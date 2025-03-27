@@ -1,0 +1,116 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "Main Module"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "Cloud Share Community, connecting to your private audio and video library."
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "Cloud Share"
+    },
+    {
+      "name": "reason_keep_background_running",
+      "value": "Keep running in the background"
+    },
+    {
+      "name": "back",
+      "value": "Back"
+    },
+    {
+      "name": "homepage",
+      "value": "Home"
+    },
+    {
+      "name": "settings",
+      "value": "Settings"
+    },
+    {
+      "name": "library",
+      "value": "Music Library"
+    },
+    {
+      "name": "song",
+      "value": "Songs"
+    },
+    {
+      "name": "album",
+      "value": "Albums"
+    },
+    {
+      "name": "playlist",
+      "value": "Playlists"
+    },
+    {
+      "name": "artist",
+      "value": "Artists"
+    },
+    {
+      "name": "setting_player",
+      "value": "Playback Settings"
+    },
+    {
+      "name": "setting_auto_cache_next",
+      "value": "Auto-cache Next Song"
+    },
+    {
+      "name": "setting_interrupting_continue",
+      "value": "Continue Playing After Interruption"
+    },
+    {
+      "name": "setting_player_lyric",
+      "value": "Scrolling Lyrics in Playback Center"
+    },
+    {
+      "name": "setting_playing_level",
+      "value": "Playback Quality"
+    },
+    {
+      "name": "setting_download_level",
+      "value": "Download Quality"
+    },
+    {
+      "name": "setting_playing_cache",
+      "value": "Maximum Playback Cache"
+    },
+    {
+      "name": "setting_playing_cache_desc",
+      "value": "Set the maximum playback cache, measured in items. If this value is exceeded, the oldest cache will be automatically cleared."
+    },
+    {
+      "name": "setting_cache",
+      "value": "Cache Settings"
+    },
+    {
+      "name": "setting_request_cache_expire",
+      "value": "Request Cache Expiration Time"
+    },
+    {
+      "name": "setting_request_cache_expire_desc",
+      "value": "Set the request cache expiration time in days. If set to 0, requests will not be cached."
+    },
+    {
+      "name": "setting_about",
+      "value": "About This App"
+    },
+    {
+      "name": "setting_feedback",
+      "value": "Feedback & Suggestions"
+    },
+    {
+      "name": "setting_privacy",
+      "value": "Privacy Policy Agreement"
+    },
+    {
+      "name": "setting_clear_cache_song",
+      "value": "Clear All Song Cache"
+    },
+    {
+      "name": "setting_clear_cache_request",
+      "value": "Clear All Request Cache"
+    }
+  ]
+}

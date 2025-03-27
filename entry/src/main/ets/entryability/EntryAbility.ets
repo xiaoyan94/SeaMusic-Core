@@ -1,0 +1,81 @@
+import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+import { window } from '@kit.ArkUI';
+import { AppUtil, CrashUtil, LogUtil } from '@pura/harmony-utils';
+import { ImageKnife } from '@ohos/imageknife';
+import { DialogHelper } from '@pura/harmony-dialog';
+import { SongCacheManager } from '../util/SongCacheManager';
+import { EventHelper } from '../util/EventHelper';
+import { ContextHelper } from '../util/ContextHelper';
+import { DownloadManager } from '../util/DownloadUtils';
+import { avPlayerManager } from '../util/AVPlayerManager';
+import { backgroundRunningManager } from '../util/BackgroundRunningManager';
+import app from '@system.app';
+
+export default class EntryAbility extends UIAbility {
+  async onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): Promise<void> {
+    hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onCreate');
+    AppUtil.init(this.context); // 初始化应用工具类
+    DialogHelper.setDefaultConfig((config) => {
+      config.uiAbilityContext = this.context;
+      config.autoCancel = false; //点击遮障层时，是否关闭弹窗
+      config.backCancel = false; // 点击返回键时，是否关闭弹窗
+    }) // 初始化对话框工具类
+    LogUtil.init(0x2003, 'Edge Music', true); // 初始化日志工具类
+    SongCacheManager.initialize() // 初始化歌曲缓存管理器
+    CrashUtil.onError(); // 注册错误处理
+    ContextHelper.init(this.context) // 初始化上下文工具类
+    DownloadManager.init(this.context) // 初始化下载工具类
+    await avPlayerManager.init(this.context); // 初始化播放器
+    // 事件监听注册
+    EventHelper.subscribePlaySong()
+    EventHelper.subscribeInitData()
+    EventHelper.subscribeSongState(async (data) => {
+      if (data === 'PLAY') {
+        await backgroundRunningManager.startBackgroundRunning();
+      } else if (data === 'PAUSE') {
+        await backgroundRunningManager.stopBackgroundRunning();
+      }
+    })
+    EventHelper.subscribeLoopMode((mode) => {
+      const session = avPlayerManager.getSession();
+      if (session) {
+        session.setAVPlaybackState({
+          loopMode: mode
+        })
+      }
+    })
+    await ImageKnife.getInstance().initFileCache(this.context, 256, 256 * 1024 * 1024)
+  }
+
+  onDestroy(): void {
+    hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onDestroy');
+  }
+
+  async onWindowStageCreate(windowStage: window.WindowStage): Promise<void> {
+    // Main window is created, set main page for this ability
+    hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
+    windowStage.loadContent('pages/Index', (err) => {
+      if (err.code) {
+        hilog.error(0x0000, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err) ?? '');
+        return;
+      }
+      hilog.info(0x0000, 'testTag', 'Succeeded in loading the content.');
+    });
+  }
+
+  onWindowStageDestroy(): void {
+    // Main window is destroyed, release UI related resources
+    hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onWindowStageDestroy');
+  }
+
+  onForeground(): void {
+    // Ability has brought to foreground
+    hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onForeground');
+  }
+
+  onBackground(): void {
+    // Ability has back to background
+    hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onBackground');
+  }
+}

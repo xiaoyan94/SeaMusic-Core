@@ -1,0 +1,55 @@
+{
+  "app": {
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "storeFile": "C:/Users/10423/Key/SeaMusic.p12",
+          "storePassword": "000000191CD80E73D2C32EE98976D67E81CDCF38BFBF016847072383DAF71CE49037A1CBDD89CDB90E",
+          "keyAlias": "SeaMusic",
+          "keyPassword": "00000019AE3AE93B7A4BE3AB8AD8D4156E30BE4A20A4326C7B025605A69D56801465034FB8184C06CD",
+          "signAlg": "SHA256withECDSA",
+          "profile": "C:/Users/10423/Key/云享社Release.p7b",
+          "certpath": "C:/Users/10423/Key/云享社.cer"
+        }
+      }
+    ],
+    "products": [
+      {
+        "name": "default",
+        "signingConfig": "default",
+        "compatibleSdkVersion": "5.0.3(15)",
+        "runtimeOS": "HarmonyOS",
+        "buildOption": {
+          "strictMode": {
+            "caseSensitiveCheck": true,
+            "useNormalizedOHMUrl": true
+          }
+        }
+      }
+    ],
+    "buildModeSet": [
+      {
+        "name": "debug",
+      },
+      {
+        "name": "release"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    }
+  ]
+}

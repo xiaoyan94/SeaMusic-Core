@@ -1,0 +1,116 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "主模块"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "云享社，连接你的私有音视频库。"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "云享社"
+    },
+    {
+      "name": "reason_keep_background_running",
+      "value": "Keep running in the background"
+    },
+    {
+      "name": "back",
+      "value": "返回"
+    },
+    {
+      "name": "homepage",
+      "value": "主页"
+    },
+    {
+      "name": "settings",
+      "value": "设置"
+    },
+    {
+      "name": "library",
+      "value": "音乐库"
+    },
+    {
+      "name": "song",
+      "value": "歌曲"
+    },
+    {
+      "name": "album",
+      "value": "专辑"
+    },
+    {
+      "name": "playlist",
+      "value": "歌单"
+    },
+    {
+      "name": "artist",
+      "value": "艺人"
+    },
+    {
+      "name": "setting_player",
+      "value": "播放设置"
+    },
+    {
+      "name": "setting_auto_cache_next",
+      "value": "自动缓存下一首"
+    },
+    {
+      "name": "setting_interrupting_continue",
+      "value": "应用打断后持续播放"
+    },
+    {
+      "name": "setting_player_lyric",
+      "value": "播控中心滚动歌词"
+    },
+    {
+      "name": "setting_playing_level",
+      "value": "播放音质"
+    },
+    {
+      "name": "setting_download_level",
+      "value": "下载音质"
+    },
+    {
+      "name": "setting_playing_cache",
+      "value": "最大播放缓存"
+    },
+    {
+      "name": "setting_playing_cache_desc",
+      "value": "设置最大播放缓存，单位为个。若超过此值，将自动清除最早的缓存。"
+    },
+    {
+      "name": "setting_cache",
+      "value": "缓存设置"
+    },
+    {
+      "name": "setting_request_cache_expire",
+      "value": "请求缓存过期时间"
+    },
+    {
+      "name": "setting_request_cache_expire_desc",
+      "value": "设置请求缓存过期时间，单位为天。如果设置为0，则不缓存请求。"
+    },
+    {
+      "name": "setting_about",
+      "value": "关于本软件"
+    },
+    {
+      "name": "setting_feedback",
+      "value": "建议反馈"
+    },
+    {
+      "name": "setting_privacy",
+      "value": "隐私政策协议"
+    },
+    {
+      "name": "setting_clear_cache_song",
+      "value": "清除所有歌曲缓存"
+    },
+    {
+      "name": "setting_clear_cache_request",
+      "value": "清除所有请求缓存"
+    }
+  ]
+}

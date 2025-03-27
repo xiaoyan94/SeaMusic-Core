@@ -1,0 +1,116 @@
+{
+  "color": [
+    {
+      "name": "start_window_background",
+      "value": "#F8F9FA"
+    },
+    {
+      "name": "page_background",
+      "value": "#F8F9FA"
+    },
+    {
+      "name": "text_title",
+      "value": "#303030"
+    },
+    {
+      "name": "text_primary",
+      "value": "#424242"
+    },
+    {
+      "name": "text_secondary",
+      "value": "#757575"
+    },
+    {
+      "name": "text_hint",
+      "value": "#BDBDBD"
+    },
+    {
+      "name": "divider",
+      "value": "#E0E0E0"
+    },
+    {
+      "name": "homepage_menu_button_divider",
+      "value": "#EEEEEE"
+    },
+    {
+      "name": "icon_normal",
+      "value": "#757575"
+    },
+    {
+      "name": "icon_pressed",
+      "value": "#e5000000"
+    },
+    {
+      "name": "icon_highlight",
+      "value": "#E8EAF6"
+    },
+    {
+      "name": "tag_background",
+      "value": "#EEF2F6"
+    },
+    {
+      "name": "background_gray",
+      "value": "#F5F7FA"
+    },
+    {
+      "name": "dialog_background",
+      "value": "#FFFFFF"
+    },
+    {
+      "name": "homepage_menu_button_normal",
+      "value": "#CCEEEEEE"
+    },
+    {
+      "name": "homepage_menu_button_pressed",
+      "value": "#E0E0E0"
+    },
+    {
+      "name": "back_button_normal",
+      "value": "#F0F0F0"
+    },
+    {
+      "name": "setting_item_background",
+      "value": "#CCF5F5F5"
+    },
+    {
+      "name": "setting_button_normal",
+      "value": "#424242"
+    },
+    {
+      "name": "text_click",
+      "value": "#5B9BD5"
+    },
+    {
+      "name": "skeleton_loading",
+      "value": "#F0F0F0"
+    },
+    {
+      "name": "success",
+      "value": "#81C784"
+    },
+    {
+      "name": "error",
+      "value": "#E57373"
+    },
+    {
+      "name": "text_tertiary",
+      "value": "#9E9E9E"
+    },
+    {
+      "name": "card_active_bg",
+      "value": "#FFFFFF"
+    },
+    {
+      "name": "billing_flash_bg",
+      "value": "#5B9BD520"
+    },
+    {
+      "name": "card_background",
+      "value": "#FFFFFF"
+    },
+    {
+      "name": "button_background",
+      "value": "#FFFFFF"
+    }
+  ]
+}

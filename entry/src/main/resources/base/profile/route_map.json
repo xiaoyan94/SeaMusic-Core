@@ -1,0 +1,14 @@
+{
+  "routerMap": [
+    {
+      "name": "Playing",
+      "pageSourceFile": "src/main/ets/view/Playing.ets",
+      "buildFunction": "PlayingBuilder"
+    },
+    {
+      "name": "Library",
+      "pageSourceFile": "src/main/ets/view/Library.ets",
+      "buildFunction": "LibraryBuilder"
+    }
+  ]
+}
