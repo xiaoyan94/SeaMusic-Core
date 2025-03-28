@@ -9,6 +9,7 @@ import { StyleConstants } from "../constants/StyleConstants";
 import { SettingItem } from "../model/SettingItem";
 import { SourceConfig } from "../type/Adapter";
 import { PreferencesCache } from "../util/PreferenceCache";
+import { SlideDownControl } from "../util/SlideDownController";
 import { AboutSetting, PlayerSetting, SoftwareSetting } from "../viewmodel/SettingGroupData";
 import { About } from "./About";
 
@@ -668,7 +669,7 @@ export struct Setting {
           List({ scroller: this.scrollController }) {
             ListItem() {
               Row() {
-                Text(this.currentIndex >= 0 ? '释放返回上一页' : '')
+                Text(SlideDownControl.getReturnActionText(this.currentIndex))
                   .fontColor($r('app.color.text_secondary'))
                   .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
                   .margin({ left: 8 })
@@ -716,6 +717,7 @@ export struct Setting {
             }
             .margin({ bottom: 80 })
           }
+          .backToTop(true)
           .layoutWeight(1)
           .scrollBar(BarState.Off)
           .edgeEffect(EdgeEffect.Spring)
@@ -725,7 +727,7 @@ export struct Setting {
             if (scrollState === ScrollState.Scroll) {
               const positionY = this.scrollController.currentOffset().yOffset
               if (positionY < 0) {
-                this.currentIndex = this.calculateCurrentIndex(positionY)
+                this.currentIndex = SlideDownControl.calculateCurrentIndex(positionY, 0)
               } else {
                 this.currentIndex = -1
               }

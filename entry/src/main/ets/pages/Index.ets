@@ -18,6 +18,7 @@ import { PushPathHelper } from '../util/PushPathHelper'
 import { PlaylistManager } from '../util/PlaylistManager'
 import { MiniPlaybackControl } from '../component/MiniPlaybackControl'
 import { MultiSearch } from '../view/MultiSearch'
+import { SlideDownControl } from '../util/SlideDownController'
 
 @Entry
 @Component
@@ -35,6 +36,8 @@ struct Index {
   @StorageLink("index_recommend_artists") recommendArtists: Artist[] = []
   @StorageLink("index_recommend_toplist") topList: Playlist[] = []
   @State loading: boolean = true
+  // 避让导航栏高度
+  @StorageProp('bottomRect') bottomRect: number = 0
 
   async aboutToAppear() {
     this.breakpointSystem.register()
@@ -97,15 +100,6 @@ struct Index {
     this.breakpointSystem.unregister()
   }
 
-  calculateCurrentIndex(offset: number) {
-    offset = Math.abs(offset)
-    if (offset < 40) {
-      return -1
-    }
-    const index = Math.floor(offset / 72)
-    return Math.min(Math.max(index, 0), 4)
-  }
-
   @Builder
   Title() {
     Row() {
@@ -149,7 +143,7 @@ struct Index {
       this.pageStack.pushPath({ name: 'Setting' })
     } else if (index === 1) {
       this.pageStack.pushPath({ name: 'MultiSearch' })
-    } else if (index === 3) {
+    } else if (index === 2) {
       this.initData()
     }
   }
@@ -167,220 +161,223 @@ struct Index {
     }
   }
 
-  build() {
+  async build() {
     Column() {
       Navigation(this.pageStack) {
-        Scroll(this.scrollController) {
-          Column() {
-            Row() {
-              LoadingProgress()
-                .width(24)
-                .height(24)
-                .opacity(this.currentIndex >= 2 ? 1 : 0)
-                .scale({ x: this.currentIndex >= 2 ? 1 : 0.5, y: this.currentIndex >= 2 ? 1 : 0.5 })
-                .animation({
-                  duration: 250,
-                  curve: Curve.FastOutSlowIn
-                })
-
-              Text(this.currentIndex === 2 ? '继续下拉刷新...' : '释放以刷新...')
-                .fontColor($r('app.color.text_secondary'))
-                .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
-                .margin({ left: 8 })
-                .opacity(this.currentIndex >= 2 ? 1 : 0)
-                .translate({ y: this.currentIndex >= 2 ? 0 : -20 })
-                .animation({
-                  duration: 250,
-                  curve: Curve.FastOutSlowIn
-                })
-            }
-            .height(this.currentIndex >= 2 ? 40 : 0)
-            .animation({
-              duration: 250,
-              curve: Curve.FastOutSlowIn
-            })
-            .alignItems(VerticalAlign.Center)
-            .justifyContent(FlexAlign.Center)
-            .width(StyleConstants.FULL_WIDTH)
-            .padding({
-              left: 16,
-              right: 16
-            })
-
-            Grid() {
-              ForEach(this.menuItems, (item: HomePageMenu) => {
-                GridItem() {
-                  MenuButton({
-                    title: item.title,
-                    onNavigate: () => {
-                      this.pageStack.pushPath({ name: item.path })
-                    }
-                  })
+        Stack({ alignContent: Alignment.Bottom}){
+          Scroll(this.scrollController) {
+            Column() {
+              Row() {
+                if(this.currentIndex >= 2){
+                  LoadingProgress()
+                    .width(24)
+                    .height(24)
+                    .opacity(this.currentIndex >= 1 ? 1 : 0)
+                    .scale({ x: this.currentIndex >= 1 ? 1 : 0.5, y: this.currentIndex >= 1 ? 1 : 0.5 })
+                    .animation({
+                      duration: 250,
+                      curve: Curve.FastOutSlowIn
+                    })
                 }
-                .padding(4)
+
+                Text(SlideDownControl.getIndexActionText(this.currentIndex))
+                  .fontColor($r('app.color.text_secondary'))
+                  .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
+                  .margin({ left: 8 })
+                  .opacity(this.currentIndex >= 0 ? 1 : 0)
+                  .translate({ y: this.currentIndex >= 0 ? 0 : -20 })
+                  .animation({
+                    duration: 250,
+                    curve: Curve.FastOutSlowIn
+                  })
+              }
+              .height(this.currentIndex >= 0 ? 40 : 0)
+              .animation({
+                duration: 250,
+                curve: Curve.FastOutSlowIn
               })
-            }
-            .columnsTemplate(this.currentBreakpoint === 'lg' ? '1fr 1fr 1fr 1fr' : '1fr 1fr')
-            .padding(12)
-            .width(StyleConstants.FULL_WIDTH)
-            .rowsGap(8)
-            .columnsGap(8)
-
-            if (this.adapters.length > 0) {
-              Segment({
-                title: "热门歌曲",
-                actionText: "换一批",
-                loading: this.loading,
-                onActionClick: async () => {
-                  this.recommendSongs = await SourceAdapter.getRecommendSongs()
-                },
-              }) {
-                ForEach(this.recommendSongs, (item: Song) => {
-                  Cover({
-                    src: cover(item.album.cover, 256),
-                    title: item.name,
-                    subtitle: item.artists.map(artist => artist.name).join(' / '),
-                    menuItems: this.generateSongMenu(item)
-                  })
-                    .width(120)
-                    .padding(4)
-                    .onClick(() => {
-                      PushPathHelper.loading("Playing", async () => {
-                        PlaylistManager.insertSongs([item], -1, item)
-                      })
-                    })
-                })
-              }
-
-              Segment({
-                title: "推荐歌单",
-                actionText: "换一批",
-                loading: this.loading,
-                onActionClick: async () => {
-                  this.recommendPlaylist = await SourceAdapter.getRecommendList()
-                },
-              }) {
-                ForEach(this.recommendPlaylist, (item: Playlist) => {
-                  Cover({
-                    src: cover(item.cover, 256),
-                    title: item.name,
-                    menuItems: this.generatePlaylistMenu(item)
-                  })
-                    .width(120)
-                    .padding(4)
-                    .onClick(async () => {
-                      PushPathHelper.pushPath(this.pageStack, "Playlist", async () => {
-                        const playlist = await SourceAdapter.getPlaylistDetail(item)
-                        AppStorage.setOrCreate('current_playlist_data', playlist)
-                      })
-                    })
-                })
-              }
-
-              Segment({
-                title: "推荐艺人",
-                actionText: "换一批",
-                loading: this.loading,
-                radius: "100%",
-                onActionClick: async () => {
-                  this.recommendArtists = await SourceAdapter.getRecommendArtists()
-                },
-              }) {
-                ForEach(this.recommendArtists, (item: Artist) => {
-                  Cover({
-                    src: cover(item.avatar, 256),
-                    title: item.name,
-                    radius: "100%",
-                    titleAlign: HorizontalAlign.Center
-                  })
-                    .width(120)
-                    .padding(4)
-                    .onClick(() => {
-                      PushPathHelper.pushPath(this.pageStack, "Playlist", async () => {
-                        // 歌手复用歌单UI
-                        const playlist = await SourceAdapter.getArtistDetail(item)
-                        AppStorage.setOrCreate('current_playlist_data', playlist)
-                      })
-                    })
-                })
-              }
-
-              Segment({
-                title: "排行榜",
-                loading: this.loading
-              }) {
-                ForEach(this.topList, (item: Playlist) => {
-                  Cover({
-                    src: cover(item.cover, 256),
-                    title: item.name,
-                    subtitle: item.description,
-                    menuItems: this.generatePlaylistMenu(item)
-                  })
-                    .width(120)
-                    .padding(4)
-                    .onClick(async () => {
-                      PushPathHelper.pushPath(this.pageStack, "Playlist", async () => {
-                        const playlist = await SourceAdapter.getPlaylistDetail(item)
-                        AppStorage.setOrCreate('current_playlist_data', playlist)
-                      })
-                    })
-                })
-              }
-            } else {
-              Column() {
-                Blank()
-                Row() {
-                  Text("添加数据源开启云上漫游！")
-                    .fontWeight(StyleConstants.FONT_WEIGHT_SEVEN)
-                    .fontColor($r('app.color.text_hint'))
-                    .fontSize(16)
-                    .margin({ right: 8 })
-
-                  Text("点击添加")
-                    .fontWeight(StyleConstants.FONT_WEIGHT_SEVEN)
-                    .fontColor($r('app.color.text_click'))
-                    .fontSize(14)
-                    .onClick(() => {
-                      this.pageStack.pushPath({ name: 'Setting' })
-                    })
-                }
-                .alignItems(VerticalAlign.Center)
-                .justifyContent(FlexAlign.Center)
-              }
+              .alignItems(VerticalAlign.Center)
+              .justifyContent(FlexAlign.Center)
               .width(StyleConstants.FULL_WIDTH)
-              .layoutWeight(1)
-              .alignItems(HorizontalAlign.Center)
-              .justifyContent(FlexAlign.SpaceBetween)
+              .padding({
+                left: 16,
+                right: 16
+              })
+
+              Grid() {
+                ForEach(this.menuItems, (item: HomePageMenu) => {
+                  GridItem() {
+                    MenuButton({
+                      title: item.title,
+                      onNavigate: () => {
+                        this.pageStack.pushPath({ name: item.path })
+                      }
+                    })
+                  }
+                  .padding(4)
+                })
+              }
+              .columnsTemplate(this.currentBreakpoint === 'lg' ? '1fr 1fr 1fr 1fr' : '1fr 1fr')
+              .padding(12)
+              .width(StyleConstants.FULL_WIDTH)
+              .rowsGap(8)
+              .columnsGap(8)
+
+              if (this.adapters.length > 0) {
+                Segment({
+                  title: "热门歌曲",
+                  actionText: "换一批",
+                  loading: this.loading,
+                  onActionClick: async () => {
+                    this.recommendSongs = await SourceAdapter.getRecommendSongs()
+                  },
+                }) {
+                  ForEach(this.recommendSongs, (item: Song) => {
+                    Cover({
+                      src: cover(item.album.cover, 256),
+                      title: item.name,
+                      subtitle: item.artists.map(artist => artist.name).join(' / '),
+                      menuItems: this.generateSongMenu(item)
+                    })
+                      .width(120)
+                      .padding(4)
+                      .onClick(() => {
+                        PushPathHelper.loading("Playing", async () => {
+                          PlaylistManager.insertSongs([item], -1, item)
+                        })
+                      })
+                  })
+                }
+
+                Segment({
+                  title: "推荐歌单",
+                  actionText: "换一批",
+                  loading: this.loading,
+                  onActionClick: async () => {
+                    this.recommendPlaylist = await SourceAdapter.getRecommendList()
+                  },
+                }) {
+                  ForEach(this.recommendPlaylist, (item: Playlist) => {
+                    Cover({
+                      src: cover(item.cover, 256),
+                      title: item.name,
+                      menuItems: this.generatePlaylistMenu(item)
+                    })
+                      .width(120)
+                      .padding(4)
+                      .onClick(async () => {
+                        PushPathHelper.pushPath(this.pageStack, "Playlist", async () => {
+                          const playlist = await SourceAdapter.getPlaylistDetail(item)
+                          AppStorage.setOrCreate('current_playlist_data', playlist)
+                        })
+                      })
+                  })
+                }
+
+                Segment({
+                  title: "推荐艺人",
+                  actionText: "换一批",
+                  loading: this.loading,
+                  radius: "100%",
+                  onActionClick: async () => {
+                    this.recommendArtists = await SourceAdapter.getRecommendArtists()
+                  },
+                }) {
+                  ForEach(this.recommendArtists, (item: Artist) => {
+                    Cover({
+                      src: cover(item.avatar, 256),
+                      title: item.name,
+                      radius: "100%",
+                      titleAlign: HorizontalAlign.Center
+                    })
+                      .width(120)
+                      .padding(4)
+                      .onClick(() => {
+                        PushPathHelper.pushPath(this.pageStack, "Playlist", async () => {
+                          // 歌手复用歌单UI
+                          const playlist = await SourceAdapter.getArtistDetail(item)
+                          AppStorage.setOrCreate('current_playlist_data', playlist)
+                        })
+                      })
+                  })
+                }
+
+                Segment({
+                  title: "排行榜",
+                  loading: this.loading
+                }) {
+                  ForEach(this.topList, (item: Playlist) => {
+                    Cover({
+                      src: cover(item.cover, 256),
+                      title: item.name,
+                      subtitle: item.description,
+                      menuItems: this.generatePlaylistMenu(item)
+                    })
+                      .width(120)
+                      .padding(4)
+                      .onClick(async () => {
+                        PushPathHelper.pushPath(this.pageStack, "Playlist", async () => {
+                          const playlist = await SourceAdapter.getPlaylistDetail(item)
+                          AppStorage.setOrCreate('current_playlist_data', playlist)
+                        })
+                      })
+                  })
+                }
+              } else {
+                Column() {
+                  Blank()
+                  Row() {
+                    Text("添加数据源开启云上漫游！")
+                      .fontWeight(StyleConstants.FONT_WEIGHT_SEVEN)
+                      .fontColor($r('app.color.text_hint'))
+                      .fontSize(16)
+                      .margin({ right: 8 })
+
+                    Text("点击添加")
+                      .fontWeight(StyleConstants.FONT_WEIGHT_SEVEN)
+                      .fontColor($r('app.color.text_click'))
+                      .fontSize(14)
+                      .onClick(() => {
+                        this.pageStack.pushPath({ name: 'Setting' })
+                      })
+                  }
+                  .alignItems(VerticalAlign.Center)
+                  .justifyContent(FlexAlign.Center)
+                }
+                .width(StyleConstants.FULL_WIDTH)
+                .layoutWeight(1)
+                .alignItems(HorizontalAlign.Center)
+                .justifyContent(FlexAlign.SpaceBetween)
+              }
+
+              // 底部填充高度 播控组件+底部导航栏避让高度
+              Blank().height(StyleConstants.PLAYER_CONTROL_HEIGHT+px2vp(this.bottomRect)).color('transparent')
             }
           }
-        }
-        .scrollBar(BarState.Off)
-        .edgeEffect(EdgeEffect.Spring)
-        .onWillScroll((_xOffset: number, _yOffset: number, scrollState: ScrollState, _scrollSource: ScrollSource) => {
-          if (scrollState === ScrollState.Scroll) {
-            const positionY = this.scrollController.currentOffset().yOffset
-            if (positionY < 0) {
-              const index = this.calculateCurrentIndex(this.scrollController.currentOffset().yOffset)
-              this.currentIndex = index
-            } else {
-              this.currentIndex = -1
+          .backToTop(true)
+          .scrollBar(BarState.Off)
+          .edgeEffect(EdgeEffect.Spring)
+          .onWillScroll((_xOffset: number, _yOffset: number, scrollState: ScrollState, _scrollSource: ScrollSource) => {
+            if (scrollState === ScrollState.Scroll) {
+              const positionY = this.scrollController.currentOffset().yOffset
+              if (positionY < 0) {
+                const index = SlideDownControl.calculateCurrentIndex(this.scrollController.currentOffset().yOffset, 2)
+                this.currentIndex = index
+              } else {
+                this.currentIndex = -1
+              }
             }
-          }
-        })
-        .onScrollStop(() => {
-          this.onMenuIconClick(this.currentIndex)
-          this.currentIndex = -1
-        })
-        .expandSafeArea()
+          })
+          .onScrollStop(() => {
+            this.onMenuIconClick(this.currentIndex)
+            this.currentIndex = -1
+          })
+          .expandSafeArea()
 
-
-        Stack() {
+          // 底部迷你播控组件
           MiniPlaybackControl()
         }
-        .alignContent(Alignment.Center)
-        .position({ x: 0, y: '100%' })
-        .translate({ y: -100 }) // 适当调整位置
-        .width('100%')
+
       }
       .mode(NavigationMode.Stack)
       .navDestination(this.PageMap)
