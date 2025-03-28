@@ -8,6 +8,7 @@ import { ClickUtil, LogUtil } from '@pura/harmony-utils';
 import { EventHelper } from './EventHelper';
 import { PreferencesCache } from './PreferenceCache';
 import { SourceAdapter } from '../adapter';
+import { Song } from '../type/Adapter';
 
 // 定义回调函数的类型
 export interface PlayerCallbacks {
@@ -307,9 +308,17 @@ class AVPlayerManager {
       }
     })
 
-    // this.avSession.on('toggleFavorite', (assetId) => {
-    //   EventHelper.postFavoriteToggle(assetId)
-    // })
+    this.avSession.on('toggleFavorite', (assetId) => {
+      const currentSong = AppStorage.get<Song>("current_playing_song");
+      if (!currentSong) {
+        LogUtil.warn("AVPlayerManager ", "defaultLoveSongCallback", "No current playing song found");
+        return;
+      }
+      // 执行喜欢歌曲的逻辑
+      const like = currentSong.meta?.isFavorite
+      SourceAdapter.likeSong(currentSong, !like)
+      EventHelper.postFavoriteToggle(assetId)
+    })
   }
 
   public async updatePlaybackState(state?: avSession.PlaybackState, position?: number) {
