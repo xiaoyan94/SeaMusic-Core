@@ -4,10 +4,25 @@
 > 📢 **反馈意见**: [music.yby.zone/feedback.html](https://music.yby.zone/feedback.html)
 
 ## 📱 预览
-<div align="center">
-    <img src="images/a961b09d3d994f1e21d1727d7b1ab80f_720.jpg" width="400"/>
-    <img src="images/3b7094c31415a3db0a0f9b2aa741b61c_720.jpg"  width="400"/>
-</div>
+### 平板
+|             **主页**             |            **音乐库**             |
+|:------------------------------:|:------------------------------:|
+| <img src="./images/0-01.png"/> | <img src="./images/0-02.png"/> |
+|            **每日推荐**            |            **歌单歌曲**            |
+| <img src="./images/0-03.png"/> | <img src="./images/0-04.png"/> |
+|             **搜索**             |             **设置**             |
+| <img src="./images/0-05.png"/> | <img src="./images/0-06.png"/> |
+|            **播放界面**            |            **播放列表**            |
+| <img src="./images/0-07.png"/> | <img src="./images/0-08.png"/> |
+
+### 手机
+|             **主页**             |            **音乐库**             |            **每日推荐**            |
+|:------------------------------:|:------------------------------:|:------------------------------:|
+| <img src="./images/1-01.jpg"/> | <img src="./images/1-02.jpg"/> | <img src="./images/1-03.jpg"/> |
+|            **歌单歌曲**            |             **搜索**             |             **设置**             |
+| <img src="./images/1-04.jpg"/> | <img src="./images/1-05.jpg"/> | <img src="./images/1-06.jpg"/> |
+|            **播放界面**            |            **播放列表**            |                                |
+| <img src="./images/1-07.jpg"/> | <img src="./images/1-08.jpg"/> |                                |
 
 ## ✨ 简介
 这是一个基于鸿蒙HarmonyOS Next API 15版本**全新重构**开发的网络音乐播放器统一UI容器。2.0版本带来了惊艳的UI设计和革命性的数据源架构，支持连接多个平台和私有数据源。我们致力于提供流畅的原生体验，同时保留并增强您喜爱的所有功能！
