@@ -18,12 +18,14 @@ import { PushPathHelper } from '../util/PushPathHelper'
 import { PlaylistManager } from '../util/PlaylistManager'
 import { MiniPlaybackControl } from '../component/MiniPlaybackControl'
 import { MultiSearch } from '../view/MultiSearch'
+import { deviceInfo } from '@kit.BasicServicesKit';
 
 @Entry
 @Component
 struct Index {
   @Provide('NavPathStack') pageStack: NavPathStack = new NavPathStack()
   @StorageProp('currentBreakpoint') currentBreakpoint: string = 'sm'
+  @StorageProp('deviceTypeInfo') deviceTypeInfo: string = 'phone'
   private breakpointSystem = new BreakpointSystem()
   private menuItems = HomePageMenuData
   private scrollController: Scroller = new Scroller()
@@ -39,6 +41,7 @@ struct Index {
   async aboutToAppear() {
     this.breakpointSystem.register()
     await this.initData()
+    this.deviceTypeInfo=deviceInfo.deviceType
   }
 
   async initData() {
