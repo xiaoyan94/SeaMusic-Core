@@ -495,7 +495,7 @@ class AVPlayerManager {
     return this.avPlayer;
   }
 
-  async playByPath(path: string, size?: number, metadata?: avSession.AVMetadata) {
+  async playByPath(path: string, size?: number, pause?: boolean, metadata?: avSession.AVMetadata) {
     try {
       const player = await this.getAVPlayerInstance();
       await player.reset();
@@ -553,7 +553,12 @@ class AVPlayerManager {
         await this.avSession.setAVMetadata(metadata);
       }
       await player.prepare();
-      await this.play();
+      if (pause) {
+        // 如果传入pause参数为true，则暂停播放
+        await this.pause();
+      } else {
+        await this.play();
+      }
     } catch (error) {
       this.triggerError(error);
     }
