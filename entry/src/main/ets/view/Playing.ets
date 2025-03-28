@@ -42,6 +42,8 @@ struct Playing {
   @State isMoreButtonPressed: boolean = false
   @State isBackButtonPressed: boolean = false
   private updateTimer: number = -1
+  //TAB控制
+  private controller: TabsController = new TabsController()
   // 歌曲封面-歌词翻转
   @State flipCoverLyric: boolean = PreferencesCache.flipCoverLyric()
 
@@ -607,7 +609,11 @@ struct Playing {
         .borderRadius(24)
         .margin({ top: 36 })
         .geometryTransition('song-cover', { follow: false })
-
+        .onClick(()=>{
+          if(!this.isWideScreen){
+            this.controller.changeIndex(1)
+          }
+        })  //点击图片切换到歌词页面
       // 进度条
       this.ProgressBar()
 
@@ -736,7 +742,7 @@ struct Playing {
             .layoutWeight(1)
           } else {
             // 窄屏布局 - Tabs切换
-            Tabs({ barPosition: BarPosition.End, index: this.selectedTabIndex }) {
+            Tabs({ barPosition: BarPosition.End, index: this.selectedTabIndex,controller:this.controller }) {
               TabContent() {
                 // 播放内容
                 this.PlayingContent()
