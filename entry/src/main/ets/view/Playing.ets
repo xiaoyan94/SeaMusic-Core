@@ -113,6 +113,12 @@ struct Playing {
       })
     })
 
+    EventHelper.subscribePlaySong(() => {
+      // 当歌曲改变时，更新当前时间和歌词
+      this.isFavorite = this.song?.meta?.isFavorite || false
+      this.currentTime = 0
+    })
+
     // 添加事件监听
     avPlayerManager.addListener('onPlay', () => {
       this.isPlaying = true;
@@ -525,6 +531,12 @@ struct Playing {
         animateTo({ duration: 400, curve: Curve.EaseOut }, () => {
           this.isFavorite = !this.isFavorite
           if (this.song) {
+            if (this.song.meta) {
+              // 更新歌曲元数据中的isFavorite
+              this.song.meta.isFavorite = this.isFavorite
+            } else {
+              this.song.meta = { isFavorite: this.isFavorite }
+            }
             SourceAdapter.likeSong(this.song, this.isFavorite)
           }
 
