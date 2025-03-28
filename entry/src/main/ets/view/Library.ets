@@ -4,6 +4,7 @@ import { Playlist } from "../type/Adapter";
 import { PushPathHelper } from "../util/PushPathHelper";
 import { SourceAdapter } from "../adapter";
 import { PlaylistGrid } from "../component/PlaylistGrid";
+import { MiniPlaybackControl } from "../component/MiniPlaybackControl";
 
 @Builder
 export function LibraryBuilder(){
@@ -216,6 +217,14 @@ struct Library {
       .width(StyleConstants.FULL_WIDTH)
       .height(StyleConstants.FULL_HEIGHT)
       .expandSafeArea()
+
+      Stack() {
+        MiniPlaybackControl()
+      }
+      .alignContent(Alignment.Center)
+      .position({ x: 0, y: '100%' })
+      .translate({ y: -100 }) // 适当调整位置
+      .width('100%')
     }
     .hideToolBar(true)
     .hideTitleBar(true)
