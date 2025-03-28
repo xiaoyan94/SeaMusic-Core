@@ -11,6 +11,7 @@ import { LyricsView } from '../component/LyricsView'
 import { PlaylistView } from '../component/PlaylistView'
 import { PreferencesCache } from '../util/PreferenceCache'
 import { SourceAdapter } from '../adapter'
+import { TimerSelector } from '../component/TimerSelector'
 
 @Builder
 export function PlayingBuilder() {
@@ -52,6 +53,8 @@ struct Playing {
     this.isWideScreen = this.currentBreakpoint !== BreakpointConstants.BREAKPOINT_SM;
   }
 
+  @State sheetType : "playlist" | "timer" = "playlist" // 用于控制底部弹出表单的类型，默认为播放列表
+
   @Builder
   PlayListBuilder() {
     Column() {
@@ -64,6 +67,24 @@ struct Playing {
         .width(StyleConstants.FULL_WIDTH)
         .textAlign(TextAlign.Start)
       PlaylistView()
+    }
+    .height(StyleConstants.FULL_HEIGHT)
+    .layoutWeight(1)
+    .transition({ type: TransitionType.Insert, scale: { y: 0.8, x: 1.0 }, opacity: 0.0 })
+    .transition({ type: TransitionType.Delete, scale: { y: 0.8, x: 1.0 }, opacity: 0.0 })
+  }
+
+  @Builder
+  Timer() {
+    Column() {
+      Text("定时关闭")
+        .fontSize(18)
+        .fontWeight(StyleConstants.FONT_WEIGHT_SEVEN)
+        .fontColor($r('app.color.text_title'))
+        .margin({ left: 36, top: 16, bottom: 16 })
+        .width(StyleConstants.FULL_WIDTH)
+        .textAlign(TextAlign.Start)
+      TimerSelector()
     }
     .height(StyleConstants.FULL_HEIGHT)
     .layoutWeight(1)
@@ -111,6 +132,12 @@ struct Playing {
       animateTo({ duration: 400, curve: Curve.EaseInOut }, () => {
         this.isFavorite = !this.isFavorite;
       })
+    })
+
+    EventHelper.subscribePlaySong(() => {
+      // 当歌曲改变时，更新当前时间和歌词
+      this.isFavorite = this.song?.meta?.isFavorite || false
+      this.currentTime = 0
     })
 
     // 添加事件监听
@@ -437,6 +464,7 @@ struct Playing {
       .onClick(() => {
         this.isListButtonPressed = true
         animateTo({ duration: 300, curve: Curve.EaseOut }, () => {
+          this.sheetType = "playlist"; // 设置当前类型为播放列表
           this.showPlaylist = true;
           setTimeout(() => {
             this.isListButtonPressed = false
@@ -468,12 +496,15 @@ struct Playing {
       //     // 收藏逻辑
       //   }
       // },
-      // {
-      //   value: '定时关闭',
-      //   action: () => {
-      //     // 定时关闭逻辑
-      //   }
-      // },
+      {
+        value: '定时关闭',
+        action: () => {
+          animateTo({ duration: 300, curve: Curve.EaseOut }, () => {
+            this.sheetType = "timer"; // 设置当前类型为定时关闭
+            this.showPlaylist = true; // 显示定时关闭选项
+          })
+        }
+      },
     ]
   }
 
@@ -486,9 +517,12 @@ struct Playing {
     //   }
     // },
       {
-        value: '还没有捏',
+        value: '定时关闭',
         action: () => {
-          // 定时关闭逻辑
+          animateTo({ duration: 300, curve: Curve.EaseOut }, () => {
+            this.sheetType = "timer"; // 设置当前类型为定时关闭
+            this.showPlaylist = true; // 显示定时关闭选项
+          })
         }
       },
     ]
@@ -523,10 +557,10 @@ struct Playing {
       .onClick(() => {
         this.isHeartButtonPressed = true
         animateTo({ duration: 400, curve: Curve.EaseOut }, () => {
-          this.isFavorite = !this.isFavorite
           if (this.song) {
-            SourceAdapter.likeSong(this.song, this.isFavorite)
+            SourceAdapter.likeSong(this.song, !this.isFavorite)
           }
+          EventHelper.postFavoriteToggle("")
 
           // 重置按钮状态
           setTimeout(() => {
@@ -664,7 +698,12 @@ struct Playing {
 
   @Builder
   sheet() {
-    this.PlayListBuilder()
+    // 根据当前的sheetType渲染不同的内容
+    if (this.sheetType === "playlist") {
+      this.PlayListBuilder()
+    } else if (this.sheetType === "timer") {
+      this.Timer()
+    }
   }
 
   @Builder
@@ -789,6 +828,7 @@ struct Playing {
         if (event.angle < -45 && event.angle > -135) {
           // 向上滑，显示播放列表
           animateTo({ duration: 400, curve: Curve.EaseInOut }, () => {
+            this.sheetType = "playlist";
             this.showPlaylist = true;
           })
         } else if (event.angle > 45 && event.angle < 135) {
@@ -803,6 +843,7 @@ struct Playing {
       preferType: this.currentBreakpoint === BreakpointConstants.BREAKPOINT_SM ? SheetType.BOTTOM : SheetType.CENTER,
       onWillDismiss: () => {
         this.showPlaylist = false;
+        this.sheetType = "playlist";
       }
     })
   }

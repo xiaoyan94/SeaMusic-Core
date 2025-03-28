@@ -11,6 +11,7 @@ import { cover } from "../util/AdapterHelper";
 import { formatRelativeTime } from "../util/String";
 import { PushPathHelper } from "../util/PushPathHelper";
 import { PlaylistManager, PlayMode } from "../util/PlaylistManager";
+import { MiniPlaybackControl } from "../component/MiniPlaybackControl";
 
 @Component
 export struct PlayList {
@@ -485,6 +486,14 @@ export struct PlayList {
       .width(StyleConstants.FULL_WIDTH)
       .height(StyleConstants.FULL_HEIGHT)
       .expandSafeArea()
+
+      Stack() {
+        MiniPlaybackControl()
+      }
+      .alignContent(Alignment.Center)
+      .position({ x: 0, y: '100%' })
+      .translate({ y: -100 }) // 适当调整位置
+      .width('100%')
     }
     .hideToolBar(true)
     .hideTitleBar(true)

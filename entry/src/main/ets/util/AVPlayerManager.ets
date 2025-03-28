@@ -8,6 +8,7 @@ import { ClickUtil, LogUtil } from '@pura/harmony-utils';
 import { EventHelper } from './EventHelper';
 import { PreferencesCache } from './PreferenceCache';
 import { SourceAdapter } from '../adapter';
+import { Song } from '../type/Adapter';
 
 // 定义回调函数的类型
 export interface PlayerCallbacks {
@@ -307,9 +308,17 @@ class AVPlayerManager {
       }
     })
 
-    // this.avSession.on('toggleFavorite', (assetId) => {
-    //   EventHelper.postFavoriteToggle(assetId)
-    // })
+    this.avSession.on('toggleFavorite', (assetId) => {
+      const currentSong = AppStorage.get<Song>("current_playing_song");
+      if (!currentSong) {
+        LogUtil.warn("AVPlayerManager ", "defaultLoveSongCallback", "No current playing song found");
+        return;
+      }
+      // 执行喜欢歌曲的逻辑
+      const like = currentSong.meta?.isFavorite
+      SourceAdapter.likeSong(currentSong, !like)
+      EventHelper.postFavoriteToggle(assetId)
+    })
   }
 
   public async updatePlaybackState(state?: avSession.PlaybackState, position?: number) {
@@ -495,7 +504,7 @@ class AVPlayerManager {
     return this.avPlayer;
   }
 
-  async playByPath(path: string, size?: number, metadata?: avSession.AVMetadata) {
+  async playByPath(path: string, size?: number, pause?: boolean, metadata?: avSession.AVMetadata) {
     try {
       const player = await this.getAVPlayerInstance();
       await player.reset();
@@ -553,7 +562,12 @@ class AVPlayerManager {
         await this.avSession.setAVMetadata(metadata);
       }
       await player.prepare();
-      await this.play();
+      if (pause) {
+        // 如果传入pause参数为true，则暂停播放
+        await this.pause();
+      } else {
+        await this.play();
+      }
     } catch (error) {
       this.triggerError(error);
     }

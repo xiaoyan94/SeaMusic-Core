@@ -13,6 +13,9 @@ import { backgroundRunningManager } from '../util/BackgroundRunningManager';
 import app from '@system.app';
 
 export default class EntryAbility extends UIAbility {
+
+  private _pause_timer: number = -1; // 用于存储暂停计时器的ID
+
   async onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): Promise<void> {
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onCreate');
     AppUtil.init(this.context); // 初始化应用工具类
@@ -30,6 +33,23 @@ export default class EntryAbility extends UIAbility {
     // 事件监听注册
     EventHelper.subscribePlaySong()
     EventHelper.subscribeInitData()
+    EventHelper.subscribeFavoriteToggle()
+    EventHelper.subscribePauseTimer(async (endAt) => {
+      // 监听暂停计时器事件
+      if (this._pause_timer !== -1) {
+        clearTimeout(this._pause_timer); // 清除旧的计时器
+      }
+      if (endAt > 0) {
+        this._pause_timer = setTimeout(async () => {
+          // 当计时器到达指定时间后触发
+          LogUtil.info("EntryAbility ", "Pause Timer Ended", `Pausing playback`);
+          await avPlayerManager.pause(); // 暂停播放器
+          this._pause_timer = -1; // 重置计时器ID
+        }, endAt - Date.now());
+      } else {
+        this._pause_timer = -1; // 重置计时器ID
+      }
+    })
     EventHelper.subscribeSongState(async (data) => {
       if (data === 'PLAY') {
         await backgroundRunningManager.startBackgroundRunning();
@@ -46,6 +66,7 @@ export default class EntryAbility extends UIAbility {
       }
     })
     await ImageKnife.getInstance().initFileCache(this.context, 256, 256 * 1024 * 1024)
+    app.setImageRawDataCacheSize(100 * 1024 * 1024) // 设置解码前图片数据内存缓存上限为100MB
   }
 
   onDestroy(): void {

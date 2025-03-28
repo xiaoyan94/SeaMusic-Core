@@ -35,16 +35,22 @@ export class PlaylistManager {
     if (PlaylistManager.instance === null) {
       PlaylistManager.instance = new PlaylistManager()
       PlaylistManager.loadPlaylist(PreferencesCache.playlist())
+      PlaylistManager.switchPlayMode(PreferencesCache.playMode())
+      const lastSong = PreferencesCache.lastSong()
+      if (lastSong) {
+        PlaylistManager.playSong(lastSong, true)
+      }
     }
     return PlaylistManager.instance
   }
 
-  public static playSong(song: Song) {
+  public static playSong(song: Song, pause = false) {
     // 获取当前播放的歌曲
     const currentSong = AppStorage.get<Song>("current_playing_song")
     // 如果当前播放的歌曲和要播放的歌曲相同，则不做任何操作，且并不是单曲循环模式
     if (currentSong && currentSong.id === song.id && PlaylistManager.getPlayMode() !== PlayMode.SINGLE) {
       // 但是依然发送播放状态
+      avPlayerManager.seek(0)
       EventHelper.postSongState("PLAY")
       return
     } else if (currentSong && currentSong.id === song.id && PlaylistManager.getPlayMode() === PlayMode.SINGLE) {
@@ -60,7 +66,7 @@ export class PlaylistManager {
       AppStorage.setOrCreate("current_playing_song", songDetail)
       PreferencesCache.lastSong(songDetail)
       // 播放音乐
-      EventHelper.postPlaySong(songDetail)
+      EventHelper.postPlaySong([songDetail, pause]) // 发送播放歌曲事件
     })
   }
 
@@ -133,6 +139,8 @@ export class PlaylistManager {
 
     // 更新AppStorage中的播放模式
     AppStorage.setOrCreate("current_playing_playMode", mode);
+
+    PreferencesCache.playMode(mode); // 更新用户偏好设置中的播放模式
 
     // 只有当播放列表实际发生变化时才更新AppStorage
     if (playlistChanged) {

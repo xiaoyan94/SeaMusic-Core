@@ -2,25 +2,39 @@ import { StyleConstants } from "../constants/StyleConstants";
 import { avPlayerManager } from "../util/AVPlayerManager";
 import { PreferencesCache } from "../util/PreferenceCache";
 
-interface LyricsLine {
+class LyricsLine {
   time: number; // 时间点（毫秒）
   text: string; // 原文歌词
   translation?: string; // 翻译/音译
   showTranslation?: boolean; // 是否显示翻译
+
+  constructor(time: number, text: string, translation?: string, showTranslation?: boolean) {
+    this.time = time;
+    this.text = text;
+    this.translation = translation;
+    this.showTranslation = showTranslation;
+  }
 }
 
-interface LyricStyle {
+class LyricStyle {
   fontWeight: FontWeight;
   fontColor: string | Color;
   background: string;
   opacity: number;
+
+  constructor(fontWeight: FontWeight, fontColor: string | Color, background: string, opacity: number) {
+    this.fontWeight = fontWeight;
+    this.fontColor = fontColor;
+    this.background = background;
+    this.opacity = opacity;
+  }
 }
 
 @Component
 export struct LyricsView {
   @Watch("onTimeUpdate") @Prop currentTimeMs: number // 当前歌曲播放时间（毫秒）
   @Watch('onLyricsChanged') @Prop lyrics: string = '' // 标准的lrc歌词格式
-  @Prop translationLyrics: string = '' // 翻译/音译歌词
+  @Watch('onTranslationLyricsChanged') @Prop translationLyrics: string = '' // 翻译/音译歌词
   @State private parsedLyrics: Array<LyricsLine> = []
   @State private currentIndex: number = -1
   @State private isAnimating: boolean = false
@@ -37,6 +51,9 @@ export struct LyricsView {
 
   // 解析LRC格式原文歌词
   private parseLyrics() {
+    // 重置状态
+    this.currentIndex = -1
+
     if (!this.lyrics) {
       this.parsedLyrics = []
       this.hasTranslation = false
@@ -76,10 +93,7 @@ export struct LyricsView {
         const text = line.replace(timeRegex, '').trim()
 
         if (text) {
-          tempLyrics.push({
-            time: time,
-            text: text
-          })
+          tempLyrics.push(new LyricsLine(time, text))
         }
       }
     })
@@ -90,7 +104,7 @@ export struct LyricsView {
 
   // 合并原始歌词和翻译歌词
   private mergeLyrics(originalLyrics: LyricsLine[], translationLyrics: LyricsLine[]): LyricsLine[] {
-    // 创建结果数组，初始使用原始歌词
+    // 创建结果数组，深拷贝原始歌词避免引用问题
     const mergedLyrics: LyricsLine[] = JSON.parse(JSON.stringify(originalLyrics))
 
     // 为每一行原始歌词寻找最接近的翻译行
@@ -122,8 +136,32 @@ export struct LyricsView {
     this.updateCurrentLyric()
   }
 
+  // 监听歌词变化
   onLyricsChanged() {
+    // 确保完全重置和重新解析
+    this.resetAndParseLyrics()
+  }
+
+  // 监听翻译歌词变化
+  onTranslationLyricsChanged() {
+    // 确保完全重置和重新解析
+    this.resetAndParseLyrics()
+  }
+
+  // 重置所有状态并重新解析歌词
+  private resetAndParseLyrics() {
+    // 重置状态
+    this.currentIndex = -1
+    this.parsedLyrics = []
+    this.hasTranslation = false
+
+    // 重新解析
     this.parseLyrics()
+
+    // 如果有滚动器，重置到开始位置
+    if (this.scroller) {
+      this.scroller.scrollTo({ xOffset: 0, yOffset: 0 })
+    }
   }
 
   // 更新当前歌词索引并处理滚动
@@ -201,12 +239,12 @@ export struct LyricsView {
   private getLyricStyle(index: number) {
     const isCurrent = index === this.currentIndex
 
-    return ({
-      fontWeight: isCurrent ? StyleConstants.FONT_WEIGHT_SEVEN : StyleConstants.FONT_WEIGHT_FIVE,
-      fontColor: isCurrent ? Color.White : 'rgba(255, 255, 255, 0.6)',
-      background: isCurrent ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-      opacity: isCurrent ? 1 : 0.7
-    } as LyricStyle)
+    return new LyricStyle(
+      isCurrent ? StyleConstants.FONT_WEIGHT_SEVEN : StyleConstants.FONT_WEIGHT_FIVE,
+      isCurrent ? Color.White : 'rgba(255, 255, 255, 0.6)',
+      isCurrent ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+      isCurrent ? 1 : 0.7
+    )
   }
 
   build() {

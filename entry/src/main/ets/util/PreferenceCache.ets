@@ -225,6 +225,25 @@ export class PreferencesCache {
   }
 
   /**
+   * 播放模式
+   * @param value 播放模式（若不传值则获取当前设置）
+   */
+  static playMode(value?: number): number {
+    if (value !== undefined) {
+      // 将 value 转换为字符串存储
+      PreferencesCache.setUserPreference('play_mode', value.toString());
+    }
+    const storedValue = PreferencesCache.getUserPreference('play_mode', '0'); // 默认值为 0
+    // 尝试将存储的值转换为数字
+    const parsedValue = parseInt(storedValue, 10);
+    // 如果转换失败，返回默认值 0
+    if (isNaN(parsedValue)) {
+      return 0; // 默认值
+    }
+    return parsedValue; // 返回解析后的值
+  }
+
+  /**
    * 播放页面 封面-歌词布局翻转
    * @param value 是否翻转
    * @returns 是否翻转

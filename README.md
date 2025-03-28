@@ -44,6 +44,21 @@
 - API版本：15 (全新重构版本)
 - 架构：模块化数据源设计
 
+## 参与开发
+
+在编译时会提示`PreferencesUtil`组件的`getAllSync`不存在，这是因为`getAllSync`是云享社新增的方法，但并没有上游依赖仓库PR。如果你正在开发云享社2.0版本，并且需要使用`getAllSync`方法，请按照以下方式手动添加：
+```typescript
+/**
+  * 获取所有的缓存数据
+  * @param preferenceName
+  * @returns
+  */
+  static getAllSync(preferenceName: string = PreferencesUtil.defaultPreferenceName): object{
+    let preferences = PreferencesUtil.getPreferencesSync(preferenceName); //获取实例
+    return preferences.getAllSync();
+  }
+```
+
 ## 🤝 参与贡献
 我们欢迎社区成员参与项目建设！您可以通过以下方式贡献：
 - 📝 报告问题
