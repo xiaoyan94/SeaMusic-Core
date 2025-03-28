@@ -1,6 +1,7 @@
 import { ToastUtil } from "@pura/harmony-utils";
 import { SourceAdapter } from "../adapter";
 import { Cover } from "../component/Cover";
+import { MiniPlaybackControl } from "../component/MiniPlaybackControl";
 import { Segment } from "../component/Segment";
 import { TitleHeader } from "../component/TitleHeader";
 import { StyleConstants } from "../constants/StyleConstants";
@@ -233,6 +234,14 @@ export struct MultiSearch {
       .height(StyleConstants.FULL_HEIGHT)
       .padding(16)
       .expandSafeArea()
+
+      Stack() {
+        MiniPlaybackControl()
+      }
+      .alignContent(Alignment.Center)
+      .position({ x: 0, y: '100%' })
+      .translate({ y: -100 }) // 适当调整位置
+      .width('100%')
     }
     .hideToolBar(true)
     .hideTitleBar(true)

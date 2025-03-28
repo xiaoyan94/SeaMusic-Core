@@ -82,10 +82,33 @@ const handleSongDownload = async (song: Song) => {
   return fileName;
 }
 
-const playSong = async (song: Song, path: string, cached: boolean) => {
+const defaultLoveSongCallback = (_assetId: string) => {
+  const currentSong = AppStorage.get<Song>("current_playing_song");
+  if (!currentSong) {
+    LogUtil.warn("EventHelper ", "defaultLoveSongCallback", "No current playing song found");
+    return;
+  }
+  const like = currentSong.meta?.isFavorite
+  if (currentSong.meta) {
+    currentSong.meta.isFavorite = !like; // 切换喜欢状态
+  } else {
+    currentSong.meta = {
+      isFavorite: true,
+    };
+  }
+  AppStorage.set("current_playing_song", currentSong); // 更新当前歌曲缓存
+  const session = avPlayerManager.getSession();
+  if (session) {
+    session.setAVPlaybackState({
+      isFavorite: !like // 切换喜欢状态
+    })
+  }
+};
+
+const playSong = async (song: Song, path: string, cached: boolean, pause: boolean) => {
   await avPlayerManager.seek(0);
   await avPlayerManager.stop();
-  await avPlayerManager.playByPath(path, cached ? undefined : song.meta?.size, {
+  await avPlayerManager.playByPath(path, cached ? undefined : song.meta?.size, pause, {
     assetId: `track-${song.id}-${song.source?.id}`,
     duration: song.duration,
     title: song.name,
@@ -93,10 +116,18 @@ const playSong = async (song: Song, path: string, cached: boolean) => {
     artist: song.artists.map(a => a.name).join("/"),
     lyric: song.meta?.lyric?.normal,
   })
+  const session = avPlayerManager.getSession();
+  if (session) {
+    session.setAVPlaybackState({
+      isFavorite: song.meta?.isFavorite
+    })
+  }
 }
 
 // 让主线程代码好看一点，所以写在这里
-const defaultPlaySongCallback = async (song: Song) => {
+const defaultPlaySongCallback = async (data: [Song, boolean]) => {
+  const song = data[0];
+  const pause = data[1]; // 是否暂停
   try {
     // 尝试获取缓存
     const key = song.meta?.md5 || `${song.id}_${song.source?.id}`;
@@ -105,11 +136,11 @@ const defaultPlaySongCallback = async (song: Song) => {
       // 判断是否存在缓存
       const exists = await checkCacheFileExists(cache, key);
       if (exists) {
-        await playSong(song, cache.path, true);
+        await playSong(song, cache.path, true, pause);
       } else {
         const filePath = await handleSongDownload(song);
         if (filePath) {
-          await playSong(song, filePath, false);
+          await playSong(song, filePath, false, pause); // 如果下载成功，继续播放
         }
       }
     } else {
@@ -117,7 +148,7 @@ const defaultPlaySongCallback = async (song: Song) => {
       const filePath = await handleSongDownload(song);
       LogUtil.info("SourceAdapter ", "defaultPlaySongCallback ", "filePath ", filePath);
       if (filePath) {
-        await playSong(song, filePath, false);
+        await playSong(song, filePath, false, pause); // 如果下载成功，继续播放
       }
     }
   } catch (error) {
@@ -126,8 +157,8 @@ const defaultPlaySongCallback = async (song: Song) => {
 };
 
 export class EventHelper {
-  public static subscribePlaySong(callback?: (song: Song) => void) {
-    EmitterUtil.onSubscribe<Song>("on_playing_song", (data) => {
+  public static subscribePlaySong(callback?: (data: [Song, boolean]) => void) {
+    EmitterUtil.onSubscribe<[Song, boolean]>("on_playing_song", (data) => {
       if (callback) {
         callback(data);
       } else {
@@ -136,8 +167,8 @@ export class EventHelper {
     });
   }
 
-  public static postPlaySong(song: Song) {
-    EmitterUtil.post("on_playing_song", song);
+  public static postPlaySong(data: [Song, boolean]) {
+    EmitterUtil.post("on_playing_song", data);
   }
 
   public static subscribeLoopMode(callback: (loopMode: avSession.LoopMode | number) => void) {
@@ -150,9 +181,14 @@ export class EventHelper {
     EmitterUtil.post("on_loop_mode", loopMode);
   }
 
-  public static subscribeFavoriteToggle(callback: (data: string) => void) {
+  public static subscribeFavoriteToggle(callback?: (data: string) => void) {
     EmitterUtil.onSubscribe("on_favorite_toggle", (data: string) => {
-      callback(data);
+      if (callback) {
+        callback(data);
+      } else {
+        // 默认回调
+        defaultLoveSongCallback(data);
+      }
     });
   }
 
@@ -172,6 +208,12 @@ export class EventHelper {
     });
   }
 
+  public static subscribePauseTimer(callback: (pauseAt: number) => void) {
+    EmitterUtil.onSubscribe("on_pause_timer", (pauseAt: number) => {
+      callback(pauseAt);
+    });
+  }
+
   public static postInitData(data: string) {
     EmitterUtil.post("on_init_data", data);
   }
@@ -188,5 +230,9 @@ export class EventHelper {
 
   public static postSongState(data: "PLAY" | "PAUSE") {
     EmitterUtil.post("on_song_state", data);
+  }
+
+  public static postPauseTimer(pauseAt: number) {
+    EmitterUtil.post("on_pause_timer", pauseAt);
   }
 }

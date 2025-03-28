@@ -47,7 +47,7 @@ export struct Cover {
           imageKnifeOption: {
             loadSrc: this.src,
             placeholderSrc: $r("app.media.ic_placeholder"),
-            errorholderSrc: $r("app.media.app_icon"),
+            errorholderSrc: $r("app.media.icon"),
             objectFit: ImageFit.Fill,
           }
         })
