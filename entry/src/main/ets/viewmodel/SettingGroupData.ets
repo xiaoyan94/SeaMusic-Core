@@ -55,6 +55,7 @@ export const PlayerSetting = [
       DialogHelper.showTextInputDialog({
         title: $r('app.string.setting_playing_cache'),
         text: PlayerSetting[2].value?.toString(),
+        inputType: InputType.Number,
         cancelButton: {
           style: CancelButtonStyle.INVISIBLE
         },
@@ -86,6 +87,7 @@ export const SoftwareSetting = [
       DialogHelper.showTextInputDialog({
         title: $r('app.string.setting_request_cache_expire'),
         text: SoftwareSetting[0].value?.toString(),
+        inputType: InputType.Number,
         cancelButton: {
           style: CancelButtonStyle.INVISIBLE
         },

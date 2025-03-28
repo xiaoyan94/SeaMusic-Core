@@ -82,6 +82,29 @@ const handleSongDownload = async (song: Song) => {
   return fileName;
 }
 
+const defaultLoveSongCallback = (_assetId: string) => {
+  const currentSong = AppStorage.get<Song>("current_playing_song");
+  if (!currentSong) {
+    LogUtil.warn("EventHelper ", "defaultLoveSongCallback", "No current playing song found");
+    return;
+  }
+  const like = currentSong.meta?.isFavorite
+  if (currentSong.meta) {
+    currentSong.meta.isFavorite = !like; // 切换喜欢状态
+  } else {
+    currentSong.meta = {
+      isFavorite: true,
+    };
+  }
+  AppStorage.set("current_playing_song", currentSong); // 更新当前歌曲缓存
+  const session = avPlayerManager.getSession();
+  if (session) {
+    session.setAVPlaybackState({
+      isFavorite: !like // 切换喜欢状态
+    })
+  }
+};
+
 const playSong = async (song: Song, path: string, cached: boolean, pause: boolean) => {
   await avPlayerManager.seek(0);
   await avPlayerManager.stop();
@@ -93,6 +116,12 @@ const playSong = async (song: Song, path: string, cached: boolean, pause: boolea
     artist: song.artists.map(a => a.name).join("/"),
     lyric: song.meta?.lyric?.normal,
   })
+  const session = avPlayerManager.getSession();
+  if (session) {
+    session.setAVPlaybackState({
+      isFavorite: song.meta?.isFavorite
+    })
+  }
 }
 
 // 让主线程代码好看一点，所以写在这里
@@ -152,9 +181,14 @@ export class EventHelper {
     EmitterUtil.post("on_loop_mode", loopMode);
   }
 
-  public static subscribeFavoriteToggle(callback: (data: string) => void) {
+  public static subscribeFavoriteToggle(callback?: (data: string) => void) {
     EmitterUtil.onSubscribe("on_favorite_toggle", (data: string) => {
-      callback(data);
+      if (callback) {
+        callback(data);
+      } else {
+        // 默认回调
+        defaultLoveSongCallback(data);
+      }
     });
   }
 
@@ -174,6 +208,12 @@ export class EventHelper {
     });
   }
 
+  public static subscribePauseTimer(callback: (pauseAt: number) => void) {
+    EmitterUtil.onSubscribe("on_pause_timer", (pauseAt: number) => {
+      callback(pauseAt);
+    });
+  }
+
   public static postInitData(data: string) {
     EmitterUtil.post("on_init_data", data);
   }
@@ -190,5 +230,9 @@ export class EventHelper {
 
   public static postSongState(data: "PLAY" | "PAUSE") {
     EmitterUtil.post("on_song_state", data);
+  }
+
+  public static postPauseTimer(pauseAt: number) {
+    EmitterUtil.post("on_pause_timer", pauseAt);
   }
 }
