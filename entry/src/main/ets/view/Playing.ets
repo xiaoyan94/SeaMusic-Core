@@ -12,7 +12,7 @@ import { PlaylistView } from '../component/PlaylistView'
 import { PreferencesCache } from '../util/PreferenceCache'
 import { SourceAdapter } from '../adapter'
 import { TimerSelector } from '../component/TimerSelector'
-
+import {playing_md_f} from '../component/func_jizhishi'
 @Builder
 export function PlayingBuilder() {
   Playing()
@@ -42,6 +42,8 @@ struct Playing {
   @State isHeartButtonPressed: boolean = false
   @State isMoreButtonPressed: boolean = false
   @State isBackButtonPressed: boolean = false
+
+  @State Playing_Next: boolean = true
   private updateTimer: number = -1
   //TAB控制
   private controller: TabsController = new TabsController()
@@ -51,6 +53,8 @@ struct Playing {
   // 监听屏幕断点变化
   onBreakpointChange() {
     this.isWideScreen = this.currentBreakpoint !== BreakpointConstants.BREAKPOINT_SM;
+    this.Playing_Next= playing_md_f()
+    console.info('Succeeded in obtaining fold status.judge: ' +this.Playing_Next);
   }
 
   @State sheetType : "playlist" | "timer" = "playlist" // 用于控制底部弹出表单的类型，默认为播放列表
@@ -91,10 +95,181 @@ struct Playing {
     .transition({ type: TransitionType.Insert, scale: { y: 0.8, x: 1.0 }, opacity: 0.0 })
     .transition({ type: TransitionType.Delete, scale: { y: 0.8, x: 1.0 }, opacity: 0.0 })
   }
+  @Builder
+  //好心人帮我改下函数名哈
+  //————————————————————————
+  // 函数名：Playing_phone()
+  // 参数：null
+  // 功能：手机横屏播放器
+  //——————————————————————————
+  Playing_phone(){
+    Row(){
+      //封面图
+      Image(cover(this.song?.album?.cover ?? "", 512))
+        .width(this.coverWidth.getValue(this.currentBreakpoint))
+        .aspectRatio(1)
+        .borderRadius(24)
+        .padding({left:30,right:18,top:18,bottom:18})//之后修复避让
+        .width('35%')
+
+      Column(){
+        Text(this.song?.name || "未知歌曲")
+          .fontSize(this.getFontSize(this.song?.name ?? "", 24, 24))
+          .fontWeight(FontWeight.Bold)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .fontColor(Color.White)
+          .height(32) // 固定高度确保布局稳定
+
+        Text(this.song?.artists ? this.song.artists.map(artist => artist.name).join(" / ") : "未知艺术家")
+          .fontSize(16)
+          .fontColor('rgba(255, 255, 255, 0.6)')
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .height(24) // 固定高度确保布局稳定
+        this.PlayerControls()
+      }
+      .padding(18)
+      .width('65%')
+      // Column(){
+      //   Column(){
+      //     Column(){
+      //       LyricView22()
+      //     }.height('30%').width('60%')
+      //     Text(this.track?.track.ar.map(item => item.name)[0] +'/'+this.track?.track.name)
+      //       .fontSize(16)
+      //       .maxLines(1)
+      //       .textOverflow({ overflow: TextOverflow.Ellipsis })
+      //       .fontColor('rgba(255, 255, 255, 0.6)')
+      //       .margin({ top: 8})
+      //       .width('60%')
+      //       .textAlign(TextAlign.Center)
+      //     Blank()
+      //       .layoutWeight(1)
+      //
+      //     Column() {
+      //       Row() {
+      //         Button({ type: ButtonType.Circle }) {
+      //           Image(this.getPlayModeResource(this.playMode))
+      //             .width(28)
+      //             .height(28)
+      //             .fillColor(Color.White)
+      //
+      //         }
+      //         .width(44)
+      //         .height(44)
+      //         // .margin(12)
+      //         .backgroundColor('#00000000')
+      //         .onClick(() => {
+      //           this.playMode = globalPlaylist.switchPlayMode()
+      //         })
+      //
+      //
+      //         Button({ type: ButtonType.Circle }) {
+      //           Image($r('app.media.ic_prev'))
+      //             .width(40)
+      //             .height(40)
+      //             .fillColor(Color.White)
+      //         }
+      //         .width(this.buttonSize.getValue(this.currentBreakpoint))
+      //         .height(this.buttonSize.getValue(this.currentBreakpoint))
+      //         // .margin(12)
+      //         .backgroundColor(Color.Transparent)
+      //         .onClick(() => {
+      //           globalPlaylist.playPrevious()
+      //         })
+      //
+      //         Button({ type: ButtonType.Circle }) {
+      //           Image(this.isPlaying ? $r('app.media.pause_round_triangle_fill') : $r('app.media.playing_icon'))
+      //             .width('100%')
+      //             .height('100%')
+      //             .fillColor($r('app.color.play_color'))
+      //           // Text(this.isPlaying_1 ? '󰡫': '󰡫')
+      //           //   .fontSize(this.buttonSize.getValue(this.currentBreakpoint) + 20)
+      //           //   .fontColor($r('app.color.play_color'))
+      //
+      //         }
+      //         .width(this.buttonSize.getValue(this.currentBreakpoint) + 20)
+      //         .height(this.buttonSize.getValue(this.currentBreakpoint) + 20)
+      //         // .margin(12)
+      //         .backgroundColor('#00000000')
+      //         .onClick(() => {
+      //           if (this.isPlaying) {
+      //             this.isPlaying = !this.isPlaying
+      //             this.playerManager.pause()
+      //           } else {
+      //             this.isPlaying = !this.isPlaying
+      //             this.playerManager.play()
+      //           }
+      //         })
+      //
+      //         Button({ type: ButtonType.Circle }) {
+      //           Image($r('app.media.ic_next'))
+      //             .width(40)
+      //             .height(40)
+      //             .fillColor(Color.White)
+      //         }
+      //         .width(this.buttonSize.getValue(this.currentBreakpoint))
+      //         .height(this.buttonSize.getValue(this.currentBreakpoint))
+      //         // .margin(12)
+      //         .backgroundColor(Color.Transparent)
+      //         .onClick(() => {
+      //           globalPlaylist.playNext()
+      //         })
+      //         Button({ type: ButtonType.Circle }) {
+      //           Image($r('app.media.ic_list'))
+      //             .width(28)
+      //             .height(28)
+      //             .fillColor(Color.White)
+      //         }
+      //         .width(44)
+      //         .height(44)
+      //         // .margin(12)
+      //         .backgroundColor('#00000000')
+      //         .onClick(() => {
+      //           if (globalPlaylist.playType == PlayType.PERSONAL_FM) {
+      //             promptAction.showToast({ message: "当前模式下需要保留一点神秘感哦！" })
+      //             return
+      //           }
+      //           this.selector = "playlist"
+      //           this.showPlaylist = true;
+      //         })
+      //       }
+      //       .width('60%')
+      //       .height(this.buttonSize.getValue(this.currentBreakpoint) + 20)
+      //       // .layoutWeight(1)
+      //       .justifyContent(FlexAlign.SpaceAround)
+      //     }
+      //     Column(){
+      //       this.ProgressBar()
+      //
+      //     }.width('60%')
+      //     // this.PlayerControls()
+      //     // .onClick(() => {
+      //     //   // this.isShow=false
+      //     //   this.pageStack.pushPathByName('cloudSearch',this.track?.track.ar.map(item => item.name)[0],true)
+      //     //
+      //     //   // router.replaceUrl({
+      //     //   //   url: "pages/CloudSearch",
+      //     //   //   params: {
+      //     //   //     keywords: this.track?.track.ar.map(item => item.name)[0]
+      //     //   //   }
+      //     //   // })
+      //     // })
+      //     // Text(this.track?.track.ar.map(item => item.name)[0])
+      //   }
+      //   .width('80%')
+      //   .alignItems(HorizontalAlign.Start)
+      //   .padding({left:20,bottom:18,top:18+high_height})
+      //
+      // }.height('100%').alignItems(HorizontalAlign.Center).justifyContent(FlexAlign.Center)
+    }
+  }
+
 
   async aboutToAppear() {
     const player = await avPlayerManager.getAVPlayerInstance()
-
+    this.Playing_Next= playing_md_f()
     // 初始化当前时间和持续时间
     this.currentTime = player.currentTime
     this.isPlaying = player.state === 'playing'
@@ -743,7 +918,7 @@ struct Playing {
           this.Title()
 
           // 根据屏幕尺寸显示不同布局
-          if (this.isWideScreen) {
+          if (this.isWideScreen && this.Playing_Next == false) {
             // 宽屏布局 - 左右分栏
             Row() {
               if (this.flipCoverLyric) {
@@ -779,6 +954,9 @@ struct Playing {
             .width(StyleConstants.FULL_WIDTH)
             .height(StyleConstants.FULL_HEIGHT)
             .layoutWeight(1)
+          }
+          else if(this.isWideScreen && this.Playing_Next){
+            this.Playing_phone()
           } else {
             // 窄屏布局 - Tabs切换
             Tabs({ barPosition: BarPosition.End, index: this.selectedTabIndex,controller:this.controller }) {
