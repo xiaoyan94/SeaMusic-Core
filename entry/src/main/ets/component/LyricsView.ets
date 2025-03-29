@@ -1,7 +1,7 @@
 import { StyleConstants } from "../constants/StyleConstants";
 import { avPlayerManager } from "../util/AVPlayerManager";
 import { PreferencesCache } from "../util/PreferenceCache";
-
+import { LengthMetrics } from '@kit.ArkUI'
 class LyricsLine {
   time: number; // 时间点（毫秒）
   text: string; // 原文歌词
@@ -313,6 +313,9 @@ export struct LyricsView {
               .width(StyleConstants.FULL_WIDTH)
             })
           }
+          .fadingEdge(true,{fadingEdgeLength:LengthMetrics.vp(80)})
+          .contentStartOffset(10)
+          .contentEndOffset(10)
           .width(StyleConstants.FULL_WIDTH)
           .height(StyleConstants.FULL_HEIGHT)
           .layoutWeight(1)
