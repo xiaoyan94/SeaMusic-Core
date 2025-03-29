@@ -209,15 +209,17 @@ export struct SettingGroup {
           } else if (item.type === 'button') {
             this.SettingButton(item, index)
           }
-          Divider()
-            .strokeWidth(0.5)
-            .color($r('app.color.divider'))
-            .margin({ left: 16, right: 16 })
+          // 如果是最后一个元素，不绘制分隔线
+          if (index !== this.items.length-1){
+            Divider()
+              .strokeWidth(0.5)
+              .color($r('app.color.divider'))
+              .margin({ left: 16, right: 16 })
+          }
         })
       }
       .backgroundColor($r('app.color.setting_item_background'))
       .borderRadius(8)
-      .expandSafeArea()
     }
     .width(StyleConstants.FULL_WIDTH)
     .expandSafeArea()

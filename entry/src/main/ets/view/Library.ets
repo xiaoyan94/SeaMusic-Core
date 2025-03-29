@@ -176,6 +176,7 @@ struct Library {
               .backgroundColor('transparent')
             }
           }
+          .expandSafeArea()
           .layoutWeight(1)
           .scrollBar(BarState.Off)
           .edgeEffect(EdgeEffect.Spring)

@@ -18,6 +18,7 @@ export const PlayerSetting = [
     getQualityLevel(PreferencesCache.playingLevel()).description, () => {
       DialogHelper.showSelectDialog({
         title: $r('app.string.setting_playing_level'),
+        confirm: '返回',
         selectedIndex: qualityLevels.findIndex(bitrate => bitrate.bitrate === PreferencesCache.playingLevel()),
         radioContent: qualityLevels.map(level => level.description),
         onCheckedChanged: (index) => {
@@ -36,6 +37,7 @@ export const PlayerSetting = [
     getQualityLevel(PreferencesCache.downloadLevel()).description, () => {
       DialogHelper.showSelectDialog({
         title: $r('app.string.setting_download_level'),
+        confirm: '返回',
         selectedIndex: qualityLevels.findIndex(bitrate => bitrate.bitrate === PreferencesCache.downloadLevel()),
         radioContent: qualityLevels.map(level => level.description),
         onCheckedChanged: (index) => {
