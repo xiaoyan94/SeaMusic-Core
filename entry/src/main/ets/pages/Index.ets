@@ -173,21 +173,6 @@ struct Index {
     }
   }
 
-  // 优化滚动效果处理
-  private handleScroll(_xOffset: number, _yOffset: number, scrollState: ScrollState, _scrollSource: ScrollSource) {
-    // 优化滚动期间的计算频率
-    if (scrollState === ScrollState.Scroll) {
-      const positionY = this.scrollController.currentOffset().yOffset
-
-      // 只有在下拉时才计算索引，减少计算量
-      if (positionY < 0) {
-        this.currentIndex = SlideDownControl.calculateCurrentIndex(positionY, 2)
-      } else if (this.currentIndex !== -1) {
-        this.currentIndex = -1
-      }
-    }
-  }
-
   // 使用Builder模式优化各个部分的渲染
   @Builder
   MenuGrid() {
@@ -281,6 +266,7 @@ struct Index {
         })
       }
       .width('100%')
+      .height('auto')
       .listDirection(Axis.Horizontal)
       .scrollBar(BarState.Off)
       .cachedCount(3) // 缓存更多项以提高性能
@@ -317,6 +303,7 @@ struct Index {
         })
       }
       .width('100%')
+      .height('auto')
       .listDirection(Axis.Horizontal)
       .scrollBar(BarState.Off)
       .cachedCount(3)
@@ -356,6 +343,7 @@ struct Index {
         })
       }
       .width('100%')
+      .height('auto')
       .listDirection(Axis.Horizontal)
       .scrollBar(BarState.Off)
       .cachedCount(3)
@@ -389,6 +377,7 @@ struct Index {
         })
       }
       .width('100%')
+      .height('auto')
       .listDirection(Axis.Horizontal)
       .scrollBar(BarState.Off)
       .cachedCount(3)
@@ -449,7 +438,19 @@ struct Index {
         }
         .scrollBar(BarState.Off)
         .edgeEffect(EdgeEffect.Spring)
-        .onWillScroll(this.handleScroll)
+        .onWillScroll((_xOffset: number, _yOffset: number, scrollState: ScrollState, _scrollSource: ScrollSource)=>{
+          // 优化滚动期间的计算频率
+          if (scrollState === ScrollState.Scroll) {
+            const positionY = this.scrollController.currentOffset().yOffset
+
+            // 只有在下拉时才计算索引，减少计算量
+            if (positionY < 0) {
+              this.currentIndex = SlideDownControl.calculateCurrentIndex(positionY, 2)
+            } else if (this.currentIndex !== -1) {
+              this.currentIndex = -1
+            }
+          }
+        })
         .onScrollStop(() => {
           if (this.currentIndex >= 0) {
             this.onMenuIconClick(this.currentIndex)
