@@ -57,7 +57,7 @@ export struct TitleHeader {
             .fontSize($r('app.float.title_font_size'))
             .maxLines(1)
             .margin({ top: 2 })
-          // 占位，把“返回”基础屏幕
+          // 占位，把“返回”挤出屏幕
           Blank()
         }
         .justifyContent(FlexAlign.SpaceBetween)
