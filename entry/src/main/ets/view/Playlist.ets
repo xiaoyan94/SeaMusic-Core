@@ -31,6 +31,7 @@ export struct PlayList {
   @State isWideScreen: boolean = false
   @StorageLink("cache_data_create_time") cacheTime: number = -1
   @StorageLink("current_playing_song") song: Song | null = null
+  @StorageProp('bottomRect') bottomRect: number = 0;  // 获取底部安全区域高度
 
   @Builder
   Title() {
@@ -205,11 +206,18 @@ export struct PlayList {
         }
         .key(`${song.id}-${index}`)
         .margin({ bottom: 4 })
-        .expandSafeArea()
       }, (song: Song, index: number) => `${song.id}-${index}`)
+
+      // 底部避让空间 - 列表项
+      ListItem() {
+        Column() {
+          // 空白区域，用于避让播放控制器和底部安全区域
+        }
+        .width('100%')
+        .height(StyleConstants.PLAYER_CONTROL_HEIGHT + px2vp(this.bottomRect))
+      }
     }
     .backToTop(true)
-    .margin({ bottom: 64 })
     .height(StyleConstants.FULL_HEIGHT)
     .width(StyleConstants.FULL_WIDTH)
     .layoutWeight(1)
@@ -252,7 +260,6 @@ export struct PlayList {
         this.isLoading = false;
       }
     })
-    .expandSafeArea()
   }
 
   // 处理封面点击，确保在任何屏幕模式下都能正确滚动和高亮
@@ -395,7 +402,7 @@ export struct PlayList {
           .width(StyleConstants.FULL_WIDTH)
         }
         .width(StyleConstants.FULL_WIDTH)
-        .height('calc(100% - 200px)')
+        .height(`calc(100% - ${StyleConstants.PLAYER_CONTROL_HEIGHT + px2vp(this.bottomRect)}px)`) // 避让播放控制器
         .backgroundColor($r('app.color.card_background'))
         .opacity(0.8)
         .borderRadius(24)
@@ -450,42 +457,40 @@ export struct PlayList {
 
   build() {
     NavDestination() {
-      Column() {
-        // 标题区域
-        this.Title()
+      Stack({ alignContent: Alignment.Bottom }) {
+        Column() {
+          // 标题区域
+          this.Title()
 
-        if (this.playlist && this.playlist.songs && this.playlist.songs.length > 0) {
-          // 根据屏幕宽度选择布局
-          if (this.isWideScreen) {
-            // 宽屏布局
-            this.WideScreenLayout()
+          if (this.playlist && this.playlist.songs && this.playlist.songs.length > 0) {
+            // 根据屏幕宽度选择布局
+            if (this.isWideScreen) {
+              // 宽屏布局
+              this.WideScreenLayout()
+            } else {
+              // 标准移动端布局
+              this.MobileLayout()
+            }
           } else {
-            // 标准移动端布局
-            this.MobileLayout()
+            // 显示空状态
+            Column() {
+              Text('暂无歌曲')
+                .fontSize(16)
+                .fontColor($r('app.color.text_secondary'))
+            }
+            .width(StyleConstants.FULL_WIDTH)
+            .height('80%')
+            .justifyContent(FlexAlign.Center)
           }
-        } else {
-          // 显示空状态
-          Column() {
-            Text('暂无歌曲')
-              .fontSize(16)
-              .fontColor($r('app.color.text_secondary'))
-          }
-          .width(StyleConstants.FULL_WIDTH)
-          .height('80%')
-          .justifyContent(FlexAlign.Center)
         }
+        .width(StyleConstants.FULL_WIDTH)
+        .height(StyleConstants.FULL_HEIGHT)
+
+        // 底部迷你播放控制器 - 直接放在Stack底部
+        MiniPlaybackControl()
       }
       .width(StyleConstants.FULL_WIDTH)
       .height(StyleConstants.FULL_HEIGHT)
-      .expandSafeArea()
-
-      Stack() {
-        MiniPlaybackControl()
-      }
-      .alignContent(Alignment.Center)
-      .position({ x: 0, y: '100%' })
-      .translate({ y: -100 }) // 适当调整位置
-      .width('100%')
     }
     .hideToolBar(true)
     .hideTitleBar(true)
