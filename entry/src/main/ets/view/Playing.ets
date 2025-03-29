@@ -109,25 +109,26 @@ struct Playing {
         .width(this.coverWidth.getValue(this.currentBreakpoint))
         .aspectRatio(1)
         .borderRadius(24)
-        .padding({left:30,right:18,top:18,bottom:18})//之后修复避让
+        .padding({left:45,right:18,top:18,bottom:18})//之后修复避让
         .width('35%')
 
       Column(){
-        Text(this.song?.name || "未知歌曲")
-          .fontSize(this.getFontSize(this.song?.name ?? "", 24, 24))
-          .fontWeight(FontWeight.Bold)
-          .maxLines(1)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-          .fontColor(Color.White)
-          .height(32) // 固定高度确保布局稳定
+        LyricsView({
+          currentTimeMs: this.currentTime,
+          lyrics: this.song?.meta?.lyric?.normal,
+          translationLyrics: this.song?.meta?.lyric?.translation || this.song?.meta?.lyric?.transliteration,
+          mode_judge:false
+        }).width('100%').layoutWeight(1)
 
-        Text(this.song?.artists ? this.song.artists.map(artist => artist.name).join(" / ") : "未知艺术家")
-          .fontSize(16)
-          .fontColor('rgba(255, 255, 255, 0.6)')
+        Text((this.song?.name || "未知歌曲")+'/' +(this.song?.artists ? this.song.artists.map(artist => artist.name).join(" / ") : "未知艺术家"))
+          .fontSize(this.getFontSize(this.song?.name ?? "", 16, 16))
+          // .fontWeight(FontWeight.Bold)
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .fontColor('rgba(255, 255, 255, 0.6)')
           .height(24) // 固定高度确保布局稳定
         this.PlayerControls()
+        this.ProgressBar()
       }
       .padding(18)
       .width('65%')
@@ -263,7 +264,7 @@ struct Playing {
       //   .padding({left:20,bottom:18,top:18+high_height})
       //
       // }.height('100%').alignItems(HorizontalAlign.Center).justifyContent(FlexAlign.Center)
-    }
+    }.alignItems(VerticalAlign.Center).justifyContent(FlexAlign.SpaceBetween)
   }
 
 
@@ -798,7 +799,8 @@ struct Playing {
       LyricsView({
         currentTimeMs: this.currentTime,
         lyrics: this.song?.meta?.lyric?.normal,
-        translationLyrics: this.song?.meta?.lyric?.translation || this.song?.meta?.lyric?.transliteration
+        translationLyrics: this.song?.meta?.lyric?.translation || this.song?.meta?.lyric?.transliteration,
+        mode_judge:true
       })
     }
     .width(StyleConstants.FULL_WIDTH)
@@ -915,10 +917,11 @@ struct Playing {
 
         Column() {
           // 标题栏
-          this.Title()
+
 
           // 根据屏幕尺寸显示不同布局
           if (this.isWideScreen && this.Playing_Next == false) {
+            this.Title()
             // 宽屏布局 - 左右分栏
             Row() {
               if (this.flipCoverLyric) {
@@ -958,6 +961,7 @@ struct Playing {
           else if(this.isWideScreen && this.Playing_Next){
             this.Playing_phone()
           } else {
+            this.Title()
             // 窄屏布局 - Tabs切换
             Tabs({ barPosition: BarPosition.End, index: this.selectedTabIndex,controller:this.controller }) {
               TabContent() {
@@ -1014,6 +1018,9 @@ struct Playing {
         }
       })
     )
+    .onSizeChange(()=>{
+      this.Playing_Next= playing_md_f()
+    })
     .bindSheet($$this.showPlaylist, this.sheet, {
       showClose: false,
       height: SheetSize.MEDIUM,
