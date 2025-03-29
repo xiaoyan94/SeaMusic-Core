@@ -3,7 +3,7 @@ import { StyleConstants } from "../constants/StyleConstants";
 import { Playlist } from "../type/Adapter";
 import { PushPathHelper } from "../util/PushPathHelper";
 import { SourceAdapter } from "../adapter";
-import { PlaylistGrid } from "../component/PlaylistGrid";
+import { PlaylistList } from "../component/PlaylistList";
 import { SlideDownControl } from "../util/SlideDownController";
 import { MiniPlaybackControl } from "../component/MiniPlaybackControl";
 
@@ -20,6 +20,7 @@ struct Library {
   @StorageProp('currentBreakpoint') currentBreakpoint: string = 'sm';
   @State isLoading: boolean = false;
   private scrollController: Scroller = new Scroller();
+  @StorageProp('bottomRect') bottomRect: number = 0;  // 获取底部安全区域高度
 
   onMenuIconClick(index: number) {
     if (index === 0) {
@@ -83,15 +84,55 @@ struct Library {
         // 创建歌单的逻辑
       })
     }
-    .width('100%')
+    .width(StyleConstants.FULL_WIDTH)
     .height('70%')
     .justifyContent(FlexAlign.Center)
     .alignItems(HorizontalAlign.Center)
   }
 
+  @Builder
+  HeaderAnimation() {
+    Row() {
+      if (this.currentIndex >= 1) {
+        LoadingProgress()
+          .width(24)
+          .height(24)
+          .opacity(this.currentIndex >= 1 ? 1 : 0)
+          .scale({ x: this.currentIndex >= 1 ? 1 : 0.5, y: this.currentIndex >= 1 ? 1 : 0.5 })
+          .animation({
+            duration: 250,
+            curve: Curve.FastOutSlowIn
+          })
+          .margin({ right: 8 })
+      }
+
+      Text(SlideDownControl.getLibraryActionText(this.currentIndex))
+        .fontColor($r('app.color.text_secondary'))
+        .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
+        .opacity(this.currentIndex >= 0 ? 1 : 0)
+        .translate({ y: this.currentIndex >= 0 ? 0 : -20 })
+        .animation({
+          duration: 250,
+          curve: Curve.FastOutSlowIn
+        })
+    }
+    .height(this.currentIndex >= 0 ? 40 : 0)
+    .animation({
+      duration: 250,
+      curve: Curve.FastOutSlowIn
+    })
+    .alignItems(VerticalAlign.Center)
+    .justifyContent(FlexAlign.Center)
+    .width(StyleConstants.FULL_WIDTH)
+    .padding({
+      left: 16,
+      right: 16
+    })
+  }
+
   build() {
     NavDestination() {
-      Stack() {
+      Stack({ alignContent: Alignment.Bottom }) {
         Column() {
           // 标题
           this.Title()
@@ -99,42 +140,7 @@ struct Library {
           // 主内容
           List({ scroller: this.scrollController }) {
             ListItem() {
-              Row() {
-                if (this.currentIndex >= 1) {
-                  LoadingProgress()
-                    .width(24)
-                    .height(24)
-                    .opacity(this.currentIndex >= 1 ? 1 : 0)
-                    .scale({ x: this.currentIndex >= 1 ? 1 : 0.5, y: this.currentIndex >= 1 ? 1 : 0.5 })
-                    .animation({
-                      duration: 250,
-                      curve: Curve.FastOutSlowIn
-                    })
-                    .margin({ right: 8 })
-                }
-
-                Text(SlideDownControl.getLibraryActionText(this.currentIndex))
-                  .fontColor($r('app.color.text_secondary'))
-                  .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
-                  .opacity(this.currentIndex >= 0 ? 1 : 0)
-                  .translate({ y: this.currentIndex >= 0 ? 0 : -20 })
-                  .animation({
-                    duration: 250,
-                    curve: Curve.FastOutSlowIn
-                  })
-              }
-              .height(this.currentIndex >= 0 ? 40 : 0)
-              .animation({
-                duration: 250,
-                curve: Curve.FastOutSlowIn
-              })
-              .alignItems(VerticalAlign.Center)
-              .justifyContent(FlexAlign.Center)
-              .width(StyleConstants.FULL_WIDTH)
-              .padding({
-                left: 16,
-                right: 16
-              })
+              this.HeaderAnimation()
             }
 
             // 如果没有歌单，显示空状态
@@ -142,11 +148,11 @@ struct Library {
               ListItem() {
                 this.EmptyState()
               }
-              .width('100%')
+              .width(StyleConstants.FULL_WIDTH)
             } else {
               // 我的歌单部分
               ListItem() {
-                PlaylistGrid({
+                PlaylistList({
                   playlists: this.playlists,
                   onPlaylistSelected: (item: Playlist) => {
                     PushPathHelper.pushPath(this.pageStack, "Playlist", async () => {
@@ -157,17 +163,24 @@ struct Library {
                 })
                   .margin({ top: 8 })
               }
-              .expandSafeArea()
-              .width('100%')
+              .width(StyleConstants.FULL_WIDTH)
+            }
+
+            // 添加底部空白区域，避开播放控制器和底部安全区域
+            ListItem() {
+              Column() {
+                // 使用Column包裹空白区域，符合ArkTS规范
+              }
+              .width(StyleConstants.FULL_WIDTH)
+              .height(StyleConstants.PLAYER_CONTROL_HEIGHT + px2vp(this.bottomRect))
+              .backgroundColor('transparent')
             }
           }
-          .backToTop(true)
           .layoutWeight(1)
           .scrollBar(BarState.Off)
           .edgeEffect(EdgeEffect.Spring)
           .width(StyleConstants.FULL_WIDTH)
           .height(StyleConstants.FULL_HEIGHT)
-          .expandSafeArea()
           .onWillScroll((_scrollOffset: number, scrollState: ScrollState, _scrollSource: ScrollSource) => {
             if (scrollState === ScrollState.Scroll) {
               const positionY = this.scrollController.currentOffset().yOffset;
@@ -192,19 +205,12 @@ struct Library {
         }
         .width(StyleConstants.FULL_WIDTH)
         .height(StyleConstants.FULL_HEIGHT)
-        .expandSafeArea()
+
+        // 底部迷你播控组件
+        MiniPlaybackControl()
       }
       .width(StyleConstants.FULL_WIDTH)
       .height(StyleConstants.FULL_HEIGHT)
-      .expandSafeArea()
-
-      Stack() {
-        MiniPlaybackControl()
-      }
-      .alignContent(Alignment.Center)
-      .position({ x: 0, y: '100%' })
-      .translate({ y: -100 }) // 适当调整位置
-      .width('100%')
     }
     .hideToolBar(true)
     .hideTitleBar(true)

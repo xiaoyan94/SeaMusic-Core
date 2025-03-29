@@ -360,7 +360,7 @@ export class SourceAdapter {
   static async getAlbumDetail(album: Album): Promise<Playlist> {
     const source = album.source as SourceConfig
     const request = createRequest(source)
-    const res = (await request.get(`/playlist/detail?id=${album.id}`, {
+    const res = (await request.get(`/album/detail?id=${album.id}`, {
       headers: {
         'X-Cache': 'true',
       }
