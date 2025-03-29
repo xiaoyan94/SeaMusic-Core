@@ -1,7 +1,7 @@
 import { StyleConstants } from "../constants/StyleConstants";
 import { avPlayerManager } from "../util/AVPlayerManager";
 import { PreferencesCache } from "../util/PreferenceCache";
-import { LengthMetrics } from '@kit.ArkUI'
+
 class LyricsLine {
   time: number; // 时间点（毫秒）
   text: string; // 原文歌词
@@ -34,7 +34,6 @@ class LyricStyle {
 export struct LyricsView {
   @Watch("onTimeUpdate") @Prop currentTimeMs: number // 当前歌曲播放时间（毫秒）
   @Watch('onLyricsChanged') @Prop lyrics: string = '' // 标准的lrc歌词格式
-  @State mode_judge:boolean = true
   @Watch('onTranslationLyricsChanged') @Prop translationLyrics: string = '' // 翻译/音译歌词
   @State private parsedLyrics: Array<LyricsLine> = []
   @State private currentIndex: number = -1
@@ -202,7 +201,7 @@ export struct LyricsView {
     }
 
     // 保持在视图中间偏上的位置，很显然这是一个经验修正
-    const targetIndex = Math.max(0,this.mode_judge? index - (5 * (this.showTranslation ? 0.6 : 1)):index-1)
+    const targetIndex = Math.max(0, index - (5 * (this.showTranslation ? 0.6 : 1)))
 
     animateTo({
       duration: this.SCROLL_ANIMATION_DURATION,
@@ -313,9 +312,6 @@ export struct LyricsView {
               .width(StyleConstants.FULL_WIDTH)
             })
           }
-          .fadingEdge(true,{fadingEdgeLength:LengthMetrics.vp(80)})
-          .contentStartOffset(10)
-          .contentEndOffset(10)
           .width(StyleConstants.FULL_WIDTH)
           .height(StyleConstants.FULL_HEIGHT)
           .layoutWeight(1)
