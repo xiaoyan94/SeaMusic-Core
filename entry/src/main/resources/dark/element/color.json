@@ -6,7 +6,7 @@
     },
     {
       "name": "page_background",
-      "value": "#121212"
+      "value": "#FF121212"
     },
     {
       "name": "text_title",
@@ -58,7 +58,7 @@
     },
     {
       "name": "homepage_menu_button_normal",
-      "value": "#33303030"
+      "value": "#FF212121"
     },
     {
       "name": "homepage_menu_button_pressed",
@@ -70,7 +70,7 @@
     },
     {
       "name": "setting_item_background",
-      "value": "#33303030"
+      "value": "#FF212121"
     },
     {
       "name": "setting_button_normal",

@@ -6,7 +6,7 @@
     },
     {
       "name": "page_background",
-      "value": "#F8F9FA"
+      "value": "#FFEAEAEA"
     },
     {
       "name": "text_title",
@@ -58,11 +58,11 @@
     },
     {
       "name": "homepage_menu_button_normal",
-      "value": "#CCEEEEEE"
+      "value": "#FFFFFFFF"
     },
     {
       "name": "homepage_menu_button_pressed",
-      "value": "#E0E0E0"
+      "value": "#FF808080"
     },
     {
       "name": "back_button_normal",
@@ -70,7 +70,7 @@
     },
     {
       "name": "setting_item_background",
-      "value": "#CCF5F5F5"
+      "value": "#FFFFFFFF"
     },
     {
       "name": "setting_button_normal",
