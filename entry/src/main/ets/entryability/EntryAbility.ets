@@ -22,7 +22,7 @@ export default class EntryAbility extends UIAbility {
     DialogHelper.setDefaultConfig((config) => {
       config.uiAbilityContext = this.context;
       config.autoCancel = false; //点击遮障层时，是否关闭弹窗
-      config.backCancel = false; // 点击返回键时，是否关闭弹窗
+      config.backCancel = true; // 点击返回键时，是否关闭弹窗
     }) // 初始化对话框工具类
     LogUtil.init(0x2003, 'Edge Music', true); // 初始化日志工具类
     SongCacheManager.initialize() // 初始化歌曲缓存管理器
