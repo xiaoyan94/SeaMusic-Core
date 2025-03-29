@@ -20,6 +20,7 @@ export struct MiniPlaybackControl {
   @State swipeOffset: number = 0; // 滑动偏移量
   @State isSwipingActive: boolean = false; // 是否正在滑动中
   @State swipeDirection: string = ''; // 滑动方向
+  @StorageLink('winWidth') winWidth: number = 0
   private updateTimer: number = -1;
   private playerManager = avPlayerManager;
   private readonly SWIPE_THRESHOLD: number = 80; // 触发切换的阈值
@@ -90,10 +91,10 @@ export struct MiniPlaybackControl {
       Progress({
         value: this.currentTimeMs,
         total: this.durationMs || 100,
-        type: ProgressType.Linear
+        type: ProgressType.Capsule
       })
         .height(2)
-        .width(StyleConstants.FULL_WIDTH)
+        .width(px2vp(this.winWidth*StyleConstants.NINETY_HEIGHT) - StyleConstants.BORDER_RADIUS*2) //进度条调整长度为屏幕宽度的90%-圆角的2倍(12*2)
         .color($r('app.color.text_click'))
         .backgroundColor('rgba(255, 255, 255, 0.2)')
     }

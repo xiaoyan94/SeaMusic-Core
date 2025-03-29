@@ -4,6 +4,7 @@ import { Playlist } from "../type/Adapter";
 import { PushPathHelper } from "../util/PushPathHelper";
 import { SourceAdapter } from "../adapter";
 import { PlaylistGrid } from "../component/PlaylistGrid";
+import { SlideDownControl } from "../util/SlideDownController";
 import { MiniPlaybackControl } from "../component/MiniPlaybackControl";
 
 @Builder
@@ -19,28 +20,6 @@ struct Library {
   @StorageProp('currentBreakpoint') currentBreakpoint: string = 'sm';
   @State isLoading: boolean = false;
   private scrollController: Scroller = new Scroller();
-
-  calculateCurrentIndex(offset: number) {
-    offset = Math.abs(offset);
-    if (offset < 40) {
-      return -1;
-    }
-    const index = Math.floor(offset / 72);
-    return Math.min(Math.max(index, 0), 2);
-  }
-
-  getActionText(index: number): string {
-    switch (index) {
-      case 0:
-        return '释放返回上一页';
-      case 1:
-        return '继续下拉刷新...';
-      case 2:
-        return '释放以刷新...';
-      default:
-        return '';
-    }
-  }
 
   onMenuIconClick(index: number) {
     if (index === 0) {
@@ -134,7 +113,7 @@ struct Library {
                     .margin({ right: 8 })
                 }
 
-                Text(this.getActionText(this.currentIndex))
+                Text(SlideDownControl.getLibraryActionText(this.currentIndex))
                   .fontColor($r('app.color.text_secondary'))
                   .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
                   .opacity(this.currentIndex >= 0 ? 1 : 0)
@@ -182,6 +161,7 @@ struct Library {
               .width('100%')
             }
           }
+          .backToTop(true)
           .layoutWeight(1)
           .scrollBar(BarState.Off)
           .edgeEffect(EdgeEffect.Spring)
@@ -192,7 +172,7 @@ struct Library {
             if (scrollState === ScrollState.Scroll) {
               const positionY = this.scrollController.currentOffset().yOffset;
               if (positionY < 0) {
-                const index = this.calculateCurrentIndex(this.scrollController.currentOffset().yOffset);
+                const index = SlideDownControl.calculateCurrentIndex(this.scrollController.currentOffset().yOffset, 2);
                 this.currentIndex = index;
               } else {
                 this.currentIndex = -1;

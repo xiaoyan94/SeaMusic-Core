@@ -9,6 +9,7 @@ import {  Artist, Playlist, SearchResult, Song } from "../type/Adapter";
 import { cover } from "../util/AdapterHelper";
 import { PlaylistManager } from "../util/PlaylistManager";
 import { PushPathHelper } from "../util/PushPathHelper";
+import { SlideDownControl } from "../util/SlideDownController";
 
 @Component
 export struct MultiSearch {
@@ -16,6 +17,8 @@ export struct MultiSearch {
   @State keywords: string = '';
   @State result: SearchResult | null = null;
   @State loading: boolean = false;
+  @State currentIndex: number = -1;
+  private scrollController: Scroller = new Scroller();
 
   private generatePlaylistMenu(playlist: Playlist) {
     return [
@@ -68,7 +71,7 @@ export struct MultiSearch {
       Column() {
         TitleHeader({
           title: $r('app.string.search'),
-          backActive: true
+          backActive: this.currentIndex === 0
         })
       }
 
@@ -80,76 +83,106 @@ export struct MultiSearch {
             await this.search()
           })
 
-        Scroll() {
+        Scroll(this.scrollController) {
           Column() {
-            if (this.result && this.result.songs) {
-              Segment({
-                title: "歌曲",
-                loading: this.loading,
-              }) {
-                ForEach(this.result.songs, (item: Song) => {
-                  Cover({
-                    src: cover(item.album.cover, 256),
-                    title: item.name,
-                    subtitle: item.artists.map(artist => artist.name).join(' / '),
-                    menuItems: this.generateSongMenu(item)
-                  })
-                    .width(120)
-                    .padding(4)
-                    .onClick(() => {
-                      PushPathHelper.loading("Playing", async () => {
-                        PlaylistManager.insertSongs([item], -1, item)
-                      })
-                    })
-                })
-              }
-            }
 
-            if (this.result && this.result.playlists) {
-              Segment({
-                title: "歌单",
-                loading: this.loading,
-              }) {
-                ForEach(this.result.playlists, (item: Playlist) => {
-                  Cover({
-                    src: cover(item.cover, 256),
-                    title: item.name,
-                    menuItems: this.generatePlaylistMenu(item)
-                  })
-                    .width(120)
-                    .padding(4)
-                    .onClick(() => {
-                      PushPathHelper.pushPath(this.pageStack, "Playlist", async () => {
-                        const playlist = await SourceAdapter.getPlaylistDetail(item)
-                        AppStorage.setOrCreate('current_playlist_data', playlist)
-                      })
-                    })
+            Row() {
+              Text(SlideDownControl.getReturnActionText(this.currentIndex))
+                .fontColor($r('app.color.text_secondary'))
+                .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
+                .opacity(this.currentIndex >= 0 ? 1 : 0)
+                .translate({ y: this.currentIndex >= 0 ? 0 : -20 })
+                .animation({
+                  duration: 250,
+                  curve: Curve.FastOutSlowIn
                 })
-              }
             }
+            .height(this.currentIndex >= 0 ? 24 : 0)
+            .animation({
+              duration: 250,
+              curve: Curve.FastOutSlowIn
+            })
+            .alignItems(VerticalAlign.Center)
+            .justifyContent(FlexAlign.Center)
+            .width(StyleConstants.FULL_WIDTH)
+            .padding({
+              left: 16,
+              right: 16
+            })
 
-            if (this.result && this.result.artists) {
-              Segment({
-                title: "歌手",
-                loading: this.loading,
-                radius: "100%",
-              }) {
-                ForEach(this.result.artists, (item: Artist) => {
-                  Cover({
-                    src: cover(item.avatar, 256),
-                    title: item.name,
-                    radius: "100%",
-                  })
-                    .width(120)
-                    .padding(4)
-                    .onClick(() => {
-                      PushPathHelper.pushPath(this.pageStack, "Playlist", async () => {
-                        const artist = await SourceAdapter.getArtistDetail(item)
-                        AppStorage.setOrCreate('current_playlist_data', artist)
-                      })
+            if(this.result){
+              if (this.result && this.result.songs) {
+                Segment({
+                  title: "歌曲",
+                  loading: this.loading,
+                }) {
+                  ForEach(this.result.songs, (item: Song) => {
+                    Cover({
+                      src: cover(item.album.cover, 256),
+                      title: item.name,
+                      subtitle: item.artists.map(artist => artist.name).join(' / '),
+                      menuItems: this.generateSongMenu(item)
                     })
-                })
+                      .width(120)
+                      .padding(4)
+                      .onClick(() => {
+                        PushPathHelper.loading("Playing", async () => {
+                          PlaylistManager.insertSongs([item], -1, item)
+                        })
+                      })
+                  })
+                }
               }
+
+              if (this.result && this.result.playlists) {
+                Segment({
+                  title: "歌单",
+                  loading: this.loading,
+                }) {
+                  ForEach(this.result.playlists, (item: Playlist) => {
+                    Cover({
+                      src: cover(item.cover, 256),
+                      title: item.name,
+                      menuItems: this.generatePlaylistMenu(item)
+                    })
+                      .width(120)
+                      .padding(4)
+                      .onClick(() => {
+                        PushPathHelper.pushPath(this.pageStack, "Playlist", async () => {
+                          const playlist = await SourceAdapter.getPlaylistDetail(item)
+                          AppStorage.setOrCreate('current_playlist_data', playlist)
+                        })
+                      })
+                  })
+                }
+              }
+
+              if (this.result && this.result.artists) {
+                Segment({
+                  title: "歌手",
+                  loading: this.loading,
+                  radius: "100%",
+                }) {
+                  ForEach(this.result.artists, (item: Artist) => {
+                    Cover({
+                      src: cover(item.avatar, 256),
+                      title: item.name,
+                      radius: "100%",
+                    })
+                      .width(120)
+                      .padding(4)
+                      .onClick(() => {
+                        PushPathHelper.pushPath(this.pageStack, "Playlist", async () => {
+                          const artist = await SourceAdapter.getArtistDetail(item)
+                          AppStorage.setOrCreate('current_playlist_data', artist)
+                        })
+                      })
+                  })
+                }
+              }
+            } else {
+              // 占满剩余空间,以便在未搜索时可以滚动
+              Blank().height('100%').flexGrow(1)
             }
 
             // if (this.result && this.result.albums) {
@@ -176,6 +209,22 @@ export struct MultiSearch {
             // }
           }
         }
+        .backToTop(true)
+        .onWillScroll((xOffset: number, yOffset: number, scrollState: ScrollState, scrollSource: ScrollSource) => {
+          if (scrollState === ScrollState.Scroll) {
+            const positionY = this.scrollController.currentOffset().yOffset;
+            if (positionY < 0) {
+              const index = SlideDownControl.calculateCurrentIndex(this.scrollController.currentOffset().yOffset, 0);
+              this.currentIndex = index;
+            } else {
+              this.currentIndex = -1;
+            }
+          }
+        })
+        .onScrollStop(() => {
+          this.onMenuIconClick(this.currentIndex);
+          this.currentIndex = -1;
+        })
         .scrollBar(BarState.Off)
         .edgeEffect(EdgeEffect.Spring)
         .expandSafeArea()
@@ -210,5 +259,13 @@ export struct MultiSearch {
         }
       })
     )
+  }
+
+  onMenuIconClick(index: number) {
+    if (index === 0) {
+      this.pageStack.pop();
+    } else if (index === 1) {
+      // 触发other
+    }
   }
 }

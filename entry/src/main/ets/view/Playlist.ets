@@ -11,6 +11,7 @@ import { cover } from "../util/AdapterHelper";
 import { formatRelativeTime } from "../util/String";
 import { PushPathHelper } from "../util/PushPathHelper";
 import { PlaylistManager, PlayMode } from "../util/PlaylistManager";
+import { SlideDownControl } from "../util/SlideDownController";
 import { MiniPlaybackControl } from "../component/MiniPlaybackControl";
 
 @Component
@@ -60,16 +61,6 @@ export struct PlayList {
     this.playlist = null;
     this.prefetcher = null;
     this.sourceOk = false;
-  }
-
-  calculateCurrentIndex(offset: number) {
-    offset = Math.abs(offset)
-    if (offset < 40) {
-      return -1
-    }
-    // const index = Math.floor(offset / 80)
-    // return Math.min(Math.max(index, 0), 1)
-    return 0
   }
 
   onMenuIconClick(index: number) {
@@ -174,7 +165,7 @@ export struct PlayList {
     List({ scroller: this.scrollController }) {
       ListItem() {
         Row() {
-          Text(this.currentIndex >= 0 ? '释放返回上一页' : '')
+          Text(SlideDownControl.getReturnActionText(this.currentIndex))
             .fontColor($r('app.color.text_secondary'))
             .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
             .margin({ left: 8 })
@@ -217,6 +208,7 @@ export struct PlayList {
         .expandSafeArea()
       }, (song: Song, index: number) => `${song.id}-${index}`)
     }
+    .backToTop(true)
     .margin({ bottom: 64 })
     .height(StyleConstants.FULL_HEIGHT)
     .width(StyleConstants.FULL_WIDTH)
@@ -234,7 +226,7 @@ export struct PlayList {
       if (scrollState === ScrollState.Scroll) {
         const positionY = this.scrollController.currentOffset().yOffset
         if (positionY < 0) {
-          const index = this.calculateCurrentIndex(this.scrollController.currentOffset().yOffset)
+          const index = SlideDownControl.calculateCurrentIndex(this.scrollController.currentOffset().yOffset, 0)
           this.currentIndex = index
         } else {
           this.currentIndex = -1

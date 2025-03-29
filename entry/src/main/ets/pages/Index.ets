@@ -18,6 +18,7 @@ import { PushPathHelper } from '../util/PushPathHelper'
 import { PlaylistManager } from '../util/PlaylistManager'
 import { MiniPlaybackControl } from '../component/MiniPlaybackControl'
 import { MultiSearch } from '../view/MultiSearch'
+import { SlideDownControl } from '../util/SlideDownController'
 
 @Entry
 @Component
@@ -35,6 +36,8 @@ struct Index {
   @StorageLink("index_recommend_artists") recommendArtists: Artist[] = []
   @StorageLink("index_recommend_toplist") topList: Playlist[] = []
   @State loading: boolean = true
+  // 避让导航栏高度
+  @StorageProp('bottomRect') bottomRect: number = 0
 
   async aboutToAppear() {
     this.breakpointSystem.register()
@@ -97,15 +100,6 @@ struct Index {
     this.breakpointSystem.unregister()
   }
 
-  calculateCurrentIndex(offset: number) {
-    offset = Math.abs(offset)
-    if (offset < 40) {
-      return -1
-    }
-    const index = Math.floor(offset / 72)
-    return Math.min(Math.max(index, 0), 4)
-  }
-
   @Builder
   Title() {
     Row() {
@@ -149,7 +143,7 @@ struct Index {
       this.pageStack.pushPath({ name: 'Setting' })
     } else if (index === 1) {
       this.pageStack.pushPath({ name: 'MultiSearch' })
-    } else if (index === 3) {
+    } else if (index === 2) {
       this.initData()
     }
   }
@@ -167,34 +161,36 @@ struct Index {
     }
   }
 
-  build() {
+  async build() {
     Column() {
       Navigation(this.pageStack) {
         Scroll(this.scrollController) {
           Column() {
             Row() {
-              LoadingProgress()
-                .width(24)
-                .height(24)
-                .opacity(this.currentIndex >= 2 ? 1 : 0)
-                .scale({ x: this.currentIndex >= 2 ? 1 : 0.5, y: this.currentIndex >= 2 ? 1 : 0.5 })
-                .animation({
-                  duration: 250,
-                  curve: Curve.FastOutSlowIn
-                })
+              if(this.currentIndex >= 2){
+                LoadingProgress()
+                  .width(24)
+                  .height(24)
+                  .opacity(this.currentIndex >= 1 ? 1 : 0)
+                  .scale({ x: this.currentIndex >= 1 ? 1 : 0.5, y: this.currentIndex >= 1 ? 1 : 0.5 })
+                  .animation({
+                    duration: 250,
+                    curve: Curve.FastOutSlowIn
+                  })
+              }
 
-              Text(this.currentIndex === 2 ? '继续下拉刷新...' : '释放以刷新...')
+              Text(SlideDownControl.getIndexActionText(this.currentIndex))
                 .fontColor($r('app.color.text_secondary'))
                 .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
                 .margin({ left: 8 })
-                .opacity(this.currentIndex >= 2 ? 1 : 0)
-                .translate({ y: this.currentIndex >= 2 ? 0 : -20 })
+                .opacity(this.currentIndex >= 0 ? 1 : 0)
+                .translate({ y: this.currentIndex >= 0 ? 0 : -20 })
                 .animation({
                   duration: 250,
                   curve: Curve.FastOutSlowIn
                 })
             }
-            .height(this.currentIndex >= 2 ? 40 : 0)
+            .height(this.currentIndex >= 0 ? 40 : 0)
             .animation({
               duration: 250,
               curve: Curve.FastOutSlowIn
@@ -352,15 +348,19 @@ struct Index {
               .alignItems(HorizontalAlign.Center)
               .justifyContent(FlexAlign.SpaceBetween)
             }
+
+            // 底部填充高度 播控组件+底部导航栏避让高度
+            Blank().height(StyleConstants.PLAYER_CONTROL_HEIGHT+px2vp(this.bottomRect)).color('transparent')
           }
         }
+        .backToTop(true)
         .scrollBar(BarState.Off)
         .edgeEffect(EdgeEffect.Spring)
         .onWillScroll((_xOffset: number, _yOffset: number, scrollState: ScrollState, _scrollSource: ScrollSource) => {
           if (scrollState === ScrollState.Scroll) {
             const positionY = this.scrollController.currentOffset().yOffset
             if (positionY < 0) {
-              const index = this.calculateCurrentIndex(this.scrollController.currentOffset().yOffset)
+              const index = SlideDownControl.calculateCurrentIndex(this.scrollController.currentOffset().yOffset, 2)
               this.currentIndex = index
             } else {
               this.currentIndex = -1
@@ -373,7 +373,7 @@ struct Index {
         })
         .expandSafeArea()
 
-
+        // 底部迷你播控组件
         Stack() {
           MiniPlaybackControl()
         }

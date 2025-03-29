@@ -8,6 +8,10 @@ export class StyleConstants {
    */
   static readonly FULL_HEIGHT: string = '100%';
   /**
+   * Component height percentage(number): 90%.
+   */
+  static readonly NINETY_HEIGHT: number = 0.90;
+  /**
    * Component height percentage: 70%.
    */
   static readonly SEVENTY_HEIGHT: string = '70%';
@@ -43,6 +47,10 @@ export class StyleConstants {
    * Component space vp : 15.
    */
   static readonly FIFTEEN_SPACE: string = '15vp';
+  /**
+   * Component's borderRadius: 12
+   */
+  static readonly BORDER_RADIUS: number = 12;
   /**
    * Font weight value: 700.
    */
@@ -107,6 +115,10 @@ export class StyleConstants {
    * Image aspect ratio value: 2.23.
    */
   static readonly IMAGE_ASPECT_RATIO: number = 2.25;
+  /**
+   * The height of the broadcast control component is 64.
+   */
+  static readonly PLAYER_CONTROL_HEIGHT: number = 64;
   /**
    * Number of value: 0.5.
    */
