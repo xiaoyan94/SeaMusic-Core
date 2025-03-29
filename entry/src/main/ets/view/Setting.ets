@@ -715,7 +715,8 @@ export struct Setting {
                 items: AboutSetting
               })
             }
-            .margin({ bottom: 80 })
+
+            ListItem().height(80).backgroundColor('transparent')
           }
           .backToTop(true)
           .layoutWeight(1)
