@@ -5,7 +5,7 @@ import { MiniPlaybackControl } from "../component/MiniPlaybackControl";
 import { Segment } from "../component/Segment";
 import { TitleHeader } from "../component/TitleHeader";
 import { StyleConstants } from "../constants/StyleConstants";
-import {  Artist, Playlist, SearchResult, Song } from "../type/Adapter";
+import { Album, Artist, Playlist, SearchResult, Song } from "../type/Adapter";
 import { cover } from "../util/AdapterHelper";
 import { PlaylistManager } from "../util/PlaylistManager";
 import { PushPathHelper } from "../util/PushPathHelper";
@@ -185,28 +185,28 @@ export struct MultiSearch {
               Blank().height('100%').flexGrow(1)
             }
 
-            // if (this.result && this.result.albums) {
-            //   Segment({
-            //     title: "专辑",
-            //     loading: this.loading,
-            //   }) {
-            //     ForEach(this.result.albums, (item: Album) => {
-            //       Cover({
-            //         src: cover(item.cover, 256),
-            //         title: item.name,
-            //         subtitle: item.artists?.map(artist => artist.name).join(' / '),
-            //       })
-            //         .width(120)
-            //         .padding(4)
-            //         .onClick(() => {
-            //           PushPathHelper.pushPath(this.pageStack, "Album", async () => {
-            //             const album = await SourceAdapter.getAlbumDetail(item)
-            //             AppStorage.setOrCreate('current_playlist_data', album)
-            //           })
-            //         })
-            //     })
-            //   }
-            // }
+            if (this.result && this.result.albums) {
+              Segment({
+                title: "专辑",
+                loading: this.loading,
+              }) {
+                ForEach(this.result.albums, (item: Album) => {
+                  Cover({
+                    src: cover(item.cover, 256),
+                    title: item.name,
+                    subtitle: item.artists?.map(artist => artist.name).join(' / '),
+                  })
+                    .width(120)
+                    .padding(4)
+                    .onClick(() => {
+                      PushPathHelper.pushPath(this.pageStack, "Playlist", async () => {
+                        const album = await SourceAdapter.getAlbumDetail(item)
+                        AppStorage.setOrCreate('current_playlist_data', album)
+                      })
+                    })
+                })
+              }
+            }
           }
         }
         .backToTop(true)
