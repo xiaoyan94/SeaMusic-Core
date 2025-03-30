@@ -88,7 +88,7 @@ export struct MultiSearch {
                     curve: Curve.FastOutSlowIn
                   })
               }
-              .height(this.currentIndex >= 0 ? 24 : 0)
+              .height(this.currentIndex >= 0 ? 40 : 0)
               .animation({
                 duration: 250,
                 curve: Curve.FastOutSlowIn
