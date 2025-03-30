@@ -13,6 +13,7 @@ import { PreferencesCache } from '../util/PreferenceCache'
 import { SourceAdapter } from '../adapter'
 import { TimerSelector } from '../component/TimerSelector'
 import {isHorizontalMode} from '../util/HorizontalCheck'
+import {screen_on} from '../util/On_screen_control'
 @Builder
 export function PlayingBuilder() {
   Playing()
@@ -265,7 +266,7 @@ struct Playing {
       //   .padding({left:20,bottom:18,top:18+high_height})
       //
       // }.height('100%').alignItems(HorizontalAlign.Center).justifyContent(FlexAlign.Center)
-    }.alignItems(VerticalAlign.Center).justifyContent(FlexAlign.SpaceBetween)
+    }.alignItems(VerticalAlign.Center).justifyContent(FlexAlign.SpaceBetween).onAppear(()=>{screen_on(true)}).onDisAppear(()=>{screen_on(false)})
   }
 
 
