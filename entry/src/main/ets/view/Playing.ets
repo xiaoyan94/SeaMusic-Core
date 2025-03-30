@@ -12,7 +12,7 @@ import { PlaylistView } from '../component/PlaylistView'
 import { PreferencesCache } from '../util/PreferenceCache'
 import { SourceAdapter } from '../adapter'
 import { TimerSelector } from '../component/TimerSelector'
-import {playing_md_f} from '../component/func_jizhishi'
+import {isHorizontalMode} from '../util/HorizontalCheck'
 @Builder
 export function PlayingBuilder() {
   Playing()
@@ -53,7 +53,7 @@ struct Playing {
   // 监听屏幕断点变化
   onBreakpointChange() {
     this.isWideScreen = this.currentBreakpoint !== BreakpointConstants.BREAKPOINT_SM;
-    this.Playing_Next= playing_md_f()
+    this.Playing_Next= isHorizontalMode()
     console.info('Succeeded in obtaining fold status.judge: ' +this.Playing_Next);
   }
 
@@ -102,15 +102,15 @@ struct Playing {
   // 参数：null
   // 功能：手机横屏播放器
   //——————————————————————————
-  Playing_phone(){
+  Playing_HorizontalMode(){
     Row(){
       //封面图
       Image(cover(this.song?.album?.cover ?? "", 512))
         .width(this.coverWidth.getValue(this.currentBreakpoint))
         .aspectRatio(1)
         .borderRadius(24)
-        .padding({left:45,right:18,top:18,bottom:18})//之后修复避让
-        .width('35%')
+        .margin({left:45,right:18,top:18,bottom:18})//之后修复避让
+        .width('34%')
 
       Column(){
         LyricsView({
@@ -270,7 +270,7 @@ struct Playing {
 
   async aboutToAppear() {
     const player = await avPlayerManager.getAVPlayerInstance()
-    this.Playing_Next= playing_md_f()
+    this.Playing_Next= isHorizontalMode()
     // 初始化当前时间和持续时间
     this.currentTime = player.currentTime
     this.isPlaying = player.state === 'playing'
@@ -959,7 +959,7 @@ struct Playing {
             .layoutWeight(1)
           }
           else if(this.isWideScreen && this.Playing_Next){
-            this.Playing_phone()
+            this.Playing_HorizontalMode()
           } else {
             this.Title()
             // 窄屏布局 - Tabs切换
@@ -1019,7 +1019,7 @@ struct Playing {
       })
     )
     .onSizeChange(()=>{
-      this.Playing_Next= playing_md_f()
+      this.Playing_Next= isHorizontalMode()
     })
     .bindSheet($$this.showPlaylist, this.sheet, {
       showClose: false,
