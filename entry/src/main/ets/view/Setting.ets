@@ -15,6 +15,7 @@ import { About } from "./About";
 
 @Component
 export struct Setting {
+  @State translateY: number = 16;
   @StorageProp('currentBreakpoint') currentBreakpoint: string = 'sm'
   @Consume('NavPathStack') pageStack: NavPathStack;
   @State isExpanded: boolean = false
@@ -243,10 +244,11 @@ export struct Setting {
         .fontColor($r('app.color.text_secondary'))
         .margin({ left: 8 })
     }
-    .padding(16)
+    .padding(12)
     .width(StyleConstants.FULL_WIDTH)
     .borderRadius(8)
-    .backgroundColor($r('app.color.setting_item_background'))
+    // .backgroundColor($r('app.color.setting_item_background'))
+    .backgroundBlurStyle(BlurStyle.Regular)
     .onClick(() => {
       // 完全重置所有表单状态
       this.isEditing = false // 确保是添加模式
@@ -629,7 +631,8 @@ export struct Setting {
     .padding(16)
     .width(StyleConstants.FULL_WIDTH)
     .borderRadius(8)
-    .backgroundColor($r('app.color.setting_item_background'))
+    // .backgroundColor($r('app.color.setting_item_background'))
+    .backgroundBlurStyle(BlurStyle.Regular)
   }
 
   @Builder
@@ -639,62 +642,39 @@ export struct Setting {
 
   build() {
     NavDestination() {
+      this.Title()
+
       Column() {
-        this.Title()
 
-        Column() {
-          if (!this.adapters?.length) {
-            this.AddSourceButton()
-          } else {
-            Column({ space: 8 }) {
-              this.AdapterItem(this.adapters[0])
-
-              if (this.adapters.length > 0) {
-                Column({ space: 8 }) {
-                  ForEach(this.adapters.slice(1), (adapter: SourceConfig) => {
-                    this.AdapterItem(adapter)
-                  })
-                  this.AddSourceButton()
-                }
-                .height(this.isExpanded ? undefined : 0)
-                .opacity(this.isExpanded ? 1 : 0)
+        List({ scroller: this.scrollController }) {
+          ListItem() {
+            Row() {
+              Text(SlideDownControl.getReturnActionText(this.currentIndex))
+                .fontColor($r('app.color.text_secondary'))
+                .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
+                // .margin({ left: 8 })
+                .opacity(this.currentIndex >= 0 ? 1 : 0)
+                .translate({ y: this.currentIndex >= 0 ? 0 : -20 })
                 .animation({
                   duration: 250,
                   curve: Curve.FastOutSlowIn
                 })
-              }
             }
+            .height(this.currentIndex >= 0 ? 40 : 0)
+            .animation({
+              duration: 250,
+              curve: Curve.FastOutSlowIn
+            })
+            .alignItems(VerticalAlign.Center)
+            .justifyContent(FlexAlign.Center)
+            .width(StyleConstants.FULL_WIDTH)
+            .padding({
+              left: 16,
+              right: 16
+            })
           }
 
-          List({ scroller: this.scrollController }) {
-            ListItem() {
-              Row() {
-                Text(SlideDownControl.getReturnActionText(this.currentIndex))
-                  .fontColor($r('app.color.text_secondary'))
-                  .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
-                  .margin({ left: 8 })
-                  .opacity(this.currentIndex >= 0 ? 1 : 0)
-                  .translate({ y: this.currentIndex >= 0 ? 0 : -20 })
-                  .animation({
-                    duration: 250,
-                    curve: Curve.FastOutSlowIn
-                  })
-              }
-              .margin({ top: 16 })
-              .height(this.currentIndex >= 0 ? 24 : 0)
-              .animation({
-                duration: 250,
-                curve: Curve.FastOutSlowIn
-              })
-              .alignItems(VerticalAlign.Center)
-              .justifyContent(FlexAlign.Center)
-              .width(StyleConstants.FULL_WIDTH)
-              .padding({
-                left: 16,
-                right: 16
-              })
-            }
-
+          ListItemGroup({ header: this.SourceButton() }) {
             ListItem() {
               SettingGroup({
                 title: $r('app.string.setting_player'),
@@ -718,33 +698,39 @@ export struct Setting {
 
             ListItem().height(80).backgroundColor('transparent')
           }
-          .backToTop(true)
-          .layoutWeight(1)
-          .scrollBar(BarState.Off)
-          .edgeEffect(EdgeEffect.Spring)
-          .width(StyleConstants.FULL_WIDTH)
-          .height(StyleConstants.FULL_HEIGHT)
-          .onWillScroll((_scrollOffset: number, scrollState: ScrollState) => {
-            if (scrollState === ScrollState.Scroll) {
-              const positionY = this.scrollController.currentOffset().yOffset
-              if (positionY < 0) {
-                this.currentIndex = SlideDownControl.calculateCurrentIndex(positionY, 0)
-              } else {
-                this.currentIndex = -1
-              }
-            }
+          .translate({ y: this.translateY })
+          .animation({
+            duration: 250,
+            curve: Curve.LinearOutSlowIn
           })
-          .onScrollStop(() => {
-            this.onMenuIconClick(this.currentIndex)
-            this.currentIndex = -1
-          })
+          .onAppear(() => { this.translateY = 0 })
         }
+        .borderRadius(8)
+        .backToTop(true)
+        .layoutWeight(1)
+        .scrollBar(BarState.Off)
+        .edgeEffect(EdgeEffect.Spring)
         .width(StyleConstants.FULL_WIDTH)
         .height(StyleConstants.FULL_HEIGHT)
-        .padding(12)
+        .sticky(StickyStyle.Header | StickyStyle.Footer)
+        .onWillScroll((_scrollOffset: number, scrollState: ScrollState) => {
+          if (scrollState === ScrollState.Scroll) {
+            const positionY = this.scrollController.currentOffset().yOffset
+            if (positionY < 0) {
+              this.currentIndex = SlideDownControl.calculateCurrentIndex(positionY, 0)
+            } else {
+              this.currentIndex = -1
+            }
+          }
+        })
+        .onScrollStop(() => {
+          this.onMenuIconClick(this.currentIndex)
+          this.currentIndex = -1
+        })
       }
       .width(StyleConstants.FULL_WIDTH)
       .height(StyleConstants.FULL_HEIGHT)
+      .padding({ left: 12, right: 12 })
     }
     .hideToolBar(true)
     .hideTitleBar(true)
@@ -767,5 +753,34 @@ export struct Setting {
         }
       })
     )
+  }
+
+  @Builder
+  SourceButton() {
+    Column(){
+      if (!this.adapters?.length) {
+        this.AddSourceButton()
+      } else {
+        Column({ space: 8 }) {
+          this.AdapterItem(this.adapters[0])
+
+          if (this.adapters.length > 0) {
+            Column({ space: 8 }) {
+              ForEach(this.adapters.slice(1), (adapter: SourceConfig) => {
+                this.AdapterItem(adapter)
+              })
+              this.AddSourceButton()
+            }
+            .height(this.isExpanded ? undefined : 0)
+            .opacity(this.isExpanded ? 1 : 0)
+            .animation({
+              duration: 250,
+              curve: Curve.FastOutSlowIn
+            })
+          }
+        }
+      }
+    }
+    .padding(12)
   }
 }
