@@ -106,22 +106,22 @@ const defaultLoveSongCallback = (_assetId: string) => {
 };
 
 const playSong = async (song: Song, path: string, cached: boolean, pause: boolean) => {
-  await avPlayerManager.seek(0);
-  await avPlayerManager.stop();
-  await avPlayerManager.playByPath(path, cached ? undefined : song.meta?.size, pause, {
-    assetId: `track-${song.id}-${song.source?.id}`,
-    duration: song.duration,
-    title: song.name,
-    mediaImage: cover(song.album.cover, 512),
-    artist: song.artists.map(a => a.name).join("/"),
-    lyric: song.meta?.lyric?.normal,
-  })
-  const session = avPlayerManager.getSession();
-  if (session) {
-    session.setAVPlaybackState({
-      isFavorite: song.meta?.isFavorite
+  avPlayerManager.stop().then(async () => {
+    await avPlayerManager.playByPath(path, cached ? undefined : song.meta?.size, pause, {
+      assetId: `track-${song.id}-${song.source?.id}`,
+      duration: song.duration,
+      title: song.name,
+      mediaImage: cover(song.album.cover, 512),
+      artist: song.artists.map(a => a.name).join("/"),
+      lyric: song.meta?.lyric?.normal,
     })
-  }
+    const session = avPlayerManager.getSession();
+    if (session) {
+      session.setAVPlaybackState({
+        isFavorite: song.meta?.isFavorite
+      })
+    }
+  });
 }
 
 // 让主线程代码好看一点，所以写在这里

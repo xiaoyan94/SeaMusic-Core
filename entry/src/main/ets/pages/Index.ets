@@ -415,74 +415,75 @@ struct Index {
   build() {
     Column() {
       Navigation(this.pageStack) {
-        Scroll(this.scrollController) {
-          Column() {
-            this.HeaderAnimation()
-            this.MenuGrid()
+        Stack({ alignContent: Alignment.Bottom }){
+          Scroll(this.scrollController) {
+            Column() {
+              this.HeaderAnimation()
+              this.MenuGrid()
 
-            if (this.adapters.length > 0) {
-              this.RecommendedSongs()
-              this.RecommendedPlaylists()
-              this.RecommendedArtists()
-              this.TopLists()
-            } else {
-              this.EmptyDataSource()
+              if (this.adapters.length > 0) {
+                this.RecommendedSongs()
+                this.RecommendedPlaylists()
+                this.RecommendedArtists()
+                this.TopLists()
+              } else {
+                this.EmptyDataSource()
+              }
+
+              // 底部填充高度 播控组件+底部导航栏避让高度
+              // Blank()
+              //   .height(StyleConstants.PLAYER_CONTROL_HEIGHT + px2vp(this.bottomRect))
+              //   .backgroundColor('transparent')
             }
-
-            // 底部填充高度 播控组件+底部导航栏避让高度
-            Blank()
-              .height(StyleConstants.PLAYER_CONTROL_HEIGHT + px2vp(this.bottomRect))
-              .backgroundColor('transparent')
+            .layoutWeight(1)
+            .alignItems(HorizontalAlign.Center)  // 确保内容居中对齐
           }
-          .alignItems(HorizontalAlign.Center)  // 确保内容居中对齐
-        }
-        .scrollBar(BarState.Off)
-        .edgeEffect(EdgeEffect.Spring)
-        .onWillScroll((_xOffset: number, _yOffset: number, scrollState: ScrollState, _scrollSource: ScrollSource)=>{
-          // 优化滚动期间的计算频率
-          if (scrollState === ScrollState.Scroll) {
-            const positionY = this.scrollController.currentOffset().yOffset
+          .width(StyleConstants.FULL_WIDTH)
+          .layoutWeight(1)
+          .backToTop(true)
+          .scrollBar(BarState.Off)
+          .edgeEffect(EdgeEffect.Spring)
+          .onWillScroll((_xOffset: number, _yOffset: number, scrollState: ScrollState, _scrollSource: ScrollSource)=>{
+            // 优化滚动期间的计算频率
+            if (scrollState === ScrollState.Scroll) {
+              const positionY = this.scrollController.currentOffset().yOffset
 
-            // 只有在下拉时才计算索引，减少计算量
-            if (positionY < 0) {
-              this.currentIndex = SlideDownControl.calculateCurrentIndex(positionY, 2)
-            } else if (this.currentIndex !== -1) {
+              // 只有在下拉时才计算索引，减少计算量
+              if (positionY < 0) {
+                this.currentIndex = SlideDownControl.calculateCurrentIndex(positionY, 2)
+              } else if (this.currentIndex !== -1) {
+                this.currentIndex = -1
+              }
+            }
+          })
+          .onScrollStop(() => {
+            if (this.currentIndex >= 0) {
+              this.onMenuIconClick(this.currentIndex)
               this.currentIndex = -1
             }
-          }
-        })
-        .onScrollStop(() => {
-          if (this.currentIndex >= 0) {
-            this.onMenuIconClick(this.currentIndex)
-            this.currentIndex = -1
-          }
-        })
-        .expandSafeArea()
-        .width('100%')  // 明确宽度
+          })
+          .expandSafeArea()
+          // 主页底部避让高度：播控组件高度(60) + 播控组件下方margin值(16)
+          .padding({ bottom: (StyleConstants.PLAYER_CONTROL_HEIGHT + 16) })
 
-        // 底部迷你播控组件
-        Stack() {
           MiniPlaybackControl()
         }
-        .alignContent(Alignment.Center)
-        .position({ x: 0, y: '100%' })
-        .translate({ y: -100 })
-        .width('100%')
+        .height(StyleConstants.FULL_HEIGHT)
+        .width(StyleConstants.FULL_WIDTH)
       }
+      .height(StyleConstants.FULL_HEIGHT)
+      .width(StyleConstants.FULL_WIDTH)
       .mode(NavigationMode.Stack)
       .navDestination(this.PageMap)
       .hideToolBar(true)
       .hideBackButton(true)
       .title({
         builder: this.Title(),
-        height: 64,
+        height: 50,
       })
       .backgroundColor($r('app.color.page_background'))
-      .height(StyleConstants.FULL_HEIGHT)
-      .width(StyleConstants.FULL_WIDTH)
-      .expandSafeArea()
     }
-    .width('100%')
-    .height('100%')
+    .height(StyleConstants.FULL_HEIGHT)
+    .width(StyleConstants.FULL_WIDTH)
   }
 }

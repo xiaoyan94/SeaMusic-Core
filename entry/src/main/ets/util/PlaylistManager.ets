@@ -44,19 +44,19 @@ export class PlaylistManager {
     return PlaylistManager.instance
   }
 
-  public static playSong(song: Song, pause = false) {
+  public static async playSong(song: Song, pause = false) {
     // 获取当前播放的歌曲
     const currentSong = AppStorage.get<Song>("current_playing_song")
     // 如果当前播放的歌曲和要播放的歌曲相同，则不做任何操作，且并不是单曲循环模式
     if (currentSong && currentSong.id === song.id && PlaylistManager.getPlayMode() !== PlayMode.SINGLE) {
-      // 但是依然发送播放状态
-      avPlayerManager.seek(0)
       EventHelper.postSongState("PLAY")
       return
     } else if (currentSong && currentSong.id === song.id && PlaylistManager.getPlayMode() === PlayMode.SINGLE) {
+      LogUtil.info("PlaylistManager ", "PlaySong ", "Single Loop Mode")
       // 如果当前播放的歌曲和要播放的歌曲相同，且是单曲循环模式，则只需要Seek到0
+      await avPlayerManager.seek(0)
+      await avPlayerManager.play()
       EventHelper.postSongState("PLAY")
-      avPlayerManager.seek(0)
       return;
     }
     LogUtil.info("PlaylistManager ", "playSong ", "song ", JSON.stringify(song))
