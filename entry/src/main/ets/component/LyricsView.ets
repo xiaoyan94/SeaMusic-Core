@@ -36,6 +36,7 @@ export struct LyricsView {
   @Watch('onLyricsChanged') @Prop lyrics: string = '' // 标准的lrc歌词格式
   @Watch('onTranslationLyricsChanged') @Prop translationLyrics: string = '' // 翻译/音译歌词
   @State private parsedLyrics: Array<LyricsLine> = []
+  @State mode_judge:boolean = false
   @State private currentIndex: number = -1
   @State private isAnimating: boolean = false
   @State private showTranslation: boolean = PreferencesCache.showTranslationLyric()
@@ -201,7 +202,7 @@ export struct LyricsView {
     }
 
     // 保持在视图中间偏上的位置，很显然这是一个经验修正
-    const targetIndex = Math.max(0, index - (5 * (this.showTranslation ? 0.6 : 1)))
+    const targetIndex = Math.max(0,this.mode_judge? index - (5 * (this.showTranslation ? 0.6 : 1)):index-1)
 
     animateTo({
       duration: this.SCROLL_ANIMATION_DURATION,
