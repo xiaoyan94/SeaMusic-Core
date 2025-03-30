@@ -132,134 +132,141 @@ export struct PlayList {
   // 歌曲列表逻辑
   @Builder
   SongListSection() {
-    Row() {
-      Column() {
-        Text('歌曲列表')
-          .fontSize(18)
-          .fontWeight(FontWeight.Bold)
-          .fontColor($r('app.color.text_secondary'))
-      }
-
-      // 显示缓存提醒
-      if (this.cacheTime !== -1) {
+    Column(){
+      Row() {
         Column() {
-          Row() {
-            Text('缓存于')
-              .fontSize(14)
-              .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
-              .fontColor($r('app.color.text_hint'))
-            Text(`${formatRelativeTime(this.cacheTime)}`)
-              .fontSize(14)
-              .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
-              .fontColor($r('app.color.text_secondary'))
+          Text('歌曲列表')
+            .fontSize(18)
+            .fontWeight(FontWeight.Bold)
+            .fontColor($r('app.color.text_secondary'))
+        }
+
+        // 显示缓存提醒
+        if (this.cacheTime !== -1) {
+          Column() {
+            Row() {
+              Text('缓存于')
+                .fontSize(14)
+                .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
+                .fontColor($r('app.color.text_hint'))
+              Text(`${formatRelativeTime(this.cacheTime)}`)
+                .fontSize(14)
+                .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
+                .fontColor($r('app.color.text_secondary'))
+            }
           }
         }
       }
-    }
-    .justifyContent(FlexAlign.SpaceBetween)
-    .width(StyleConstants.FULL_WIDTH)
-    .padding({
-      left: 24,
-      right: 16,
-    })
+      .justifyContent(FlexAlign.SpaceBetween)
+      .width(StyleConstants.FULL_WIDTH)
+      .padding({
+        left: 24,
+        right: 16,
+      })
 
-    List({ scroller: this.scrollController }) {
-      ListItem() {
-        Row() {
-          Text(SlideDownControl.getReturnActionText(this.currentIndex))
-            .fontColor($r('app.color.text_secondary'))
-            .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
-            .margin({ left: 8 })
-            .opacity(this.currentIndex >= 0 ? 1 : 0)
-            .translate({ y: this.currentIndex >= 0 ? 0 : -20 })
-            .animation({
-              duration: 250,
-              curve: Curve.FastOutSlowIn
-            })
-        }
-        .margin({ top: 16 })
-        .height(this.currentIndex >= 0 ? 24 : 0)
-        .animation({
-          duration: 250,
-          curve: Curve.FastOutSlowIn
-        })
-        .alignItems(VerticalAlign.Center)
-        .justifyContent(FlexAlign.Center)
-        .width(StyleConstants.FULL_WIDTH)
-        .padding({
-          left: 16,
-          right: 16
-        })
-      }
-
-      LazyForEach(this.songDataSource, (song: Song, index: number) => {
+      List({ scroller: this.scrollController }) {
         ListItem() {
-          SongInfo({
-            song: song,
-            index: index,
-            active: this.song?.id === song.id,
-            highlight: this.billingIndex === index,
-            onTap: (song: Song) => {
-              this.onSongTap(song, index);
-            }
+          Row() {
+            Text(SlideDownControl.getReturnActionText(this.currentIndex))
+              .fontColor($r('app.color.text_secondary'))
+              .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
+              .margin({ left: 8 })
+              .opacity(this.currentIndex >= 0 ? 1 : 0)
+              .translate({ y: this.currentIndex >= 0 ? 0 : -20 })
+              .animation({
+                duration: 250,
+                curve: Curve.FastOutSlowIn
+              })
+          }
+          .margin({ top: 16 })
+          .height(this.currentIndex >= 0 ? 24 : 0)
+          .animation({
+            duration: 250,
+            curve: Curve.FastOutSlowIn
+          })
+          .alignItems(VerticalAlign.Center)
+          .justifyContent(FlexAlign.Center)
+          .width(StyleConstants.FULL_WIDTH)
+          .padding({
+            left: 16,
+            right: 16
           })
         }
-        .key(`${song.id}-${index}`)
-        .margin({ bottom: 4 })
-      }, (song: Song, index: number) => `${song.id}-${index}`)
 
-      // 底部避让空间 - 列表项
-      ListItem() {
-        Column() {
-          // 空白区域，用于避让播放控制器和底部安全区域
+        LazyForEach(this.songDataSource, (song: Song, index: number) => {
+          ListItem() {
+            SongInfo({
+              song: song,
+              index: index,
+              active: this.song?.id === song.id,
+              highlight: this.billingIndex === index,
+              onTap: (song: Song) => {
+                this.onSongTap(song, index);
+              }
+            })
+          }
+          .key(`${song.id}-${index}`)
+          .padding({ bottom: 4 })
+        }, (song: Song, index: number) => `${song.id}-${index}`)
+
+        // 底部避让空间 - 列表项
+        ListItem() {
+          Column() {
+            // 空白区域，用于避让播放控制器和底部安全区域
+          }
+          .width('100%')
+          // .height(StyleConstants.PLAYER_CONTROL_HEIGHT + px2vp(this.bottomRect))
+          .height(StyleConstants.PLAYER_CONTROL_HEIGHT + 16)
         }
-        .width('100%')
-        .height(StyleConstants.PLAYER_CONTROL_HEIGHT + px2vp(this.bottomRect))
       }
+      .backToTop(true)
+      // .height(StyleConstants.FULL_HEIGHT)
+      .width(StyleConstants.FULL_WIDTH)
+      .layoutWeight(1)
+      .expandSafeArea()
+      .edgeEffect(EdgeEffect.Spring)
+      .listDirection(Axis.Vertical)
+      .divider({ strokeWidth: 0 })
+      .cachedCount(5)
+      .onScrollIndex((firstIndex: number, lastIndex: number) => {
+        if (this.prefetcher) {
+          this.prefetcher.visibleAreaChanged(firstIndex, lastIndex);
+        }
+      })
+      .onWillScroll((_scrollOffset: number, scrollState: ScrollState, _scrollSource: ScrollSource) => {
+        if (scrollState === ScrollState.Scroll) {
+          const positionY = this.scrollController.currentOffset().yOffset
+          if (positionY < 0) {
+            const index = SlideDownControl.calculateCurrentIndex(this.scrollController.currentOffset().yOffset, 0)
+            this.currentIndex = index
+          } else {
+            this.currentIndex = -1
+          }
+        }
+      })
+      .onScrollStop(() => {
+        this.onMenuIconClick(this.currentIndex)
+        this.currentIndex = -1
+      })
+      .onReachEnd(async () => {
+        if (this.isLoading || !this.sourceOk) {
+          return;
+        }
+
+        this.isLoading = true;
+        try {
+          const hasMoreData = await this.songDataSource.loadMoreData(10);
+          if (!hasMoreData) {
+            return
+          }
+        } finally {
+          this.isLoading = false;
+        }
+      })
     }
-    .backToTop(true)
-    .height(StyleConstants.FULL_HEIGHT)
+    .expandSafeArea()
     .width(StyleConstants.FULL_WIDTH)
     .layoutWeight(1)
-    .edgeEffect(EdgeEffect.Spring)
-    .listDirection(Axis.Vertical)
-    .divider({ strokeWidth: 0 })
-    .cachedCount(5)
-    .onScrollIndex((firstIndex: number, lastIndex: number) => {
-      if (this.prefetcher) {
-        this.prefetcher.visibleAreaChanged(firstIndex, lastIndex);
-      }
-    })
-    .onWillScroll((_scrollOffset: number, scrollState: ScrollState, _scrollSource: ScrollSource) => {
-      if (scrollState === ScrollState.Scroll) {
-        const positionY = this.scrollController.currentOffset().yOffset
-        if (positionY < 0) {
-          const index = SlideDownControl.calculateCurrentIndex(this.scrollController.currentOffset().yOffset, 0)
-          this.currentIndex = index
-        } else {
-          this.currentIndex = -1
-        }
-      }
-    })
-    .onScrollStop(() => {
-      this.onMenuIconClick(this.currentIndex)
-      this.currentIndex = -1
-    })
-    .onReachEnd(async () => {
-      if (this.isLoading || !this.sourceOk) {
-        return;
-      }
-
-      this.isLoading = true;
-      try {
-        const hasMoreData = await this.songDataSource.loadMoreData(10);
-        if (!hasMoreData) {
-          return
-        }
-      } finally {
-        this.isLoading = false;
-      }
-    })
   }
 
   // 处理封面点击，确保在任何屏幕模式下都能正确滚动和高亮
@@ -321,6 +328,8 @@ export struct PlayList {
       // 3. 歌曲列表组件
       this.SongListSection()
     }
+    .expandSafeArea()
+    .height(StyleConstants.FULL_HEIGHT)
     .width(StyleConstants.FULL_WIDTH)
   }
 
@@ -462,26 +471,30 @@ export struct PlayList {
           // 标题区域
           this.Title()
 
-          if (this.playlist && this.playlist.songs && this.playlist.songs.length > 0) {
-            // 根据屏幕宽度选择布局
-            if (this.isWideScreen) {
-              // 宽屏布局
-              this.WideScreenLayout()
+          Column(){
+            if (this.playlist && this.playlist.songs && this.playlist.songs.length > 0) {
+              // 根据屏幕宽度选择布局
+              if (this.isWideScreen) {
+                // 宽屏布局
+                this.WideScreenLayout()
+              } else {
+                // 标准移动端布局
+                this.MobileLayout()
+              }
             } else {
-              // 标准移动端布局
-              this.MobileLayout()
+              // 显示空状态
+              Column() {
+                Text('暂无歌曲')
+                  .fontSize(16)
+                  .fontColor($r('app.color.text_secondary'))
+              }
+              .width(StyleConstants.FULL_WIDTH)
+              .height('80%')
+              .justifyContent(FlexAlign.Center)
             }
-          } else {
-            // 显示空状态
-            Column() {
-              Text('暂无歌曲')
-                .fontSize(16)
-                .fontColor($r('app.color.text_secondary'))
-            }
-            .width(StyleConstants.FULL_WIDTH)
-            .height('80%')
-            .justifyContent(FlexAlign.Center)
           }
+          .layoutWeight(1)
+          .width(StyleConstants.FULL_WIDTH)
         }
         .width(StyleConstants.FULL_WIDTH)
         .height(StyleConstants.FULL_HEIGHT)

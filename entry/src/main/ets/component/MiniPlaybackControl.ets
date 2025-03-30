@@ -116,6 +116,7 @@ export struct MiniPlaybackControl {
         .textAlign(TextAlign.Start)
       PlaylistView()
     }
+    .backgroundColor($r('app.color.page_background'))
     .height(StyleConstants.FULL_HEIGHT)
     .layoutWeight(1)
     .transition({ type: TransitionType.Insert, scale: { y: 0.8, x: 1.0 }, opacity: 0.0 })
@@ -128,8 +129,9 @@ export struct MiniPlaybackControl {
       Column()
         .width(StyleConstants.FULL_WIDTH)
         .height(StyleConstants.FULL_HEIGHT)
-        .backgroundColor('rgba(243, 243, 243, 0.6)')
-        .backdropBlur(30)
+        // .backgroundColor('rgba(243, 243, 243, 0.6)')
+        // .backdropBlur(30)
+        .backgroundBlurStyle(BlurStyle.Thick)
         .borderRadius(10)
         .shadow({
           color: 'rgba(0, 0, 0, 0.12)',
