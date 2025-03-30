@@ -105,12 +105,13 @@ struct Playing {
   Playing_HorizontalMode(){
     Row(){
       //封面图
-      Image(cover(this.song?.album?.cover ?? "", 512))
-        .width(this.coverWidth.getValue(this.currentBreakpoint))
-        .aspectRatio(1)
-        .borderRadius(24)
-        .margin({left:45,right:18,top:18,bottom:18})//之后修复避让
-        .width('34%')
+      Column(){
+        Image(cover(this.song?.album?.cover ?? "", 512))
+          .width('100%')
+          .aspectRatio(1)
+          .borderRadius(24)
+      }.padding({left:45,top:12,bottom:12,right:12})
+        .width('35%') .height('100%').justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center)
 
       Column(){
         LyricsView({
