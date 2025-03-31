@@ -26,7 +26,7 @@
     },
     {
       "name": "divider",
-      "value": "#E0E0E0"
+      "value": "#FFD2D2D2"
     },
     {
       "name": "homepage_menu_button_divider",
@@ -111,6 +111,10 @@
     {
       "name": "button_background",
       "value": "#FFFFFF"
+    },
+    {
+      "name": "card_background_two",
+      "value": "#CCF3F3F3"
     }
   ]
 }

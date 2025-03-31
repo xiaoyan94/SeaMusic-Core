@@ -12,7 +12,7 @@ import { PreferencesCache } from "../util/PreferenceCache";
 import { SlideDownControl } from "../util/SlideDownController";
 import { AboutSetting, PlayerSetting, SoftwareSetting } from "../viewmodel/SettingGroupData";
 import { About } from "./About";
-
+import {Personalized_settings}from '../view/Personalized_settings'
 @Component
 export struct Setting {
   @State translateY: number = 16;
@@ -544,7 +544,10 @@ export struct Setting {
     .width(StyleConstants.FULL_WIDTH)
     .height(StyleConstants.FULL_HEIGHT)
   }
-
+  @Builder
+  Personalized_Settings(){
+    Personalized_settings()
+  }
   // 修改：AdapterItem 添加长按菜单
   @Builder
   AdapterItemMenu(adapter: SourceConfig) {
@@ -639,7 +642,16 @@ export struct Setting {
   AboutPage() {
     About()
   }
-
+  @Builder
+  sheet() {
+    if (this.nowSheet === "about") {
+      this.AboutPage()
+    }else if (this.nowSheet === "setting"){
+      this.FormContent()
+    }else if (this.nowSheet === "Personalized_settings"){
+      this.Personalized_Settings()
+    }
+  }
   build() {
     NavDestination() {
       this.Title()
@@ -695,7 +707,6 @@ export struct Setting {
                 items: AboutSetting
               })
             }
-
             ListItem().height(80).backgroundColor('transparent')
           }
           .translate({ y: this.translateY })
@@ -739,8 +750,9 @@ export struct Setting {
     .expandSafeArea()
     .width(StyleConstants.FULL_WIDTH)
     .height(StyleConstants.FULL_HEIGHT)
-    .bindSheet($$this.isShow, this.nowSheet === "form" ? this.FormContent() : this.AboutPage(), {
+    .bindSheet($$this.isShow, this.sheet, {
       showClose: this.nowSheet !== "form",
+      height:SheetSize.FIT_CONTENT,
       detents: [SheetSize.MEDIUM],
       preferType: this.currentBreakpoint === BreakpointConstants.BREAKPOINT_SM ? SheetType.BOTTOM : SheetType.CENTER
     })
