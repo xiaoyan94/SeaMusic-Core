@@ -167,32 +167,51 @@ export class SourceAdapter {
   static async getRecommendList(limit = 10, storageLink = true): Promise<Playlist[]> {
     const sourceConfigGroup = PreferencesCache.getUserDataSource()
 
-    const results = await Promise.all(
-      sourceConfigGroup.map((source) =>
-      createRequest(source)
-        .get(`/playlist/recommend?limit=${limit}`)
-        .then((res: AxiosResponse) => (res.data as BaseResponse<Playlist[]>).data.map(item => {
-          item.source = source
-          return item
-        }))
-      )
-    )
+    // 使用Promise.allSettled来并行请求，即使部分请求失败也能获取成功的结果
+    const promises = sourceConfigGroup.map((source) => {
+      return new Promise<Playlist[]>((resolve) => {
+        createRequest(source)
+          .get(`/playlist/recommend?limit=${limit}`)
+          .then((res: AxiosResponse) => {
+            const playlists = (res.data as BaseResponse<Playlist[]>).data.map(item => {
+              item.source = source;
+              return item;
+            });
+            resolve(playlists);
+          })
+          .catch((error:Error) => {
+            LogUtil.error(TAG, `获取推荐歌单失败，数据源：${source.url}，错误：${error}`);
+            resolve([]); // 失败时返回空数组
+          });
+      });
+    });
 
-    const uniqueItems = new Map<string, Playlist>()
-    results.flat().forEach(item => {
-      const key = `${item.id}-${item.name}`
-      if (!uniqueItems.has(key)) {
-        uniqueItems.set(key, item)
+    const results = await Promise.allSettled(promises);
+
+    // 收集所有成功的结果
+    const allPlaylists: Playlist[] = [];
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        allPlaylists.push(...result.value);
       }
-    })
-
-    const result = Array.from(uniqueItems.values())
-
-    if (storageLink) {
-      AppStorage.setOrCreate('index_recommend_playlist', result)
     }
 
-    return result
+    // 去除重复项
+    const uniqueItems = new Map<string, Playlist>();
+    for (const item of allPlaylists) {
+      const key = `${item.id}-${item.name}`;
+      if (!uniqueItems.has(key)) {
+        uniqueItems.set(key, item);
+      }
+    }
+
+    const result = Array.from(uniqueItems.values());
+
+    if (storageLink) {
+      AppStorage.setOrCreate('index_recommend_playlist', result);
+    }
+
+    return result;
   }
 
   /**
@@ -202,34 +221,52 @@ export class SourceAdapter {
    * @returns 返回歌曲列表
    */
   static async getRecommendSongs(limit = 10, storageLink = true): Promise<Song[]> {
-    const sourceConfigGroup = PreferencesCache.getUserDataSource()
+    const sourceConfigGroup = PreferencesCache.getUserDataSource();
 
-    const results = await Promise.all(
-      sourceConfigGroup.map((source) =>
-      createRequest(source)
-        .get(`/song/recommend?limit=${limit}`)
-        .then((res: AxiosResponse) => (res.data as BaseResponse<Song[]>).data.map(item => {
-          item.source = source
-          return item
-        }))
-      )
-    )
+    const promises = sourceConfigGroup.map((source) => {
+      return new Promise<Song[]>((resolve) => {
+        createRequest(source)
+          .get(`/song/recommend?limit=${limit}`)
+          .then((res: AxiosResponse) => {
+            const songs = (res.data as BaseResponse<Song[]>).data.map(item => {
+              item.source = source;
+              return item;
+            });
+            resolve(songs);
+          })
+          .catch((error:Error) => {
+            LogUtil.error(TAG, `获取推荐歌曲失败，数据源：${source.url}，错误：${error}`);
+            resolve([]); // 失败时返回空数组
+          });
+      });
+    });
 
-    const uniqueItems = new Map<string, Song>()
-    results.flat().forEach(item => {
-      const key = `${item.id}-${item.name}`
-      if (!uniqueItems.has(key)) {
-        uniqueItems.set(key, item)
+    const results = await Promise.allSettled(promises);
+
+    // 收集所有成功的结果
+    const allSongs: Song[] = [];
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        allSongs.push(...result.value);
       }
-    })
-
-    const result = Array.from(uniqueItems.values())
-
-    if (storageLink) {
-      AppStorage.setOrCreate('index_recommend_songs', result)
     }
 
-    return result
+    // 去除重复项
+    const uniqueItems = new Map<string, Song>();
+    for (const item of allSongs) {
+      const key = `${item.id}-${item.name}`;
+      if (!uniqueItems.has(key)) {
+        uniqueItems.set(key, item);
+      }
+    }
+
+    const result = Array.from(uniqueItems.values());
+
+    if (storageLink) {
+      AppStorage.setOrCreate('index_recommend_songs', result);
+    }
+
+    return result;
   }
 
   /**
@@ -239,34 +276,52 @@ export class SourceAdapter {
    * @returns 返回歌手列表
    */
   static async getRecommendArtists(limit = 10, storageLink = true): Promise<Artist[]> {
-    const sourceConfigGroup = PreferencesCache.getUserDataSource()
+    const sourceConfigGroup = PreferencesCache.getUserDataSource();
 
-    const results = await Promise.all(
-      sourceConfigGroup.map((source) =>
-      createRequest(source)
-        .get(`/artist/recommend?limit=${limit}`)
-        .then((res: AxiosResponse) => (res.data as BaseResponse<Artist[]>).data.map(item => {
-          item.source = source
-          return item
-        }))
-      )
-    )
+    const promises = sourceConfigGroup.map((source) => {
+      return new Promise<Artist[]>((resolve) => {
+        createRequest(source)
+          .get(`/artist/recommend?limit=${limit}`)
+          .then((res: AxiosResponse) => {
+            const artists = (res.data as BaseResponse<Artist[]>).data.map(item => {
+              item.source = source;
+              return item;
+            });
+            resolve(artists);
+          })
+          .catch((error:Error) => {
+            LogUtil.error(TAG, `获取推荐歌手失败，数据源：${source.url}，错误：${error}`);
+            resolve([]); // 失败时返回空数组
+          });
+      });
+    });
 
-    const uniqueItems = new Map<string, Artist>()
-    results.flat().forEach(item => {
-      const key = `${item.id}-${item.name}`
-      if (!uniqueItems.has(key)) {
-        uniqueItems.set(key, item)
+    const results = await Promise.allSettled(promises);
+
+    // 收集所有成功的结果
+    const allArtists: Artist[] = [];
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        allArtists.push(...result.value);
       }
-    })
-
-    const result = Array.from(uniqueItems.values())
-
-    if (storageLink) {
-      AppStorage.setOrCreate('index_recommend_artists', result)
     }
 
-    return result
+    // 去除重复项
+    const uniqueItems = new Map<string, Artist>();
+    for (const item of allArtists) {
+      const key = `${item.id}-${item.name}`;
+      if (!uniqueItems.has(key)) {
+        uniqueItems.set(key, item);
+      }
+    }
+
+    const result = Array.from(uniqueItems.values());
+
+    if (storageLink) {
+      AppStorage.setOrCreate('index_recommend_artists', result);
+    }
+
+    return result;
   }
 
   /**
@@ -276,34 +331,52 @@ export class SourceAdapter {
    * @returns 返回歌单列表
    */
   static async getTopList(limit = 10, storageLink = true): Promise<Playlist[]> {
-    const sourceConfigGroup = PreferencesCache.getUserDataSource()
+    const sourceConfigGroup = PreferencesCache.getUserDataSource();
 
-    const results = await Promise.all(
-      sourceConfigGroup.map((source) =>
-      createRequest(source)
-        .get(`/playlist/toplist?limit=${limit}`)
-        .then((res: AxiosResponse) => (res.data as BaseResponse<Playlist[]>).data.map(item => {
-          item.source = source
-          return item
-        }))
-      )
-    )
+    const promises = sourceConfigGroup.map((source) => {
+      return new Promise<Playlist[]>((resolve) => {
+        createRequest(source)
+          .get(`/playlist/toplist?limit=${limit}`)
+          .then((res: AxiosResponse) => {
+            const playlists = (res.data as BaseResponse<Playlist[]>).data.map(item => {
+              item.source = source;
+              return item;
+            });
+            resolve(playlists);
+          })
+          .catch((error:Error) => {
+            LogUtil.error(TAG, `获取排行榜失败，数据源：${source.url}，错误：${error}`);
+            resolve([]); // 失败时返回空数组
+          });
+      });
+    });
 
-    const uniqueItems = new Map<string, Playlist>()
-    results.flat().forEach(item => {
-      const key = `${item.id}-${item.name}`
-      if (!uniqueItems.has(key)) {
-        uniqueItems.set(key, item)
+    const results = await Promise.allSettled(promises);
+
+    // 收集所有成功的结果
+    const allPlaylists: Playlist[] = [];
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        allPlaylists.push(...result.value);
       }
-    })
-
-    const result = Array.from(uniqueItems.values())
-
-    if (storageLink) {
-      AppStorage.setOrCreate('index_recommend_toplist', result)
     }
 
-    return result
+    // 去除重复项
+    const uniqueItems = new Map<string, Playlist>();
+    for (const item of allPlaylists) {
+      const key = `${item.id}-${item.name}`;
+      if (!uniqueItems.has(key)) {
+        uniqueItems.set(key, item);
+      }
+    }
+
+    const result = Array.from(uniqueItems.values());
+
+    if (storageLink) {
+      AppStorage.setOrCreate('index_recommend_toplist', result);
+    }
+
+    return result;
   }
 
   /**
@@ -311,161 +384,262 @@ export class SourceAdapter {
    * @returns 返回歌单列表
    */
   static async getUserPlaylist(storageLink = true): Promise<Playlist[]> {
-    const sourceConfigGroup = PreferencesCache.getUserDataSource()
-    const results = await Promise.all(
-      sourceConfigGroup.map(source =>
-      createRequest(source)
-        .get(`/playlist/list?uid=${source.auth?.user?.id}`)
-        .then((res: AxiosResponse) => (res.data as BaseResponse<Playlist[]>).data.map(item => {
-          item.source = source
-          return item
-        }))
-      )
-    )
+    const sourceConfigGroup = PreferencesCache.getUserDataSource();
 
-    const uniqueItems = new Map<string, Playlist>()
-    results.flat().forEach(item => {
-      const key = `${item.id}-${item.name}`
-      if (!uniqueItems.has(key)) {
-        uniqueItems.set(key, item)
+    const promises = sourceConfigGroup.map((source) => {
+      return new Promise<Playlist[]>((resolve) => {
+        createRequest(source)
+          .get(`/playlist/list?uid=${source.auth?.user?.id}`)
+          .then((res: AxiosResponse) => {
+            const playlists = (res.data as BaseResponse<Playlist[]>).data.map(item => {
+              item.source = source;
+              return item;
+            });
+            resolve(playlists);
+          })
+          .catch((error:Error) => {
+            LogUtil.error(TAG, `获取用户歌单失败，数据源：${source.url}，错误：${error}`);
+            resolve([]); // 失败时返回空数组
+          });
+      });
+    });
+
+    const results = await Promise.allSettled(promises);
+
+    // 收集所有成功的结果
+    const allPlaylists: Playlist[] = [];
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        allPlaylists.push(...result.value);
       }
-    })
-
-    const result = Array.from(uniqueItems.values())
-
-    if (storageLink) {
-      AppStorage.setOrCreate('user_playlist', result)
     }
 
-    return result
+    // 去除重复项
+    const uniqueItems = new Map<string, Playlist>();
+    for (const item of allPlaylists) {
+      const key = `${item.id}-${item.name}`;
+      if (!uniqueItems.has(key)) {
+        uniqueItems.set(key, item);
+      }
+    }
+
+    const result = Array.from(uniqueItems.values());
+
+    if (storageLink) {
+      AppStorage.setOrCreate('user_playlist', result);
+    }
+
+    return result;
   }
 
   static async getPlaylistDetail(playlist: Playlist): Promise<Playlist> {
-    const source = playlist.source as SourceConfig
-    const request = createRequest(source)
-    const res = (await request.get(`/playlist/detail?id=${playlist.id}`, {
-      headers: {
-        // TODO:这种逻辑应该是服务端发送，后续要进行优化
-        'X-Cache': playlist.id !== "daily_songs" ? 'true' : 'false'
-      }
-    })).data as BaseResponse<Playlist>
-    playlist.songs = res.data.songs?.map(song => {
-      song.source = source
-      return song
-    }) || []
-    playlist.meta = res.data.meta
-    return playlist
+    try {
+      const source = playlist.source as SourceConfig;
+      const request = createRequest(source);
+      const res = (await request.get(`/playlist/detail?id=${playlist.id}`, {
+        headers: {
+          // TODO:这种逻辑应该是服务端发送，后续要进行优化
+          'X-Cache': playlist.id !== "daily_songs" ? 'true' : 'false'
+        }
+      })).data as BaseResponse<Playlist>;
+
+      playlist.songs = res.data.songs?.map(song => {
+        song.source = source;
+        return song;
+      }) || [];
+      playlist.meta = res.data.meta;
+      return playlist;
+    } catch (error) {
+      LogUtil.error(TAG, `获取歌单详情失败，id：${playlist.id}，错误：${error}`);
+      // 出错时返回空歌曲列表的歌单
+      playlist.songs = [];
+      return playlist;
+    }
   }
 
   static async getAlbumDetail(album: Album): Promise<Playlist> {
-    const source = album.source as SourceConfig
-    const request = createRequest(source)
-    const res = (await request.get(`/album/detail?id=${album.id}`, {
-      headers: {
-        'X-Cache': 'true',
-      }
-    })).data as BaseResponse<Playlist>
-    // 根据album，创建一个playlist
-    const playlist: Playlist = {
-      id: album.id,
-      name: album.name,
-      size: album.size,
-      description: album.description,
-      cover: album.cover,
+    try {
+      const source = album.source as SourceConfig;
+      const request = createRequest(source);
+      const res = (await request.get(`/album/detail?id=${album.id}`, {
+        headers: {
+          'X-Cache': 'true',
+        }
+      })).data as BaseResponse<Playlist>;
+
+      // 根据album，创建一个playlist
+      const playlist: Playlist = {
+        id: album.id,
+        name: album.name,
+        size: album.size,
+        description: album.description,
+        cover: album.cover,
+      };
+
+      playlist.songs = res.data.songs?.map(song => {
+        song.source = source;
+        return song;
+      }) || [];
+      playlist.meta = res.data.meta;
+      return playlist;
+    } catch (error) {
+      LogUtil.error(TAG, `获取专辑详情失败，id：${album.id}，错误：${error}`);
+      // 出错时返回空歌曲列表的播放列表
+      return {
+        id: album.id,
+        name: album.name,
+        size: album.size,
+        description: album.description,
+        cover: album.cover,
+        songs: []
+      };
     }
-    playlist.songs = res.data.songs?.map(song => {
-      song.source = source
-      return song
-    }) || []
-    playlist.meta = res.data.meta
-    return playlist
   }
 
   static async getSongDetail(song: Song, br: Bitrate = PreferencesCache.playingLevel()): Promise<Song> {
-    const source = song.source as SourceConfig
-    const uid = song.source?.auth?.user?.id
-    const request = createRequest(source)
-    const bitRate = song.privilege.bitrates
-    if (bitRate) {
-      // 获取离当前码率最近的码率，避免因为码率不匹配导致无法播放
-      br = bitRate.reduce((prev, curr) => Math.abs(curr - br) < Math.abs(prev - br) ? curr : prev)
+    try {
+      const source = song.source as SourceConfig;
+      const uid = song.source?.auth?.user?.id;
+      const request = createRequest(source);
+      const bitRate = song.privilege?.bitrates;
+      if (bitRate) {
+        // 获取离当前码率最近的码率，避免因为码率不匹配导致无法播放
+        br = bitRate.reduce((prev, curr) => Math.abs(curr - br) < Math.abs(prev - br) ? curr : prev);
+      }
+      let uri = `/song/detail?id=${song.id}&br=${br}`;
+      if (uid) {
+        uri += `&uid=${uid}`;
+      }
+      const res = (await request.get(uri)).data as BaseResponse<Song>;
+      song.meta = res.data.meta;
+      return song;
+    } catch (error) {
+      LogUtil.error(TAG, `获取歌曲详情失败，id：${song.id}，错误：${error}`);
+      return song; // 出错时返回原始歌曲
     }
-    let uri = `/song/detail?id=${song.id}&br=${br}`
-    if (uid) {
-      uri += `&uid=${uid}`
-    }
-    const res = (await request.get(uri, {
-      // headers: {
-      //   'X-Cache': 'true'
-      // }
-    })).data as BaseResponse<Song>
-    song.meta = res.data.meta
-    return song
   }
 
   static async getArtistDetail(artist: Artist): Promise<Playlist> {
-    const source = artist.source as SourceConfig
-    const request = createRequest(source)
-    const res = (await request.get(`/artist/detail?id=${artist.id}`, {
-      headers: {
-        'X-Cache': 'true'
-      }
-    })).data as BaseResponse<Playlist>
-    res.data.songs = res.data.songs?.map(song => {
-      song.source = source
-      return song
-    }) || []
-    return res.data
+    try {
+      const source = artist.source as SourceConfig;
+      const request = createRequest(source);
+      const res = (await request.get(`/artist/detail?id=${artist.id}`, {
+        headers: {
+          'X-Cache': 'true'
+        }
+      })).data as BaseResponse<Playlist>;
+
+      res.data.songs = res.data.songs?.map(song => {
+        song.source = source;
+        return song;
+      }) || [];
+      return res.data;
+    } catch (error) {
+      LogUtil.error(TAG, `获取歌手详情失败，id：${artist.id}，错误：${error}`);
+      // 出错时返回基本信息和空歌曲列表
+      return {
+        id: artist.id,
+        name: artist.name || "",
+        songs: []
+      };
+    }
   }
 
   static async search(keywords: string, limit = 10): Promise<SearchResult> {
-    const sourceConfigGroup = PreferencesCache.getUserDataSource()
-    keywords = encodeURIComponent(keywords)
-    const results = await Promise.all(
-      sourceConfigGroup.map(source =>
-      createRequest(source)
-        .get(`/search?keywords=${keywords}&limit=${limit}`)
-        .then((res: AxiosResponse) => {
-          const data = res.data as BaseResponse<SearchResult>
-          data.data.songs = data.data.songs?.map(song => {
-            song.source = source
-            return song
-          }) || []
-          data.data.playlists = data.data.playlists?.map(playlist => {
-            playlist.source = source
-            return playlist
-          }) || []
-          data.data.artists = data.data.artists?.map(artist => {
-            artist.source = source
-            return artist
-          }) || []
-          data.data.albums = data.data.albums?.map(album => {
-            album.source = source
-            return album
-          }) || []
-          return data.data
-        })
-      )
-    )
+    const sourceConfigGroup = PreferencesCache.getUserDataSource();
+    keywords = encodeURIComponent(keywords);
 
-    return results.reduce((prev, curr) => {
-      prev.songs = [...(prev.songs || []), ...(curr.songs || [])]
-      prev.playlists = [...(prev.playlists || []), ...(curr.playlists || [])]
-      prev.artists = [...(prev.artists || []), ...(curr.artists || [])]
-      prev.albums = [...(prev.albums || []), ...(curr.albums || [])]
-      return prev
-    }, {} as SearchResult)
+    const promises = sourceConfigGroup.map((source) => {
+      return new Promise<SearchResult>((resolve) => {
+        createRequest(source)
+          .get(`/search?keywords=${keywords}&limit=${limit}`)
+          .then((res: AxiosResponse) => {
+            const data = res.data as BaseResponse<SearchResult>;
+            const result: SearchResult = {
+              songs: data.data.songs?.map(song => {
+                song.source = source;
+                return song;
+              }) || [],
+              playlists: data.data.playlists?.map(playlist => {
+                playlist.source = source;
+                return playlist;
+              }) || [],
+              artists: data.data.artists?.map(artist => {
+                artist.source = source;
+                return artist;
+              }) || [],
+              albums: data.data.albums?.map(album => {
+                album.source = source;
+                return album;
+              }) || []
+            };
+            resolve(result);
+          })
+          .catch((error:Error) => {
+            LogUtil.error(TAG, `搜索失败，数据源：${source.url}，关键词：${keywords}，错误：${error}`);
+            resolve({
+              songs: [],
+              playlists: [],
+              artists: [],
+              albums: []
+            }); // 失败时返回空结果
+          });
+      });
+    });
+
+    const results = await Promise.allSettled(promises);
+
+    // 创建空结果对象
+    const finalResult: SearchResult = {
+      songs: [],
+      playlists: [],
+      artists: [],
+      albums: []
+    };
+
+    // 合并所有成功的结果
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        if (result.value.songs) {
+          for (let i = 0; i < result.value.songs.length; i++) {
+            finalResult.songs?.push(result.value.songs[i]);
+          }
+        }
+        if (result.value.playlists) {
+          for (let i = 0; i < result.value.playlists.length; i++) {
+            finalResult.playlists?.push(result.value.playlists[i]);
+          }
+        }
+        if (result.value.artists) {
+          for (let i = 0; i < result.value.artists.length; i++) {
+            finalResult.artists?.push(result.value.artists[i]);
+          }
+        }
+        if (result.value.albums) {
+          for (let i = 0; i < result.value.albums.length; i++) {
+            finalResult.albums?.push(result.value.albums[i]);
+          }
+        }
+      }
+    }
+
+    return finalResult;
   }
 
   static async likeSong(song: Song, like: boolean = true): Promise<void> {
-    const source = song.source as SourceConfig
-    const request = createRequest(source)
-    const res = (await request.put(`/song/like?id=${song.id}&like=${like}`)).data as BaseResponse<LikeResponse>
-    const playlistId = res.data.playlist
-    const fullKey = source.url + `/playlist/detail?id=${playlistId}`
-    // 删除缓存
-    ResponseCacheUtil.remove(fullKey)
-    // 更新用户歌单
-    SourceAdapter.getUserPlaylist()
+    try {
+      const source = song.source as SourceConfig;
+      const request = createRequest(source);
+      const res = (await request.put(`/song/like?id=${song.id}&like=${like}`)).data as BaseResponse<LikeResponse>;
+      const playlistId = res.data.playlist;
+      const fullKey = source.url + `/playlist/detail?id=${playlistId}`;
+      // 删除缓存
+      ResponseCacheUtil.remove(fullKey);
+      // 更新用户歌单
+      SourceAdapter.getUserPlaylist();
+    } catch (error) {
+      LogUtil.error(TAG, `收藏歌曲操作失败，歌曲id：${song.id}，错误：${error}`);
+      // 不抛出异常，只记录日志
+    }
   }
 }
