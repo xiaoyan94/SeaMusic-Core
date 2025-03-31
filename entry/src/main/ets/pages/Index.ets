@@ -390,7 +390,7 @@ struct Index {
   EmptyDataSource() {
     Column() {
       Row() {
-        Text("添加数据")
+        Text("添加数据源")
           .fontWeight(StyleConstants.FONT_WEIGHT_SEVEN)
           .fontColor($r('app.color.text_click'))
           .fontSize(16)
@@ -398,7 +398,7 @@ struct Index {
           .onClick(() => {
             this.pageStack.pushPath({ name: 'Setting' })
           })
-        Text("源开启云上漫游！")
+        Text("开启云上漫游！")
           .fontWeight(StyleConstants.FONT_WEIGHT_SEVEN)
           .fontColor($r('app.color.text_hint'))
           .fontSize(15)

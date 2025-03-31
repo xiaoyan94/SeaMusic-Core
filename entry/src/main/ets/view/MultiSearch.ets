@@ -13,12 +13,15 @@ import { SlideDownControl } from "../util/SlideDownController";
 
 @Component
 export struct MultiSearch {
+  @State groupHeight: Length = 0
   @Consume('NavPathStack') pageStack: NavPathStack;
   @State keywords: string = '';
   @State result: SearchResult | null = null;
   @State loading: boolean = false;
   @State currentIndex: number = -1;
   @StorageProp('bottomRect') bottomRect: number = 0
+  @StorageProp('topRect') topRect: number = 0
+  @StorageProp('winHeight') winHeight: number = 0
   private scrollController: Scroller = new Scroller();
 
   private generatePlaylistMenu(playlist: Playlist) {
@@ -185,14 +188,26 @@ export struct MultiSearch {
                 }
               }
 
-              ListItem(){
-                Row(){
-                  // 搜索页底部避让高度：播控组件高度(64) + 导航栏避让高度 + 播控组件下方margin值(16)
-                  Blank().height(StyleConstants.PLAYER_CONTROL_HEIGHT + 16).layoutWeight(1)
-                }
+            }
+            .onAreaChange((oldValue: Area, newValue: Area) => {
+              console.info(`Ace: on area change, oldValue is ${JSON.stringify(oldValue)} value is ${JSON.stringify(newValue)}`)
+              this.groupHeight = newValue.height
+            })
+            .expandSafeArea()
+
+            ListItem(){
+              Row(){
+                // 监控ListItemGroup高度变化，随时调整List下方补充高度，winHeight - group高度 - 标题高度 - 避让高度
+                Blank().height(px2vp(this.winHeight) - parseInt(JSON.stringify(this.groupHeight)) - 50 - px2vp(this.bottomRect+this.topRect))
               }
             }
-            .expandSafeArea()
+
+            ListItem(){
+              Row(){
+                // 搜索页底部避让高度：播控组件高度(64) + 导航栏避让高度 + 播控组件下方margin值(16)
+                Blank().height(StyleConstants.PLAYER_CONTROL_HEIGHT + 16).layoutWeight(1)
+              }
+            }
           }
           .expandSafeArea()
           .backToTop(true)
