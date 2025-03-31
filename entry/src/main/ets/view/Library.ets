@@ -159,7 +159,7 @@ struct Library {
                       })
                     }
                   })
-                    .margin({ top: 8 })
+                    .padding({ top: 12 })
                 }
                 .width(StyleConstants.FULL_WIDTH)
               }

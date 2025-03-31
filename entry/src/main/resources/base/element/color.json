@@ -74,7 +74,7 @@
     },
     {
       "name": "setting_button_normal",
-      "value": "#424242"
+      "value": "#FFFFFFFF"
     },
     {
       "name": "text_click",
@@ -111,6 +111,10 @@
     {
       "name": "button_background",
       "value": "#FFFFFF"
+    },
+    {
+      "name": "border_line",
+      "value": "#80696969"
     }
   ]
 }

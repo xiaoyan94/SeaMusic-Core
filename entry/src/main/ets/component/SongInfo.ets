@@ -46,7 +46,7 @@ export struct SongInfo {
     if (this.isHighlighting) {
       return 'rgba(100, 149, 237, 0.15)'; // 高亮背景色
     }
-    return Color.Transparent;
+    return $r('app.color.setting_item_background');
   }
 
   // 获取边框颜色
@@ -56,7 +56,7 @@ export struct SongInfo {
     } else if (!this.showBorder) {
       return Color.Transparent;
     }
-    return 'rgba(200, 200, 200, 0.12)';
+    return $r('app.color.border_line');
   }
 
   build() {
@@ -115,16 +115,17 @@ export struct SongInfo {
           this.rightSlot()
         }
       }
+      .shadow(ShadowStyle.OUTER_DEFAULT_XS)
       .width(StyleConstants.FULL_WIDTH)
       .height(68)
       .padding({ left: 16, right: 16 })
       .borderRadius(10)
       .backgroundColor(this.getBackgroundColor())
-      .border({
-        width: 1,
-        color: this.getBorderColor(),
-        style: BorderStyle.Solid
-      })
+      // .border({
+      //   width: 1,
+      //   color: this.getBorderColor(),
+      //   style: BorderStyle.Solid
+      // })
       .opacity(this.disabled ? 0.6 : 1)
       .animation({
         duration: 300,
