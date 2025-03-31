@@ -12,9 +12,10 @@ import { PlaylistView } from '../component/PlaylistView'
 import { PreferencesCache } from '../util/PreferenceCache'
 import { SourceAdapter } from '../adapter'
 import { TimerSelector } from '../component/TimerSelector'
-import {isHorizontalMode} from '../util/HorizontalCheck'
-import {screen_on} from '../util/On_screen_control'
+import { isHorizontalMode } from '../util/HorizontalCheck'
+import { screen_on } from '../util/On_screen_control'
 import { window } from '@kit.ArkUI';
+
 @Builder
 export function PlayingBuilder() {
   Playing()
@@ -57,11 +58,11 @@ struct Playing {
   // 监听屏幕断点变化
   onBreakpointChange() {
     this.isWideScreen = this.currentBreakpoint !== BreakpointConstants.BREAKPOINT_SM;
-    this.Playing_Next= isHorizontalMode()
-    console.info('Succeeded in obtaining fold status.judge: ' +this.Playing_Next);
+    this.Playing_Next = isHorizontalMode()
+    console.info('Succeeded in obtaining fold status.judge: ' + this.Playing_Next);
   }
 
-  @State sheetType : "playlist" | "timer" = "playlist" // 用于控制底部弹出表单的类型，默认为播放列表
+  @State sheetType: "playlist" | "timer" = "playlist" // 用于控制底部弹出表单的类型，默认为播放列表
 
   @Builder
   PlayListBuilder() {
@@ -99,6 +100,7 @@ struct Playing {
     .transition({ type: TransitionType.Insert, scale: { y: 0.8, x: 1.0 }, opacity: 0.0 })
     .transition({ type: TransitionType.Delete, scale: { y: 0.8, x: 1.0 }, opacity: 0.0 })
   }
+
   @Builder
   //好心人帮我改下函数名哈
   //————————————————————————
@@ -106,28 +108,37 @@ struct Playing {
   // 参数：null
   // 功能：手机横屏播放器
   //——————————————————————————
-  Playing_HorizontalMode(){
-    Row(){
+  Playing_HorizontalMode() {
+    Row() {
       //封面图
-      Column(){
+      Column() {
         Image(cover(this.song?.album?.cover ?? "", 512))
           .width('100%')
           .aspectRatio(1)
           .borderRadius(24)
-      }.padding({left:45,top:12,bottom:12,right:12})
-        .width('35%') .height('100%').justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center)
+      }
+      .padding({
+        left: 45,
+        top: 12,
+        bottom: 12,
+        right: 12
+      })
+      .width('35%')
+      .height('100%')
+      .justifyContent(FlexAlign.Center)
+      .alignItems(HorizontalAlign.Center)
 
-      Column(){
+      Column() {
         LyricsView({
           currentTimeMs: this.currentTime,
           lyrics: this.song?.meta?.lyric?.normal,
           translationLyrics: this.song?.meta?.lyric?.translation || this.song?.meta?.lyric?.transliteration,
-          mode_judge:false
+          mode_judge: false
         }).width('100%').layoutWeight(1)
 
-        Text((this.song?.name || "未知歌曲")+'/' +(this.song?.artists ? this.song.artists.map(artist => artist.name).join(" / ") : "未知艺术家"))
-          .fontSize(this.getFontSize(this.song?.name ?? "", 16, 16))
-          // .fontWeight(FontWeight.Bold)
+        Text((this.song?.name || "未知歌曲") + '/' +
+          (this.song?.artists ? this.song.artists.map(artist => artist.name).join(" / ") : "未知艺术家"))
+          .fontSize(this.getFontSize(this.song?.name ?? "", 16, 16))// .fontWeight(FontWeight.Bold)
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
           .fontColor('rgba(255, 255, 255, 0.6)')
@@ -137,6 +148,7 @@ struct Playing {
       }
       .padding(18)
       .width('65%')
+
       // Column(){
       //   Column(){
       //     Column(){
@@ -269,9 +281,12 @@ struct Playing {
       //   .padding({left:20,bottom:18,top:18+high_height})
       //
       // }.height('100%').alignItems(HorizontalAlign.Center).justifyContent(FlexAlign.Center)
-    }.alignItems(VerticalAlign.Center).justifyContent(FlexAlign.SpaceBetween).onAppear(()=>{screen_on(true)}).onDisAppear(()=>{screen_on(false)})
+    }.alignItems(VerticalAlign.Center).justifyContent(FlexAlign.SpaceBetween).onAppear(() => {
+      screen_on(true)
+    }).onDisAppear(() => {
+      screen_on(false)
+    })
   }
-
 
   async aboutToAppear() {
     window.getLastWindow(getContext(this), (err, windowClass) => {
@@ -286,7 +301,7 @@ struct Playing {
       }
     })
     const player = await avPlayerManager.getAVPlayerInstance()
-    this.Playing_Next= isHorizontalMode()
+    this.Playing_Next = isHorizontalMode()
     // 初始化当前时间和持续时间
     this.currentTime = player.currentTime
     this.isPlaying = player.state === 'playing'
@@ -816,7 +831,7 @@ struct Playing {
         currentTimeMs: this.currentTime,
         lyrics: this.song?.meta?.lyric?.normal,
         translationLyrics: this.song?.meta?.lyric?.translation || this.song?.meta?.lyric?.transliteration,
-        mode_judge:true
+        mode_judge: true
       })
     }
     .width(StyleConstants.FULL_WIDTH)
@@ -836,11 +851,11 @@ struct Playing {
         .borderRadius(24)
         .margin({ top: 36 })
         .geometryTransition('song-cover', { follow: false })
-        .onClick(()=>{
-          if(!this.isWideScreen){
+        .onClick(() => {
+          if (!this.isWideScreen) {
             this.controller.changeIndex(1)
           }
-        })  //点击图片切换到歌词页面
+        }) //点击图片切换到歌词页面
       // 进度条
       this.ProgressBar()
 
@@ -973,17 +988,18 @@ struct Playing {
             .width(StyleConstants.FULL_WIDTH)
             .height(StyleConstants.FULL_HEIGHT)
             .layoutWeight(1)
-          }
-          else if(this.isWideScreen && this.Playing_Next){
+          } else if (this.isWideScreen && this.Playing_Next) {
             this.Playing_HorizontalMode()
           } else {
             Column().height(this.statusHeight)
             this.Title()
             // 窄屏布局 - Tabs切换
-            Tabs({ barPosition: BarPosition.End, index: this.selectedTabIndex,controller:this.controller }) {
+            Tabs({ barPosition: BarPosition.End, index: this.selectedTabIndex, controller: this.controller }) {
               TabContent() {
                 // 播放内容
-                Column(){this.PlayingContent()}.padding({bottom:this.bottomAvoidAreaHeight})
+                Column() {
+                  this.PlayingContent()
+                }.padding({ bottom: this.bottomAvoidAreaHeight })
               }
               .transition({ type: TransitionType.All, opacity: 0.0, translate: { x: -20 } })
 
@@ -1019,8 +1035,14 @@ struct Playing {
     .expandSafeArea()
     .width(StyleConstants.FULL_WIDTH)
     .height(StyleConstants.FULL_HEIGHT)
-    .onWillShow(()=>{if(this.Playing_Next){this.windowClass?.setWindowLayoutFullScreen(true)}})
-    .onWillDisappear(()=>{if(this.Playing_Next){this.windowClass?.setWindowLayoutFullScreen(false)}})
+    .onWillShow(() => {
+      if (this.Playing_Next) {
+        this.windowClass?.setWindowLayoutFullScreen(true)
+      }
+    })
+    .onWillHide(() => {
+      this.windowClass?.setWindowLayoutFullScreen(false)
+    })
     .gesture(
       SwipeGesture({
         // 竖直方向滑动
@@ -1037,8 +1059,8 @@ struct Playing {
         }
       })
     )
-    .onSizeChange(()=>{
-      this.Playing_Next= isHorizontalMode()
+    .onSizeChange(() => {
+      this.Playing_Next = isHorizontalMode()
     })
     .bindSheet($$this.showPlaylist, this.sheet, {
       showClose: false,

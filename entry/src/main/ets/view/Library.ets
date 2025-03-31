@@ -175,7 +175,7 @@ struct Library {
               // }
             }
             .width(StyleConstants.FULL_WIDTH)
-            .height('auto')
+            .height(StyleConstants.FULL_HEIGHT)
             .expandSafeArea()
             .scrollBar(BarState.Off)
             .edgeEffect(EdgeEffect.None)
