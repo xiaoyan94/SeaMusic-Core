@@ -76,35 +76,13 @@ export struct MultiSearch {
           List({ scroller: this.scrollController}){
 
             ListItem(){
-              Row() {
-                Text(SlideDownControl.getReturnActionText(this.currentIndex))
-                  .fontColor($r('app.color.text_secondary'))
-                  .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
-                  .opacity(this.currentIndex >= 0 ? 1 : 0)
-                  .translate({ y: this.currentIndex >= 0 ? 0 : -20 })
-                  .animation({
-                    duration: 250,
-                    curve: Curve.FastOutSlowIn
-                  })
-              }
-              .height(this.currentIndex >= 0 ? 40 : 0)
-              .animation({
-                duration: 250,
-                curve: Curve.FastOutSlowIn
-              })
-              .alignItems(VerticalAlign.Center)
-              .justifyContent(FlexAlign.Center)
-              .width(StyleConstants.FULL_WIDTH)
-              .padding({
-                left: 16,
-                right: 16
-              })
+              this.HeaderAnimation()
             }
 
             ListItemGroup({ header: this.SearchComponent()}){
-              if(this.result){
-                ListItem(){
-                  if (this.result && this.result.songs) {
+              if(this.result && this.result.songs && this.result.playlists && this.result.artists && this.result.albums){
+                if(this.result.songs.length > 0 && this.result.playlists.length > 0 && this.result.artists.length > 0 && this.result.albums.length > 0){
+                  ListItem(){
                     Segment({
                       title: "歌曲",
                       loading: this.loading,
@@ -126,10 +104,8 @@ export struct MultiSearch {
                       })
                     }
                   }
-                }
 
-                ListItem(){
-                  if (this.result && this.result.playlists) {
+                  ListItem(){
                     Segment({
                       title: "歌单",
                       loading: this.loading,
@@ -151,10 +127,8 @@ export struct MultiSearch {
                       })
                     }
                   }
-                }
 
-                ListItem(){
-                  if (this.result && this.result.artists) {
+                  ListItem(){
                     Segment({
                       title: "歌手",
                       loading: this.loading,
@@ -177,10 +151,8 @@ export struct MultiSearch {
                       })
                     }
                   }
-                }
 
-                ListItem(){
-                  if (this.result && this.result.albums) {
+                  ListItem(){
                     Segment({
                       title: "专辑",
                       loading: this.loading,
@@ -202,14 +174,14 @@ export struct MultiSearch {
                       })
                     }
                   }
+                } else {
+                  ListItem(){
+                    this.EmptySearchResult('白给了呀！莫结果！')
+                  }
                 }
               } else {
                 ListItem(){
-                  // 占满剩余空间,以便在未搜索时可以滚动
-                  Row(){
-                    Blank().height('100%').layoutWeight(1)
-                      .expandSafeArea()
-                  }
+                  this.EmptySearchResult('愣着干啥？开搜啊！')
                 }
               }
 
@@ -275,6 +247,33 @@ export struct MultiSearch {
   }
 
   @Builder
+  HeaderAnimation(){
+    Row() {
+      Text(SlideDownControl.getReturnActionText(this.currentIndex))
+        .fontColor($r('app.color.text_secondary'))
+        .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
+        .opacity(this.currentIndex >= 0 ? 1 : 0)
+        .translate({ y: this.currentIndex >= 0 ? 0 : -20 })
+        .animation({
+          duration: 250,
+          curve: Curve.FastOutSlowIn
+        })
+    }
+    .height(this.currentIndex >= 0 ? 40 : 0)
+    .animation({
+      duration: 250,
+      curve: Curve.FastOutSlowIn
+    })
+    .alignItems(VerticalAlign.Center)
+    .justifyContent(FlexAlign.Center)
+    .width(StyleConstants.FULL_WIDTH)
+    .padding({
+      left: 16,
+      right: 16
+    })
+  }
+
+  @Builder
   SearchComponent() {
     Column(){
       Search({ value: this.keywords, placeholder: '搜索你想要的...' })
@@ -286,7 +285,7 @@ export struct MultiSearch {
         .margin(0)
         .backgroundBlurStyle(BlurStyle.Regular)
     }
-    .padding(16)
+    .padding(12)
 
   }
 
@@ -296,6 +295,26 @@ export struct MultiSearch {
       title: $r('app.string.search'),
       backActive: this.currentIndex === 0
     })
+  }
+
+  @Builder
+  EmptySearchResult(reason: string) {
+    Column() {
+      Row() {
+        Text(reason)
+          .fontWeight(StyleConstants.FONT_WEIGHT_SEVEN)
+          .fontColor($r('app.color.text_hint'))
+          .fontSize(16)
+      }
+      .width(StyleConstants.FULL_WIDTH)
+      .height(StyleConstants.FULL_HEIGHT)
+      .alignItems(VerticalAlign.Center)
+      .justifyContent(FlexAlign.Center)
+    }
+    .width(StyleConstants.FULL_WIDTH)
+    .height(StyleConstants.FULL_HEIGHT)
+    .alignItems(HorizontalAlign.Center)
+    .justifyContent(FlexAlign.SpaceBetween)
   }
 
   onMenuIconClick(index: number) {

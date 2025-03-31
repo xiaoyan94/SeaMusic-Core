@@ -494,8 +494,9 @@ export struct PlayList {
                 ListItem(){
                   Column() {
                     Text('暂无歌曲')
+                      .fontWeight(StyleConstants.FONT_WEIGHT_SEVEN)
+                      .fontColor($r('app.color.text_hint'))
                       .fontSize(16)
-                      .fontColor($r('app.color.text_secondary'))
                   }
                   .width(StyleConstants.FULL_WIDTH)
                   .height(StyleConstants.FULL_HEIGHT)

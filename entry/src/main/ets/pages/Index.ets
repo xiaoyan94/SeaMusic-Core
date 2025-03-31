@@ -389,103 +389,111 @@ struct Index {
   @Builder
   EmptyDataSource() {
     Column() {
-      Blank()
       Row() {
-        Text("添加数据源开启云上漫游！")
-          .fontWeight(StyleConstants.FONT_WEIGHT_SEVEN)
-          .fontColor($r('app.color.text_hint'))
-          .fontSize(16)
-          .margin({ right: 8 })
-
-        Text("点击添加")
+        Text("添加数据")
           .fontWeight(StyleConstants.FONT_WEIGHT_SEVEN)
           .fontColor($r('app.color.text_click'))
-          .fontSize(14)
+          .fontSize(16)
+          .margin({ right: 2 })
           .onClick(() => {
             this.pageStack.pushPath({ name: 'Setting' })
           })
+        Text("源开启云上漫游！")
+          .fontWeight(StyleConstants.FONT_WEIGHT_SEVEN)
+          .fontColor($r('app.color.text_hint'))
+          .fontSize(15)
       }
+      .width(StyleConstants.FULL_WIDTH)
+      .height(StyleConstants.FULL_HEIGHT)
       .alignItems(VerticalAlign.Center)
       .justifyContent(FlexAlign.Center)
     }
     .width(StyleConstants.FULL_WIDTH)
-    .layoutWeight(1)
+    .height(StyleConstants.FULL_HEIGHT)
     .alignItems(HorizontalAlign.Center)
     .justifyContent(FlexAlign.SpaceBetween)
   }
 
   build() {
-    Column() {
-      Navigation(this.pageStack) {
-        Stack({ alignContent: Alignment.Bottom }){
-          Scroll(this.scrollController) {
-            Column() {
-              this.HeaderAnimation()
-              this.MenuGrid()
-
-              if (this.adapters.length > 0) {
-                this.RecommendedSongs()
-                this.RecommendedPlaylists()
-                this.RecommendedArtists()
-                this.TopLists()
-              } else {
-                this.EmptyDataSource()
-              }
-
-              // 底部填充高度 播控组件+底部导航栏避让高度
-              // Blank()
-              //   .height(StyleConstants.PLAYER_CONTROL_HEIGHT + px2vp(this.bottomRect))
-              //   .backgroundColor('transparent')
-            }
-            .layoutWeight(1)
-            .alignItems(HorizontalAlign.Center)  // 确保内容居中对齐
+    Navigation(this.pageStack) {
+      Stack({ alignContent: Alignment.Bottom }){
+        List({ scroller: this.scrollController }){
+          ListItem(){
+            this.HeaderAnimation()
           }
-          .width(StyleConstants.FULL_WIDTH)
-          .layoutWeight(1)
-          .backToTop(true)
-          .scrollBar(BarState.Off)
-          .edgeEffect(EdgeEffect.Spring)
-          .onWillScroll((_xOffset: number, _yOffset: number, scrollState: ScrollState, _scrollSource: ScrollSource)=>{
-            // 优化滚动期间的计算频率
-            if (scrollState === ScrollState.Scroll) {
-              const positionY = this.scrollController.currentOffset().yOffset
-
-              // 只有在下拉时才计算索引，减少计算量
-              if (positionY < 0) {
-                this.currentIndex = SlideDownControl.calculateCurrentIndex(positionY, 2)
-              } else if (this.currentIndex !== -1) {
-                this.currentIndex = -1
+          if (this.adapters.length > 0) {
+            if(this.recommendPlaylist.length > 0 && this.recommendSongs.length > 0
+            && this.recommendArtists.length > 0 && this.topList.length > 0){
+              ListItem(){
+                this.MenuGrid()
+              }
+              ListItem(){
+                this.RecommendedSongs()
+              }
+              ListItem(){
+                this.RecommendedPlaylists()
+              }
+              ListItem(){
+                this.RecommendedArtists()
+              }
+              ListItem(){
+                this.TopLists()
               }
             }
-          })
-          .onScrollStop(() => {
-            if (this.currentIndex >= 0) {
-              this.onMenuIconClick(this.currentIndex)
+          } else {
+            ListItem(){
+              this.EmptyDataSource()
+            }
+          }
+
+          ListItem(){
+            Row(){
+              Blank().height(StyleConstants.PLAYER_CONTROL_HEIGHT + 16)
+            }
+          }
+        }
+        .width(StyleConstants.FULL_WIDTH)
+        .height(StyleConstants.FULL_HEIGHT)
+        .layoutWeight(1)
+        .backToTop(true)
+        .scrollBar(BarState.Off)
+        .edgeEffect(EdgeEffect.Spring)
+        .onWillScroll((scrollOffset: number, scrollState: ScrollState, scrollSource: ScrollSource)=>{
+          // 优化滚动期间的计算频率
+          if (scrollState === ScrollState.Scroll) {
+            const positionY = this.scrollController.currentOffset().yOffset
+
+            // 只有在下拉时才计算索引，减少计算量
+            if (positionY < 0) {
+              this.currentIndex = SlideDownControl.calculateCurrentIndex(positionY, 2)
+            } else if (this.currentIndex !== -1) {
               this.currentIndex = -1
             }
-          })
-          .expandSafeArea()
-          // 主页底部避让高度：播控组件高度(60) + 播控组件下方margin值(16)
-          .padding({ bottom: (StyleConstants.PLAYER_CONTROL_HEIGHT + 16) })
+          }
+        })
+        .onScrollStop(() => {
+          if (this.currentIndex >= 0) {
+            this.onMenuIconClick(this.currentIndex)
+            this.currentIndex = -1
+          }
+        })
+        .expandSafeArea()
 
-          MiniPlaybackControl()
-        }
-        .height(StyleConstants.FULL_HEIGHT)
-        .width(StyleConstants.FULL_WIDTH)
+        MiniPlaybackControl()
       }
       .height(StyleConstants.FULL_HEIGHT)
       .width(StyleConstants.FULL_WIDTH)
-      .mode(NavigationMode.Stack)
-      .navDestination(this.PageMap)
-      .hideToolBar(true)
-      .hideBackButton(true)
-      .title({
-        builder: this.Title(),
-        height: 50,
-      })
-      .backgroundColor($r('app.color.page_background'))
     }
     .height(StyleConstants.FULL_HEIGHT)
     .width(StyleConstants.FULL_WIDTH)
+    .mode(NavigationMode.Stack)
+    .navDestination(this.PageMap)
+    .hideToolBar(true)
+    .hideBackButton(true)
+    .title({
+      builder: this.Title(),
+      height: 50,
+    })
+    .backgroundColor($r('app.color.page_background'))
   }
 }
