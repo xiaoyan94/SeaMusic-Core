@@ -74,7 +74,7 @@
     },
     {
       "name": "setting_button_normal",
-      "value": "#424242"
+      "value": "#FFFFFFFF"
     },
     {
       "name": "text_click",
@@ -115,6 +115,10 @@
     {
       "name": "card_background_two",
       "value": "#CCF3F3F3"
+    },
+    {
+      "name": "border_line",
+      "value": "#80696969"
     }
   ]
 }
