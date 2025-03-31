@@ -152,4 +152,8 @@ export const AboutSetting = [
         ToastUtil.showToast("跳转到浏览器失败！");
       });
   }),
+  new SettingItem("button", '个性化设置', undefined, undefined, () => {
+    AppStorage.setOrCreate("setting_page_sheet_content", "Personalized_settings")
+    AppStorage.setOrCreate("setting_page_sheet_show", true)
+  }),
 ]
