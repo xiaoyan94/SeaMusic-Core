@@ -37,7 +37,7 @@ export struct PlaylistList {
         }
         .width('100%')
         .listDirection(Axis.Vertical)
-        .divider({ strokeWidth: 0.5, color: $r('app.color.divider') })
+        .divider({ strokeWidth: 0.5, color: $r('app.color.divider'), startMargin: 16, endMargin: 16 })
         .backgroundColor($r('app.color.page_background'))
       }
     }
@@ -55,19 +55,12 @@ export struct PlaylistList {
           .width(58)
           .height(58)
           .objectFit(ImageFit.Cover)
-
-        if (playlist?.size) {
-          Text(`${playlist.size}首`)
-            .fontSize(10)
-            .fontColor(Color.White)
-            .backgroundColor('rgba(0, 0, 0, 0.7)')
-            .padding({ left: 4, right: 4, top: 1, bottom: 1 })
-        }
+          .borderRadius(8)
       }
       .margin({ right: 12 })
 
       // 歌单信息 - 层次分明的布局
-      Column() {
+      Column({ space: 12 }) {
         Text(playlist?.name || '未知歌单')
           .fontSize(15)
           .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
@@ -79,8 +72,8 @@ export struct PlaylistList {
         if (playlist.creator) {
           Row({ space: 4 }) {
             Image(cover(playlist?.creator?.avatar || '', 40))
-              .width(16)
-              .height(16)
+              .width(12)
+              .height(12)
               .borderRadius(8)
               .backgroundColor($r('app.color.tag_background'))
 
@@ -89,8 +82,20 @@ export struct PlaylistList {
               .fontColor($r('app.color.text_secondary'))
               .maxLines(1)
               .textOverflow({ overflow: TextOverflow.Ellipsis })
+
+            if (playlist?.size) {
+
+              Text('·')
+                .fontSize(12)
+                .fontColor($r('app.color.text_secondary'))
+                .maxLines(1)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+
+              Text(`${playlist.size}首`)
+                .fontSize(12)
+                .fontColor($r('app.color.text_secondary'))
+            }
           }
-          .margin({ top: 4 })
         }
       }
       .layoutWeight(1)

@@ -20,6 +20,7 @@ import { MiniPlaybackControl } from '../component/MiniPlaybackControl'
 import { MultiSearch } from '../view/MultiSearch'
 import { SlideDownControl } from '../util/SlideDownController'
 import { LazyData } from '@pie/lazy-data'
+import {HorizontalMode}from '../util/HorizontalCheck'
 
 // 缓存常用值以避免重复计算
 const COLUMNS_TEMPLATE_LG = '1fr 1fr 1fr 1fr'
@@ -46,7 +47,7 @@ struct Index {
 
   // 避让导航栏高度
   @StorageProp('bottomRect') bottomRect: number = 0
-
+  @State HorizontalMode_ctrl:string =  PreferencesCache.getUserPreference('HorizontalMode_ctrl','0')
   // 预先计算并缓存必要的布局值
   private coverWidth: number = 120
   private segmentPadding: number = 4
@@ -54,7 +55,7 @@ struct Index {
   async aboutToAppear() {
     // 注册断点系统
     this.breakpointSystem.register()
-
+    HorizontalMode(this.HorizontalMode_ctrl==='1')
     // 立即初始化数据
     this.initData()
   }
@@ -205,6 +206,7 @@ struct Index {
           .height(24)
           .opacity(this.currentIndex >= 1 ? 1 : 0)
           .scale({ x: this.currentIndex >= 1 ? 1 : 0.5, y: this.currentIndex >= 1 ? 1 : 0.5 })
+          .margin({ right: 8 })
           .animation({
             duration: 250,
             curve: Curve.FastOutSlowIn
@@ -214,7 +216,7 @@ struct Index {
       Text(SlideDownControl.getIndexActionText(this.currentIndex))
         .fontColor($r('app.color.text_secondary'))
         .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
-        .margin({ left: 8 })
+        // .margin({ left: 8 })
         .opacity(this.currentIndex >= 0 ? 1 : 0)
         .translate({ y: this.currentIndex >= 0 ? 0 : -20 })
         .animation({

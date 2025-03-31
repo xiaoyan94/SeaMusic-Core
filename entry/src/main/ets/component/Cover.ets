@@ -92,20 +92,24 @@ export struct Cover {
         } else {
           if (this.title) {
             Text(this.title)
+              .width(StyleConstants.FULL_WIDTH)
               .fontSize(16)
               .fontColor($r('app.color.text_title'))
               .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
-              .maxLines(2)
+              .maxLines(1)
               .textOverflow({ overflow: TextOverflow.Ellipsis })
+              .heightAdaptivePolicy(TextHeightAdaptivePolicy.MAX_LINES_FIRST)
           }
 
           if (this.subtitle) {
             Text(this.subtitle)
+              .width(StyleConstants.FULL_WIDTH)
               .fontSize(14)
               .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
               .fontColor($r('app.color.text_secondary'))
               .maxLines(1)
               .textOverflow({ overflow: TextOverflow.Ellipsis })
+              .heightAdaptivePolicy(TextHeightAdaptivePolicy.MAX_LINES_FIRST)
           }
         }
       }
