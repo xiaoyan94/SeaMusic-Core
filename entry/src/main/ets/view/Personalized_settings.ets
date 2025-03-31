@@ -16,6 +16,8 @@ export struct Personalized_settings{
         Blank()
           .layoutWeight(1)
         Toggle({ type: ToggleType.Switch, isOn: this.HorizontalMode_ctrl==='1'?true:false})
+          .switchPointColor($r('app.color.icon_normal'))
+          .selectedColor($r('app.color.back_button_normal'))
           .onChange((isOn: boolean) => {
             if (isOn) {
               this.HorizontalMode_ctrl ='1'
