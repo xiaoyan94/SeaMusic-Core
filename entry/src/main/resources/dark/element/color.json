@@ -111,6 +111,10 @@
     {
       "name": "button_background",
       "value": "#2A2A2A"
+    },
+    {
+      "name": "card_background_two",
+      "value": "#242424"
     }
   ]
 }
