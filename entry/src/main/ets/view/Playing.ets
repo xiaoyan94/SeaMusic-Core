@@ -1023,7 +1023,7 @@ struct Playing {
     .onWillHide(()=>{this.windowClass?.setWindowLayoutFullScreen(false)})
     .gesture(
       SwipeGesture({
-        // 竖直方向滑动
+        // 竖直方向滑动啊
         direction: SwipeDirection.Vertical,
       }).onAction((event) => {
         if (event.angle < -45 && event.angle > -135) {
