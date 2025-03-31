@@ -115,6 +115,10 @@
     {
       "name": "border_line",
       "value": "#80969696"
+    },
+    {
+      "name": "card_background_two",
+      "value": "#242424"
     }
   ]
 }

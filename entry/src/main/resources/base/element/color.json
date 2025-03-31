@@ -113,6 +113,10 @@
       "value": "#FFFFFF"
     },
     {
+      "name": "card_background_two",
+      "value": "#CCF3F3F3"
+    },
+    {
       "name": "border_line",
       "value": "#80696969"
     }
