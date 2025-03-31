@@ -18,7 +18,6 @@ import { MiniPlaybackControl } from "../component/MiniPlaybackControl";
 export struct PlayList {
   @Consume('NavPathStack') pageStack: NavPathStack;
   @State currentIndex: number = -1
-  @State albumRows: number = 2
   @StorageLink("current_playlist_data") playlist: Playlist | null = null
   @Watch('onBreakpointChange') @StorageProp('currentBreakpoint') currentBreakpoint: string = 'sm'
   private songDataSource: SongDataSourcePrefetching = new SongDataSourcePrefetching(null);
@@ -101,7 +100,7 @@ export struct PlayList {
             .fontColor($r('app.color.text_primary'))
             .margin({ left: 8 })
         }
-        .shadow(ShadowStyle.OUTER_DEFAULT_MD)
+        .shadow(ShadowStyle.OUTER_DEFAULT_XS)
         .height(40)
         .width(120)
         // .layoutWeight(1)
@@ -127,7 +126,7 @@ export struct PlayList {
         .width(40)
         .height(40)
         .borderRadius(8)
-        .shadow(ShadowStyle.OUTER_DEFAULT_MD)
+        .shadow(ShadowStyle.OUTER_DEFAULT_XS)
         .backgroundColor($r('app.color.setting_item_background'))
         .justifyContent(FlexAlign.Center)
         .onClick(() => {
@@ -251,9 +250,6 @@ export struct PlayList {
             this.currentIndex = index
           } else {
             this.currentIndex = -1
-          }
-          if (positionY > 56) {
-            this.albumRows = 1
           }
         }
       })
@@ -490,14 +486,45 @@ export struct PlayList {
               }
             } else {
               // 显示空状态
-              Column() {
-                Text('暂无歌曲')
-                  .fontSize(16)
-                  .fontColor($r('app.color.text_secondary'))
+              List({ scroller: this.scrollController }){
+                ListItem() {
+                  // 下拉提示动画
+                  this.HeaderAnimation()
+                }
+                ListItem(){
+                  Column() {
+                    Text('暂无歌曲')
+                      .fontSize(16)
+                      .fontColor($r('app.color.text_secondary'))
+                  }
+                  .width(StyleConstants.FULL_WIDTH)
+                  .height(StyleConstants.FULL_HEIGHT)
+                  .justifyContent(FlexAlign.Center)
+                }
+                ListItem(){
+                  Column(){
+                    // 底部避让空间，高度为播控高度(64) + 播控底部padding高度(16)
+                    Blank().height(StyleConstants.PLAYER_CONTROL_HEIGHT + 16)
+                  }
+                }
               }
+              .onWillScroll((_scrollOffset: number, scrollState: ScrollState, _scrollSource: ScrollSource) => {
+                if (scrollState === ScrollState.Scroll) {
+                  const positionY = this.scrollController.currentOffset().yOffset
+                  if (positionY < 0) {
+                    const index = SlideDownControl.calculateCurrentIndex(this.scrollController.currentOffset().yOffset, 0)
+                    this.currentIndex = index
+                  } else {
+                    this.currentIndex = -1
+                  }
+                }
+              })
+              .onScrollStop(() => {
+                this.onMenuIconClick(this.currentIndex)
+                this.currentIndex = -1
+              })
               .width(StyleConstants.FULL_WIDTH)
-              .height('80%')
-              .justifyContent(FlexAlign.Center)
+              .height(StyleConstants.FULL_HEIGHT)
             }
           }
           .layoutWeight(1)

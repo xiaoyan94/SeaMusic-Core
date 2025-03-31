@@ -88,7 +88,7 @@ struct Library {
       })
     }
     .width(StyleConstants.FULL_WIDTH)
-    .height('70%')
+    .height(StyleConstants.FULL_HEIGHT)
     .justifyContent(FlexAlign.Center)
     .alignItems(HorizontalAlign.Center)
   }
