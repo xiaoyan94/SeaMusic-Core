@@ -43,7 +43,9 @@ export struct Personalized_settings{
   build() {
     NavDestination(){
       Column(){
-        this.HorizontalMode_Ctrl()
+        Scroll(){
+          this.HorizontalMode_Ctrl()
+        }
       }.padding(16)
     }.title('个性化设置').hideToolBar(true)
 
