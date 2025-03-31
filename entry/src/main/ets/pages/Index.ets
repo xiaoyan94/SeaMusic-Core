@@ -205,6 +205,7 @@ struct Index {
           .height(24)
           .opacity(this.currentIndex >= 1 ? 1 : 0)
           .scale({ x: this.currentIndex >= 1 ? 1 : 0.5, y: this.currentIndex >= 1 ? 1 : 0.5 })
+          .margin({ right: 8 })
           .animation({
             duration: 250,
             curve: Curve.FastOutSlowIn
@@ -214,7 +215,7 @@ struct Index {
       Text(SlideDownControl.getIndexActionText(this.currentIndex))
         .fontColor($r('app.color.text_secondary'))
         .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
-        .margin({ left: 8 })
+        // .margin({ left: 8 })
         .opacity(this.currentIndex >= 0 ? 1 : 0)
         .translate({ y: this.currentIndex >= 0 ? 0 : -20 })
         .animation({
