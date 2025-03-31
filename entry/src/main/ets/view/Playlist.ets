@@ -32,7 +32,9 @@ export struct PlayList {
   @State isWideScreen: boolean = false
   @StorageLink("cache_data_create_time") cacheTime: number = -1
   @StorageLink("current_playing_song") song: Song | null = null
-  @StorageProp('bottomRect') bottomRect: number = 0;  // 获取底部安全区域高度
+  @StorageProp('bottomRect') bottomRect: number = 0;
+  @StorageProp('topRect') topRect: number = 0;
+  @StorageProp('winHeight') winHeight: number = 0;
 
   @Builder
   Title() {
@@ -209,6 +211,14 @@ export struct PlayList {
             // .margin({ top: index === 0 ? 12 : 0})
             .key(`${song.id}-${index}`)
           }, (song: Song, index: number) => `${song.id}-${index}`)
+
+          ListItem(){
+            if (this.countSubVp() > 0) {
+              Row(){
+                Blank().height(this.countSubVp())
+              }
+            }
+          }
         }
 
         ListItem() {
@@ -557,5 +567,14 @@ export struct PlayList {
       left: 16,
       right: 16
     })
+  }
+
+  countSubVp(): number {
+    let sub: number = 0
+    if(this.songDataSource.totalCount() <= 15){
+      // 填补高度=屏幕高度 - title高度50 - (播放组件高度40+上下padding高度2*4) - 状态栏高度 - 导航栏高度
+      sub = px2vp(this.winHeight) - (50+40+12*2+(68+2*4)*this.songDataSource.totalCount()) - px2vp(this.topRect) - px2vp(this.bottomRect)
+    }
+    return sub > 0 ? sub : 0
   }
 }
