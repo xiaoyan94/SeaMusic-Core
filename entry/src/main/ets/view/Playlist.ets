@@ -101,7 +101,7 @@ export struct PlayList {
             .fontColor($r('app.color.text_primary'))
             .margin({ left: 8 })
         }
-        .shadow(ShadowStyle.OUTER_DEFAULT_MD)
+        .shadow(ShadowStyle.OUTER_DEFAULT_XS)
         .height(40)
         .width(120)
         // .layoutWeight(1)
@@ -127,7 +127,7 @@ export struct PlayList {
         .width(40)
         .height(40)
         .borderRadius(8)
-        .shadow(ShadowStyle.OUTER_DEFAULT_MD)
+        .shadow(ShadowStyle.OUTER_DEFAULT_XS)
         .backgroundColor($r('app.color.setting_item_background'))
         .justifyContent(FlexAlign.Center)
         .onClick(() => {
