@@ -1020,7 +1020,7 @@ struct Playing {
     .width(StyleConstants.FULL_WIDTH)
     .height(StyleConstants.FULL_HEIGHT)
     .onWillShow(()=>{if(this.Playing_Next){this.windowClass?.setWindowLayoutFullScreen(true)}})
-    .onWillDisappear(()=>{if(this.Playing_Next){this.windowClass?.setWindowLayoutFullScreen(false)}})
+    .onWillHide(()=>{this.windowClass?.setWindowLayoutFullScreen(false)})
     .gesture(
       SwipeGesture({
         // 竖直方向滑动
