@@ -646,7 +646,7 @@ export struct Setting {
   sheet() {
     if (this.nowSheet === "about") {
       this.AboutPage()
-    }else if (this.nowSheet === "setting"){
+    }else if (this.nowSheet === "form"){
       this.FormContent()
     }else if (this.nowSheet === "Personalized_settings"){
       this.Personalized_Settings()
