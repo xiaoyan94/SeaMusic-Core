@@ -29,6 +29,7 @@ export function isHorizontalMode(): boolean {
 //HorizontalMode
 //true为设置窗口方向为传感器跟随系统自动旋转模式。
 //false为设置窗口方向为传感器自动旋转模式。
+
 export function  HorizontalMode(judge:boolean){
   try {
     if(judge===true){

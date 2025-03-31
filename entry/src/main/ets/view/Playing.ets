@@ -14,6 +14,7 @@ import { SourceAdapter } from '../adapter'
 import { TimerSelector } from '../component/TimerSelector'
 import {isHorizontalMode} from '../util/HorizontalCheck'
 import {screen_on} from '../util/On_screen_control'
+import { window } from '@kit.ArkUI';
 @Builder
 export function PlayingBuilder() {
   Playing()
@@ -43,7 +44,9 @@ struct Playing {
   @State isHeartButtonPressed: boolean = false
   @State isMoreButtonPressed: boolean = false
   @State isBackButtonPressed: boolean = false
-
+  @State windowClass: window.Window | null = null //窗口管理器
+  @State statusHeight: number = 0 //状态栏高度
+  @State bottomAvoidAreaHeight: number = 0 //手机底部规避区域高度
   @State Playing_Next: boolean = true
   private updateTimer: number = -1
   //TAB控制
@@ -271,6 +274,17 @@ struct Playing {
 
 
   async aboutToAppear() {
+    window.getLastWindow(getContext(this), (err, windowClass) => {
+      if (!err.code) { //保存窗口管理器
+        this.windowClass = windowClass //获取状态栏高度
+        this.statusHeight =
+          px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height) //获取手机底部规避区域高度
+        this.bottomAvoidAreaHeight =
+          px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR).bottomRect.height)
+        windowClass.setWindowLayoutFullScreen(true)
+
+      }
+    })
     const player = await avPlayerManager.getAVPlayerInstance()
     this.Playing_Next= isHorizontalMode()
     // 初始化当前时间和持续时间
@@ -963,12 +977,13 @@ struct Playing {
           else if(this.isWideScreen && this.Playing_Next){
             this.Playing_HorizontalMode()
           } else {
+            Column().height(this.statusHeight)
             this.Title()
             // 窄屏布局 - Tabs切换
             Tabs({ barPosition: BarPosition.End, index: this.selectedTabIndex,controller:this.controller }) {
               TabContent() {
                 // 播放内容
-                this.PlayingContent()
+                Column(){this.PlayingContent()}.padding({bottom:this.bottomAvoidAreaHeight})
               }
               .transition({ type: TransitionType.All, opacity: 0.0, translate: { x: -20 } })
 
@@ -1004,6 +1019,8 @@ struct Playing {
     .expandSafeArea()
     .width(StyleConstants.FULL_WIDTH)
     .height(StyleConstants.FULL_HEIGHT)
+    .onWillShow(()=>{if(this.Playing_Next){this.windowClass?.setWindowLayoutFullScreen(true)}})
+    .onWillDisappear(()=>{if(this.Playing_Next){this.windowClass?.setWindowLayoutFullScreen(false)}})
     .gesture(
       SwipeGesture({
         // 竖直方向滑动
