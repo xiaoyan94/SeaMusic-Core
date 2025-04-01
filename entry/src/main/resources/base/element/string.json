@@ -118,11 +118,11 @@
     },
     {
       "name": "EntryFormAbility_desc",
-      "value": "form_description"
+      "value": "音乐服务卡片"
     },
     {
       "name": "EntryFormAbility_label",
-      "value": "form_label"
+      "value": "服务卡片"
     },
     {
       "name": "widget_display_name_recommended",
