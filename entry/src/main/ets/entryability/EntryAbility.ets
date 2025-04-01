@@ -90,7 +90,6 @@ export default class EntryAbility extends UIAbility {
       AppStorage.setOrCreate('bottomRect', windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).bottomRect.height);
       // 监听避让高度变化
       windowClass.on('avoidAreaChange', (avoidArea) => {
-        console.log("避让高度和宽度："+avoidArea.area.topRect.height+" "+avoidArea.area.bottomRect.height);
         AppStorage.setOrCreate('topRect', avoidArea.area.topRect.height);
         AppStorage.setOrCreate('bottomRect', avoidArea.area.bottomRect.height);
       });

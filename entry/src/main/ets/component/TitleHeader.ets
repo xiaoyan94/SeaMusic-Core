@@ -56,7 +56,6 @@ export struct TitleHeader {
             .fontWeight(StyleConstants.FONT_WEIGHT_SEVEN)
             .fontSize($r('app.float.title_font_size'))
             .maxLines(1)
-            .margin({ top: 2 })
           // 占位，把“返回”挤出屏幕
           Blank()
         }
@@ -69,7 +68,6 @@ export struct TitleHeader {
           .fontWeight(StyleConstants.FONT_WEIGHT_SEVEN)
           .fontSize($r('app.float.title_font_size'))
           .maxLines(1)
-          .margin({ top: 2 })
           .padding({ left: 16 })  // 与主页标题左padding一致
 
         if (this.rightContent) {
