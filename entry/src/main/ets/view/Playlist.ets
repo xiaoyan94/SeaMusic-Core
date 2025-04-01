@@ -18,7 +18,6 @@ import { MiniPlaybackControl } from "../component/MiniPlaybackControl";
 export struct PlayList {
   @Consume('NavPathStack') pageStack: NavPathStack;
   @State currentIndex: number = -1
-  @State albumRows: number = 2
   @StorageLink("current_playlist_data") playlist: Playlist | null = null
   @Watch('onBreakpointChange') @StorageProp('currentBreakpoint') currentBreakpoint: string = 'sm'
   private songDataSource: SongDataSourcePrefetching = new SongDataSourcePrefetching(null);
@@ -32,7 +31,9 @@ export struct PlayList {
   @State isWideScreen: boolean = false
   @StorageLink("cache_data_create_time") cacheTime: number = -1
   @StorageLink("current_playing_song") song: Song | null = null
-  @StorageProp('bottomRect') bottomRect: number = 0;  // 获取底部安全区域高度
+  @StorageProp('bottomRect') bottomRect: number = 0;
+  @StorageProp('topRect') topRect: number = 0;
+  @StorageProp('winHeight') winHeight: number = 0;
 
   @Builder
   Title() {
@@ -99,7 +100,7 @@ export struct PlayList {
             .fontColor($r('app.color.text_primary'))
             .margin({ left: 8 })
         }
-        .shadow(ShadowStyle.OUTER_DEFAULT_MD)
+        .shadow(ShadowStyle.OUTER_DEFAULT_XS)
         .height(40)
         .width(120)
         // .layoutWeight(1)
@@ -125,7 +126,7 @@ export struct PlayList {
         .width(40)
         .height(40)
         .borderRadius(8)
-        .shadow(ShadowStyle.OUTER_DEFAULT_MD)
+        .shadow(ShadowStyle.OUTER_DEFAULT_XS)
         .backgroundColor($r('app.color.setting_item_background'))
         .justifyContent(FlexAlign.Center)
         .onClick(() => {
@@ -209,6 +210,14 @@ export struct PlayList {
             // .margin({ top: index === 0 ? 12 : 0})
             .key(`${song.id}-${index}`)
           }, (song: Song, index: number) => `${song.id}-${index}`)
+
+          ListItem(){
+            if (this.countSubVp() > 0) {
+              Row(){
+                Blank().height(this.countSubVp())
+              }
+            }
+          }
         }
 
         ListItem() {
@@ -241,9 +250,6 @@ export struct PlayList {
             this.currentIndex = index
           } else {
             this.currentIndex = -1
-          }
-          if (positionY > 56) {
-            this.albumRows = 1
           }
         }
       })
@@ -480,14 +486,46 @@ export struct PlayList {
               }
             } else {
               // 显示空状态
-              Column() {
-                Text('暂无歌曲')
-                  .fontSize(16)
-                  .fontColor($r('app.color.text_secondary'))
+              List({ scroller: this.scrollController }){
+                ListItem() {
+                  // 下拉提示动画
+                  this.HeaderAnimation()
+                }
+                ListItem(){
+                  Column() {
+                    Text('暂无歌曲')
+                      .fontWeight(StyleConstants.FONT_WEIGHT_SEVEN)
+                      .fontColor($r('app.color.text_hint'))
+                      .fontSize(16)
+                  }
+                  .width(StyleConstants.FULL_WIDTH)
+                  .height(StyleConstants.FULL_HEIGHT)
+                  .justifyContent(FlexAlign.Center)
+                }
+                ListItem(){
+                  Column(){
+                    // 底部避让空间，高度为播控高度(64) + 播控底部padding高度(16)
+                    Blank().height(StyleConstants.PLAYER_CONTROL_HEIGHT + 16)
+                  }
+                }
               }
+              .onWillScroll((_scrollOffset: number, scrollState: ScrollState, _scrollSource: ScrollSource) => {
+                if (scrollState === ScrollState.Scroll) {
+                  const positionY = this.scrollController.currentOffset().yOffset
+                  if (positionY < 0) {
+                    const index = SlideDownControl.calculateCurrentIndex(this.scrollController.currentOffset().yOffset, 0)
+                    this.currentIndex = index
+                  } else {
+                    this.currentIndex = -1
+                  }
+                }
+              })
+              .onScrollStop(() => {
+                this.onMenuIconClick(this.currentIndex)
+                this.currentIndex = -1
+              })
               .width(StyleConstants.FULL_WIDTH)
-              .height('80%')
-              .justifyContent(FlexAlign.Center)
+              .height(StyleConstants.FULL_HEIGHT)
             }
           }
           .layoutWeight(1)
@@ -557,5 +595,14 @@ export struct PlayList {
       left: 16,
       right: 16
     })
+  }
+
+  countSubVp(): number {
+    let sub: number = 0
+    if(this.songDataSource.totalCount() <= 15){
+      // 填补高度=屏幕高度 - title高度50 - (播放组件高度40+上下padding高度2*4) - 状态栏高度 - 导航栏高度
+      sub = px2vp(this.winHeight) - (50+40+12*2+(68+2*4)*this.songDataSource.totalCount()) - px2vp(this.topRect) - px2vp(this.bottomRect)
+    }
+    return sub > 0 ? sub : 0
   }
 }

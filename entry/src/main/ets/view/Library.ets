@@ -20,7 +20,10 @@ struct Library {
   @StorageProp('currentBreakpoint') currentBreakpoint: string = 'sm';
   @State isLoading: boolean = false;
   private scrollController: Scroller = new Scroller();
-  @StorageProp('bottomRect') bottomRect: number = 0;  // 获取底部安全区域高度
+  @StorageProp('bottomRect') bottomRect: number = 0;
+  @StorageProp('topRect') topRect: number = 0;
+  @StorageProp('winHeight') winHeight: number = 0;
+
 
   onMenuIconClick(index: number) {
     if (index === 0) {
@@ -85,7 +88,7 @@ struct Library {
       })
     }
     .width(StyleConstants.FULL_WIDTH)
-    .height('70%')
+    .height(StyleConstants.FULL_HEIGHT)
     .justifyContent(FlexAlign.Center)
     .alignItems(HorizontalAlign.Center)
   }
@@ -137,57 +140,60 @@ struct Library {
           // 标题
           this.Title()
           // 主内容
-          Scroll(this.scrollController){
-            List() {
-              // 下拉提示动画
-              this.HeaderAnimation()
-              // 如果没有歌单，显示空状态
-              if (this.playlists.length === 0) {
-                ListItem() {
-                  this.EmptyState()
-                }
-                .width(StyleConstants.FULL_WIDTH)
-              } else {
-                // 我的歌单部分
-                ListItem() {
-                  PlaylistList({
-                    playlists: this.playlists,
-                    onPlaylistSelected: (item: Playlist) => {
-                      PushPathHelper.pushPath(this.pageStack, "Playlist", async () => {
-                        const playlist = await SourceAdapter.getPlaylistDetail(item)
-                        AppStorage.setOrCreate('current_playlist_data', playlist)
-                      })
-                    }
-                  })
-                    .padding({ top: 12 })
-                }
-                .width(StyleConstants.FULL_WIDTH)
+          List({ scroller: this.scrollController }) {
+            // 下拉提示动画
+            this.HeaderAnimation()
+            // 如果没有歌单，显示空状态
+            if (this.playlists.length === 0) {
+              ListItem() {
+                this.EmptyState()
               }
+              .width(StyleConstants.FULL_WIDTH)
+            } else {
+              // 我的歌单部分
+              ListItem() {
+                PlaylistList({
+                  playlists: this.playlists,
+                  onPlaylistSelected: (item: Playlist) => {
+                    PushPathHelper.pushPath(this.pageStack, "Playlist", async () => {
+                      const playlist = await SourceAdapter.getPlaylistDetail(item)
+                      AppStorage.setOrCreate('current_playlist_data', playlist)
+                    })
+                  }
+                })
+                  .padding({ top: 12 })
+              }
+              .width(StyleConstants.FULL_WIDTH)
 
-              // 添加底部空白区域，避开播放控制器和底部安全区域
-              // ListItem() {
-              //   Column() {
-              //     // 使用Column包裹空白区域，符合ArkTS规范
-              //   }
-              //   .width(StyleConstants.FULL_WIDTH)
-              //   .height(StyleConstants.PLAYER_CONTROL_HEIGHT + px2vp(this.bottomRect))
-              //   .backgroundColor('transparent')
-              // }
+              if(this.countSubVp() > 0) {
+                ListItem(){
+                  Column(){
+                    Blank().height(this.countSubVp())
+                  }
+                }
+              }
             }
-            .width(StyleConstants.FULL_WIDTH)
-            .height('auto')
-            .expandSafeArea()
-            .scrollBar(BarState.Off)
-            .edgeEffect(EdgeEffect.None)
+
+            // 添加底部空白区域，避开播放控制器和底部安全区域
+            ListItem() {
+              Column() {
+                // 使用Column包裹空白区域，符合ArkTS规范
+                // 主页底部避让高度：播控组件高度(60) + 播控组件下方margin值(16)
+              }
+              .width(StyleConstants.FULL_WIDTH)
+              .height(StyleConstants.PLAYER_CONTROL_HEIGHT + 16)
+              .backgroundColor('transparent')
+            }
           }
           .width(StyleConstants.FULL_WIDTH)
+          .height(StyleConstants.FULL_HEIGHT)
           .layoutWeight(1)
           .edgeEffect(EdgeEffect.Spring)
           .expandSafeArea()
           .backToTop(true)
           // 主页底部避让高度：播控组件高度(60) + 播控组件下方margin值(16)
-          .padding({ bottom: (StyleConstants.PLAYER_CONTROL_HEIGHT + 16) })
-          .onWillScroll((xOffset: number, yOffset: number, scrollState: ScrollState, scrollSource: ScrollSource) => {
+          // .padding({ bottom: (StyleConstants.PLAYER_CONTROL_HEIGHT + 16) })
+          .onWillScroll((scrollOffset: number, scrollState: ScrollState, scrollSource: ScrollSource) => {
             if (scrollState === ScrollState.Scroll) {
               const positionY = this.scrollController.currentOffset().yOffset;
               if (positionY < 0) {
@@ -237,5 +243,14 @@ struct Library {
         }
       })
     )
+  }
+
+  countSubVp(): number{
+    let sub: number = 0
+    if(this.playlists.length <= 15){
+      // 填补高度=屏幕高度 - title高度50 - 上方padding高度12 - 单一组件高度(74+0.5)*歌曲数量 - 状态栏高度 - 导航栏高度
+      sub = px2vp(this.winHeight) - ((74+0.5)*(this.playlists.length)+50+12) - px2vp(this.topRect) - px2vp(this.bottomRect)
+    }
+    return sub > 0 ? sub : 0
   }
 }

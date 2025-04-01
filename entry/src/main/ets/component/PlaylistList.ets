@@ -23,8 +23,8 @@ export struct PlaylistList {
             .fontSize(16)
             .fontColor($r('app.color.text_secondary'))
         }
-        .width('100%')
-        .height(200)
+        .width(StyleConstants.FULL_WIDTH)
+        .height(StyleConstants.FULL_HEIGHT)
         .justifyContent(FlexAlign.Center)
       } else {
         // 歌单列表展示
@@ -111,7 +111,7 @@ export struct PlaylistList {
     }
     .width('100%')
     .justifyContent(FlexAlign.SpaceBetween)
-    .padding({ left: 16, right: 16, top: 10, bottom: 10 })
+    .padding({ left: 16, right: 16, top: 0, bottom: 0 })
     .height(74)
     .backgroundColor($r('app.color.card_background'))
     .onClick(() => {
