@@ -9,6 +9,7 @@ import { util } from "@kit.ArkTS";
 import { DownloadManager } from "./DownloadUtils";
 import { ContextHelper } from "./ContextHelper";
 import { SourceAdapter } from "../adapter";
+import FormUtils from "./FormUtils";
 
 async function checkCacheFileExists(cache: SongCacheItem, key: string) {
   if (!cache || !cache.path) {
@@ -107,6 +108,7 @@ const defaultLoveSongCallback = (_assetId: string) => {
 
 const playSong = async (song: Song, path: string, cached: boolean, pause: boolean) => {
   avPlayerManager.stop().then(async () => {
+    FormUtils.updateMusicControlCards(song,!pause)
     await avPlayerManager.playByPath(path, cached ? undefined : song.meta?.size, pause, {
       assetId: `track-${song.id}-${song.source?.id}`,
       duration: song.duration,
