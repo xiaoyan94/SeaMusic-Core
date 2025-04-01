@@ -53,7 +53,7 @@ export struct Setting {
   @StorageProp('winHeight') winHeight: number = 0;
   @StorageProp('bottomRect') bottomRect: number = 0;
   @StorageProp('topRect') topRect: number = 0;
-  @State groupHeight: Length = 0
+  @State groupHeight: number = 0
 
   calculateCurrentIndex(offset: number): number {
     offset = Math.abs(offset)
@@ -714,8 +714,7 @@ export struct Setting {
             ListItem().height(80).backgroundColor('transparent')
           }
           .onAreaChange((oldValue: Area, newValue: Area) => {
-            console.info(`Ace: on area change, oldValue is ${JSON.stringify(oldValue)} value is ${JSON.stringify(newValue)}`)
-            this.groupHeight = newValue.height
+            this.groupHeight = newValue.height as number
           })
           .translate({ y: this.translateY })
           .animation({
@@ -727,7 +726,7 @@ export struct Setting {
           ListItem(){
             Row(){
               // 监控ListItemGroup高度变化，随时调整List下方补充高度，winHeight - group高度 - 标题高度 - 避让高度
-              Blank().height(px2vp(this.winHeight) - parseInt(JSON.stringify(this.groupHeight)) - 50 - px2vp(this.bottomRect+this.topRect))
+              Blank().height(this.getBlankHeight())
             }
           }
         }
@@ -780,6 +779,11 @@ export struct Setting {
         }
       })
     )
+  }
+
+  getBlankHeight(): Length {
+    let sub = px2vp(this.winHeight) - this.groupHeight - 50 - px2vp(this.bottomRect+this.topRect)
+    return sub > 0 ? sub : 0
   }
 
   @Builder

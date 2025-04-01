@@ -30,6 +30,7 @@ const DEFAULT_COVER_SIZE = 256
 @Entry
 @Component
 struct Index {
+  @State blankHeight: number = 0
   @Provide('NavPathStack') pageStack: NavPathStack = new NavPathStack()
   @StorageProp('currentBreakpoint') currentBreakpoint: string = 'sm'
   private breakpointSystem = new BreakpointSystem()
@@ -47,6 +48,8 @@ struct Index {
 
   // 避让导航栏高度
   @StorageProp('bottomRect') bottomRect: number = 0
+  @StorageProp('topRect') topRect: number = 0
+  @StorageProp('winHeight') winHeight: number = 0
   @State HorizontalMode_ctrl:string =  PreferencesCache.getUserPreference('HorizontalMode_ctrl','0')
   // 预先计算并缓存必要的布局值
   private coverWidth: number = 120
@@ -439,6 +442,27 @@ struct Index {
               ListItem(){
                 this.TopLists()
               }
+            } else {
+              ListItem(){
+                this.MenuGrid()
+              }
+              .onAreaChange((oldValue: Area, newValue: Area) => {
+                this.blankHeight = newValue.height as number
+              })
+              ListItem(){
+                Row(){
+                  Column() {
+                    Text('当前音源暂无推荐！')
+                      .fontWeight(StyleConstants.FONT_WEIGHT_SEVEN)
+                      .fontColor($r('app.color.text_hint'))
+                      .fontSize(16)
+                  }
+                  .width(StyleConstants.FULL_WIDTH)
+                  .height(StyleConstants.FULL_HEIGHT)
+                  .justifyContent(FlexAlign.Center)
+                }
+                .height(this.getBlankHeight())
+              }
             }
           } else {
             ListItem(){
@@ -495,5 +519,10 @@ struct Index {
       height: 50,
     })
     .backgroundColor($r('app.color.page_background'))
+  }
+
+  getBlankHeight(): number {
+    let sub = px2vp(this.winHeight) - this.blankHeight - 50 - px2vp(this.bottomRect+this.topRect)
+    return sub > 0 ? sub : 0
   }
 }
