@@ -13,6 +13,8 @@ import { SlideDownControl } from "../util/SlideDownController";
 import { AboutSetting, PlayerSetting, SoftwareSetting } from "../viewmodel/SettingGroupData";
 import { About } from "./About";
 import {Personalized_settings}from '../view/Personalized_settings'
+import { window } from '@kit.ArkUI';
+
 @Component
 export struct Setting {
   @State translateY: number = 16;
@@ -21,6 +23,7 @@ export struct Setting {
   @State isExpanded: boolean = false
   @StorageLink("setting_page_sheet_show") isShow: boolean = false
   @State currentStep: number = 0
+  @State windowClass: window.Window | null = null //窗口管理器
   @State formData: SourceConfig = {
     id: `user_data_source_${Date.now()}`,
     name: '',
@@ -51,8 +54,8 @@ export struct Setting {
   @StorageLink("about_page_show") aboutPageShow: boolean = false
   @StorageLink("setting_page_sheet_content") nowSheet: string = "form"
   @StorageProp('winHeight') winHeight: number = 0;
-  @StorageProp('bottomRect') bottomRect: number = 0;
-  @StorageProp('topRect') topRect: number = 0;
+  @StorageLink('bottomAvoidAreaHeight') bottomRect: number = 0
+  @StorageLink('statusHeight') topRect: number = 0
   @State groupHeight: Length = 0
 
   calculateCurrentIndex(offset: number): number {
@@ -658,6 +661,7 @@ export struct Setting {
   }
   build() {
     NavDestination() {
+      Column().height(this.topRect)
       this.Title()
 
       Column() {
@@ -734,6 +738,7 @@ export struct Setting {
         .borderRadius(8)
         .backToTop(true)
         .layoutWeight(1)
+        .contentEndOffset(this.bottomRect)
         .scrollBar(BarState.Off)
         .edgeEffect(EdgeEffect.Spring)
         .width(StyleConstants.FULL_WIDTH)
@@ -765,6 +770,46 @@ export struct Setting {
     .expandSafeArea()
     .width(StyleConstants.FULL_WIDTH)
     .height(StyleConstants.FULL_HEIGHT)
+    .onSizeChange(()=>{
+      window.getLastWindow(getContext(this), (err, windowClass) => {
+        if (!err.code) { //保存窗口管理器
+          this.windowClass = windowClass //获取状态栏高度
+          window.getLastWindow(getContext(this), (err, windowClass) => {
+            if (!err.code) { //保存窗口管理器
+              this.windowClass = windowClass //获取状态栏高度
+              this.windowClass?.setWindowLayoutFullScreen(false)
+              this.topRect =
+                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height) //获取手机底部规避区域高度
+              this.bottomRect =
+                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR).bottomRect.height)
+              this.windowClass?.setWindowLayoutFullScreen(true)
+            }
+          })
+        }
+      })
+
+
+    })
+    .onWillAppear(()=>{
+      window.getLastWindow(getContext(this), (err, windowClass) => {
+        if (!err.code) { //保存窗口管理器
+          this.windowClass = windowClass //获取状态栏高度
+          window.getLastWindow(getContext(this), (err, windowClass) => {
+            if (!err.code) { //保存窗口管理器
+              this.windowClass = windowClass //获取状态栏高度
+              this.windowClass?.setWindowLayoutFullScreen(false)
+              this.topRect =
+                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height) //获取手机底部规避区域高度
+              this.bottomRect =
+                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR).bottomRect.height)
+              this.windowClass?.setWindowLayoutFullScreen(true)
+            }
+          })
+        }
+      })
+
+
+    })
     .bindSheet($$this.isShow, this.sheet, {
       showClose: this.nowSheet !== "form",
       height:SheetSize.FIT_CONTENT,

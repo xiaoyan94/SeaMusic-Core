@@ -24,6 +24,7 @@ export function PlayingBuilder() {
 
 @Component
 struct Playing {
+  @State windowClass: window.Window | null = null //窗口管理器
   @Consume('NavPathStack') pageStack: NavPathStack;
   @Watch('onBreakpointChange') @StorageProp('currentBreakpoint') currentBreakpoint: string = 'sm'
   @State currentTime: number = 0
@@ -45,10 +46,11 @@ struct Playing {
   @State isHeartButtonPressed: boolean = false
   @State isMoreButtonPressed: boolean = false
   @State isBackButtonPressed: boolean = false
-  @State windowClass: window.Window | null = null //窗口管理器
-  @State statusHeight: number = 0 //状态栏高度
-  @State bottomAvoidAreaHeight: number = 0 //手机底部规避区域高度
   @State Playing_Next: boolean = true
+
+  @StorageLink('bottomAvoidAreaHeight') bottomRect: number = 0
+  @StorageLink('statusHeight') topRect: number = 0
+
   private updateTimer: number = -1
   //TAB控制
   private controller: TabsController = new TabsController()
@@ -148,139 +150,6 @@ struct Playing {
       }
       .padding(18)
       .width('65%')
-
-      // Column(){
-      //   Column(){
-      //     Column(){
-      //       LyricView22()
-      //     }.height('30%').width('60%')
-      //     Text(this.track?.track.ar.map(item => item.name)[0] +'/'+this.track?.track.name)
-      //       .fontSize(16)
-      //       .maxLines(1)
-      //       .textOverflow({ overflow: TextOverflow.Ellipsis })
-      //       .fontColor('rgba(255, 255, 255, 0.6)')
-      //       .margin({ top: 8})
-      //       .width('60%')
-      //       .textAlign(TextAlign.Center)
-      //     Blank()
-      //       .layoutWeight(1)
-      //
-      //     Column() {
-      //       Row() {
-      //         Button({ type: ButtonType.Circle }) {
-      //           Image(this.getPlayModeResource(this.playMode))
-      //             .width(28)
-      //             .height(28)
-      //             .fillColor(Color.White)
-      //
-      //         }
-      //         .width(44)
-      //         .height(44)
-      //         // .margin(12)
-      //         .backgroundColor('#00000000')
-      //         .onClick(() => {
-      //           this.playMode = globalPlaylist.switchPlayMode()
-      //         })
-      //
-      //
-      //         Button({ type: ButtonType.Circle }) {
-      //           Image($r('app.media.ic_prev'))
-      //             .width(40)
-      //             .height(40)
-      //             .fillColor(Color.White)
-      //         }
-      //         .width(this.buttonSize.getValue(this.currentBreakpoint))
-      //         .height(this.buttonSize.getValue(this.currentBreakpoint))
-      //         // .margin(12)
-      //         .backgroundColor(Color.Transparent)
-      //         .onClick(() => {
-      //           globalPlaylist.playPrevious()
-      //         })
-      //
-      //         Button({ type: ButtonType.Circle }) {
-      //           Image(this.isPlaying ? $r('app.media.pause_round_triangle_fill') : $r('app.media.playing_icon'))
-      //             .width('100%')
-      //             .height('100%')
-      //             .fillColor($r('app.color.play_color'))
-      //           // Text(this.isPlaying_1 ? '󰡫': '󰡫')
-      //           //   .fontSize(this.buttonSize.getValue(this.currentBreakpoint) + 20)
-      //           //   .fontColor($r('app.color.play_color'))
-      //
-      //         }
-      //         .width(this.buttonSize.getValue(this.currentBreakpoint) + 20)
-      //         .height(this.buttonSize.getValue(this.currentBreakpoint) + 20)
-      //         // .margin(12)
-      //         .backgroundColor('#00000000')
-      //         .onClick(() => {
-      //           if (this.isPlaying) {
-      //             this.isPlaying = !this.isPlaying
-      //             this.playerManager.pause()
-      //           } else {
-      //             this.isPlaying = !this.isPlaying
-      //             this.playerManager.play()
-      //           }
-      //         })
-      //
-      //         Button({ type: ButtonType.Circle }) {
-      //           Image($r('app.media.ic_next'))
-      //             .width(40)
-      //             .height(40)
-      //             .fillColor(Color.White)
-      //         }
-      //         .width(this.buttonSize.getValue(this.currentBreakpoint))
-      //         .height(this.buttonSize.getValue(this.currentBreakpoint))
-      //         // .margin(12)
-      //         .backgroundColor(Color.Transparent)
-      //         .onClick(() => {
-      //           globalPlaylist.playNext()
-      //         })
-      //         Button({ type: ButtonType.Circle }) {
-      //           Image($r('app.media.ic_list'))
-      //             .width(28)
-      //             .height(28)
-      //             .fillColor(Color.White)
-      //         }
-      //         .width(44)
-      //         .height(44)
-      //         // .margin(12)
-      //         .backgroundColor('#00000000')
-      //         .onClick(() => {
-      //           if (globalPlaylist.playType == PlayType.PERSONAL_FM) {
-      //             promptAction.showToast({ message: "当前模式下需要保留一点神秘感哦！" })
-      //             return
-      //           }
-      //           this.selector = "playlist"
-      //           this.showPlaylist = true;
-      //         })
-      //       }
-      //       .width('60%')
-      //       .height(this.buttonSize.getValue(this.currentBreakpoint) + 20)
-      //       // .layoutWeight(1)
-      //       .justifyContent(FlexAlign.SpaceAround)
-      //     }
-      //     Column(){
-      //       this.ProgressBar()
-      //
-      //     }.width('60%')
-      //     // this.PlayerControls()
-      //     // .onClick(() => {
-      //     //   // this.isShow=false
-      //     //   this.pageStack.pushPathByName('cloudSearch',this.track?.track.ar.map(item => item.name)[0],true)
-      //     //
-      //     //   // router.replaceUrl({
-      //     //   //   url: "pages/CloudSearch",
-      //     //   //   params: {
-      //     //   //     keywords: this.track?.track.ar.map(item => item.name)[0]
-      //     //   //   }
-      //     //   // })
-      //     // })
-      //     // Text(this.track?.track.ar.map(item => item.name)[0])
-      //   }
-      //   .width('80%')
-      //   .alignItems(HorizontalAlign.Start)
-      //   .padding({left:20,bottom:18,top:18+high_height})
-      //
-      // }.height('100%').alignItems(HorizontalAlign.Center).justifyContent(FlexAlign.Center)
     }.alignItems(VerticalAlign.Center).justifyContent(FlexAlign.SpaceBetween).onAppear(() => {
       screen_on(true)
     }).onDisAppear(() => {
@@ -289,17 +158,6 @@ struct Playing {
   }
 
   async aboutToAppear() {
-    window.getLastWindow(getContext(this), (err, windowClass) => {
-      if (!err.code) { //保存窗口管理器
-        this.windowClass = windowClass //获取状态栏高度
-        this.statusHeight =
-          px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height) //获取手机底部规避区域高度
-        this.bottomAvoidAreaHeight =
-          px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR).bottomRect.height)
-        windowClass.setWindowLayoutFullScreen(true)
-
-      }
-    })
     const player = await avPlayerManager.getAVPlayerInstance()
     this.Playing_Next = isHorizontalMode()
     // 初始化当前时间和持续时间
@@ -947,11 +805,13 @@ struct Playing {
         this.BlurBackground()
 
         Column() {
+
           // 标题栏
 
 
           // 根据屏幕尺寸显示不同布局
           if (this.isWideScreen && this.Playing_Next == false) {
+
             this.Title()
             // 宽屏布局 - 左右分栏
             Row() {
@@ -991,7 +851,7 @@ struct Playing {
           } else if (this.isWideScreen && this.Playing_Next) {
             this.Playing_HorizontalMode()
           } else {
-            Column().height(this.statusHeight)
+
             this.Title()
             // 窄屏布局 - Tabs切换
             Tabs({ barPosition: BarPosition.End, index: this.selectedTabIndex, controller: this.controller }) {
@@ -999,7 +859,7 @@ struct Playing {
                 // 播放内容
                 Column() {
                   this.PlayingContent()
-                }.padding({ bottom: this.bottomAvoidAreaHeight })
+                }
               }
               .transition({ type: TransitionType.All, opacity: 0.0, translate: { x: -20 } })
 
@@ -1021,12 +881,52 @@ struct Playing {
             })
           }
         }
+        .onAreaChange(()=>{
+          window.getLastWindow(getContext(this), (err, windowClass) => {
+            if (!err.code) { //保存窗口管理器
+              this.windowClass = windowClass //获取状态栏高度
+              window.getLastWindow(getContext(this), (err, windowClass) => {
+                if (!err.code) { //保存窗口管理器
+                  this.windowClass = windowClass //获取状态栏高度
+                  this.windowClass?.setWindowLayoutFullScreen(false)
+                  this.topRect =
+                    px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height) //获取手机底部规避区域高度
+                  this.bottomRect =
+                    px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR).bottomRect.height)
+                  this.windowClass?.setWindowLayoutFullScreen(true)
+                }
+              })
+            }
+          })
+
+
+        })
+        .onSizeChange(()=>{
+          window.getLastWindow(getContext(this), (err, windowClass) => {
+            if (!err.code) { //保存窗口管理器
+              this.windowClass = windowClass //获取状态栏高度
+              window.getLastWindow(getContext(this), (err, windowClass) => {
+                if (!err.code) { //保存窗口管理器
+                  this.windowClass = windowClass //获取状态栏高度
+                  this.windowClass?.setWindowLayoutFullScreen(false)
+                  this.topRect =
+                    px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height) //获取手机底部规避区域高度
+                  this.bottomRect =
+                    px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR).bottomRect.height)
+                  this.windowClass?.setWindowLayoutFullScreen(true)
+                }
+              })
+            }
+          })
+
+
+        })
+        .padding({top:(this.isWideScreen && this.Playing_Next)?0:this.topRect})
         .width(StyleConstants.FULL_WIDTH)
         .height(StyleConstants.FULL_HEIGHT)
       }
       .width(StyleConstants.FULL_WIDTH)
-      .height(StyleConstants.FULL_HEIGHT)
-      .expandSafeArea()
+      .height('100%')
     }
     .hideToolBar(true)
     .hideTitleBar(true)
@@ -1034,14 +934,46 @@ struct Playing {
     .mode(NavDestinationMode.STANDARD)
     .expandSafeArea()
     .width(StyleConstants.FULL_WIDTH)
-    .height(StyleConstants.FULL_HEIGHT)
-    .onWillShow(() => {
-      if (this.Playing_Next) {
-        this.windowClass?.setWindowLayoutFullScreen(true)
-      }
+    .height('100%')
+    .onSizeChange(()=>{
+      window.getLastWindow(getContext(this), (err, windowClass) => {
+        if (!err.code) { //保存窗口管理器
+          this.windowClass = windowClass //获取状态栏高度
+          window.getLastWindow(getContext(this), (err, windowClass) => {
+            if (!err.code) { //保存窗口管理器
+              this.windowClass = windowClass //获取状态栏高度
+              this.windowClass?.setWindowLayoutFullScreen(false)
+              this.topRect =
+                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height) //获取手机底部规避区域高度
+              this.bottomRect =
+                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR).bottomRect.height)
+              this.windowClass?.setWindowLayoutFullScreen(true)
+            }
+          })
+        }
+      })
+
+
     })
-    .onWillHide(() => {
-      this.windowClass?.setWindowLayoutFullScreen(false)
+    .onWillAppear(()=>{
+      window.getLastWindow(getContext(this), (err, windowClass) => {
+        if (!err.code) { //保存窗口管理器
+          this.windowClass = windowClass //获取状态栏高度
+          window.getLastWindow(getContext(this), (err, windowClass) => {
+            if (!err.code) { //保存窗口管理器
+              this.windowClass = windowClass //获取状态栏高度
+              this.windowClass?.setWindowLayoutFullScreen(false)
+              this.topRect =
+                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height) //获取手机底部规避区域高度
+              this.bottomRect =
+                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR).bottomRect.height)
+              this.windowClass?.setWindowLayoutFullScreen(true)
+            }
+          })
+        }
+      })
+
+
     })
     .gesture(
       SwipeGesture({

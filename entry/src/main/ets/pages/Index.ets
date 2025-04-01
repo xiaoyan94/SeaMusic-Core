@@ -21,8 +21,7 @@ import { MultiSearch } from '../view/MultiSearch'
 import { SlideDownControl } from '../util/SlideDownController'
 import { LazyData } from '@pie/lazy-data'
 import {HorizontalMode}from '../util/HorizontalCheck'
-
-// 缓存常用值以避免重复计算
+import { window } from '@kit.ArkUI';// 缓存常用值以避免重复计算
 const COLUMNS_TEMPLATE_LG = '1fr 1fr 1fr 1fr'
 const COLUMNS_TEMPLATE_SM = '1fr 1fr'
 const DEFAULT_COVER_SIZE = 256
@@ -37,29 +36,49 @@ struct Index {
   private scrollController: Scroller = new Scroller()
   @State currentIndex: number = -1
   @StorageLink("user_data_source") adapters: SourceConfig[] = PreferencesCache.getUserDataSource()
-
+  @State windowClass: window.Window | null = null //窗口管理器
   // 使用StorageLink保持数据同步
   @StorageLink("index_recommend_playlist") recommendPlaylist: Playlist[] = []
   @StorageLink("index_recommend_songs") recommendSongs: Song[] = []
   @StorageLink("index_recommend_artists") recommendArtists: Artist[] = []
   @StorageLink("index_recommend_toplist") topList: Playlist[] = []
   @State loading: boolean = true
-
+  @StorageProp('statusHeight')  topRect:number=0
+  @StorageProp('bottomAvoidAreaHeight')  bottomRect:number=0
   // 避让导航栏高度
-  @StorageProp('bottomRect') bottomRect: number = 0
+  // @StorageProp('bottomAvoidAreaHeight') bottomRect: number = 0
+  // @StorageProp('statusHeight') topRect: number = 0
   @State HorizontalMode_ctrl:string =  PreferencesCache.getUserPreference('HorizontalMode_ctrl','0')
   // 预先计算并缓存必要的布局值
   private coverWidth: number = 120
   private segmentPadding: number = 4
 
   async aboutToAppear() {
+    window.getLastWindow(getContext(this), (err, windowClass) => {
+      if (!err.code) { //保存窗口管理器
+        this.windowClass = windowClass //获取状态栏高度
+        window.getLastWindow(getContext(this), (err, windowClass) => {
+          if (!err.code) { //保存窗口管理器
+            this.windowClass = windowClass //获取状态栏高度
+            this.windowClass?.setWindowLayoutFullScreen(true)
+            this.topRect =
+              px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height) //获取手机底部规避区域高度
+            this.bottomRect =
+              px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR).bottomRect.height)
+          }
+        })
+
+      }
+    })
     // 注册断点系统
     this.breakpointSystem.register()
     HorizontalMode(this.HorizontalMode_ctrl==='1')
     // 立即初始化数据
     this.initData()
   }
-
+  onPageShow(): void {
+    this.windowClass?.setWindowLayoutFullScreen(true)
+  }
   async initData() {
     this.loading = true
 
@@ -146,8 +165,10 @@ struct Index {
     .alignItems(VerticalAlign.Center)
     .padding({
       left: 16,
-      right: 16
+      right: 16,
+      top:this.topRect
     })
+    // .margin({top:statusHeight})
     .expandSafeArea()
   }
 
@@ -492,7 +513,28 @@ struct Index {
     .hideBackButton(true)
     .title({
       builder: this.Title(),
-      height: 50,
+      height: 50+this.topRect,
+    })
+    // .padding({top:statusHeight})
+    .onSizeChange(()=>{
+      window.getLastWindow(getContext(this), (err, windowClass) => {
+        if (!err.code) { //保存窗口管理器
+          this.windowClass = windowClass //获取状态栏高度
+          window.getLastWindow(getContext(this), (err, windowClass) => {
+            if (!err.code) { //保存窗口管理器
+              this.windowClass = windowClass //获取状态栏高度
+              this.windowClass?.setWindowLayoutFullScreen(false)
+              this.topRect =
+                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height) //获取手机底部规避区域高度
+              this.bottomRect =
+                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR).bottomRect.height)
+              this.windowClass?.setWindowLayoutFullScreen(true)
+            }
+          })
+        }
+      })
+
+
     })
     .backgroundColor($r('app.color.page_background'))
   }

@@ -78,20 +78,28 @@ export default class EntryAbility extends UIAbility {
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
     windowStage.getMainWindow().then((windowClass) => {
       // 获取窗口尺寸，存入AppStorage
+      windowClass?.setWindowLayoutFullScreen(false)
       AppStorage.setOrCreate('winWidth', windowClass.getWindowProperties().windowRect.width);
       AppStorage.setOrCreate('winHeight', windowClass.getWindowProperties().windowRect.height);
+      windowClass?.setWindowLayoutFullScreen(true)
       // 监听窗口尺寸变化
       windowClass.on('windowSizeChange', (windowSize) => {
+        windowClass?.setWindowLayoutFullScreen(false)
         AppStorage.setOrCreate('winWidth', windowSize.width);
         AppStorage.setOrCreate('winHeight', windowSize.height);
+        windowClass?.setWindowLayoutFullScreen(true)
       });
       // 获取避让高度，存入AppStorage
+      windowClass?.setWindowLayoutFullScreen(false)
       AppStorage.setOrCreate('topRect', windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height);
       AppStorage.setOrCreate('bottomRect', windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).bottomRect.height);
+      windowClass?.setWindowLayoutFullScreen(true)
       // 监听避让高度变化
       windowClass.on('avoidAreaChange', (avoidArea) => {
+        windowClass?.setWindowLayoutFullScreen(false)
         AppStorage.setOrCreate('topRect', avoidArea.area.topRect.height);
         AppStorage.setOrCreate('bottomRect', avoidArea.area.bottomRect.height);
+        windowClass?.setWindowLayoutFullScreen(true)
       });
     });
     windowStage.loadContent('pages/Index', (err) => {

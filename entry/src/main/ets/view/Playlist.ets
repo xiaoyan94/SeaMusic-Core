@@ -13,6 +13,7 @@ import { PushPathHelper } from "../util/PushPathHelper";
 import { PlaylistManager, PlayMode } from "../util/PlaylistManager";
 import { SlideDownControl } from "../util/SlideDownController";
 import { MiniPlaybackControl } from "../component/MiniPlaybackControl";
+import { window } from '@kit.ArkUI';
 
 @Component
 export struct PlayList {
@@ -31,10 +32,10 @@ export struct PlayList {
   @State isWideScreen: boolean = false
   @StorageLink("cache_data_create_time") cacheTime: number = -1
   @StorageLink("current_playing_song") song: Song | null = null
-  @StorageProp('bottomRect') bottomRect: number = 0;
-  @StorageProp('topRect') topRect: number = 0;
+  @StorageProp('bottomAvoidAreaHeight') bottomRect: number = 0
+  @StorageProp('statusHeight') topRect: number = 0
   @StorageProp('winHeight') winHeight: number = 0;
-
+  @State windowClass: window.Window | null = null //窗口管理器
   @Builder
   Title() {
     TitleHeader({
@@ -524,6 +525,7 @@ export struct PlayList {
                 this.onMenuIconClick(this.currentIndex)
                 this.currentIndex = -1
               })
+              .contentEndOffset(this.bottomRect)
               .width(StyleConstants.FULL_WIDTH)
               .height(StyleConstants.FULL_HEIGHT)
             }
@@ -531,6 +533,7 @@ export struct PlayList {
           .layoutWeight(1)
           .width(StyleConstants.FULL_WIDTH)
         }
+        .padding({top:this.topRect})
         .width(StyleConstants.FULL_WIDTH)
         .height(StyleConstants.FULL_HEIGHT)
 
@@ -542,6 +545,46 @@ export struct PlayList {
     }
     .hideToolBar(true)
     .hideTitleBar(true)
+    .onSizeChange(()=>{
+      window.getLastWindow(getContext(this), (err, windowClass) => {
+        if (!err.code) { //保存窗口管理器
+          this.windowClass = windowClass //获取状态栏高度
+          window.getLastWindow(getContext(this), (err, windowClass) => {
+            if (!err.code) { //保存窗口管理器
+              this.windowClass = windowClass //获取状态栏高度
+              this.windowClass?.setWindowLayoutFullScreen(false)
+              this.topRect =
+                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height) //获取手机底部规避区域高度
+              this.bottomRect =
+                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR).bottomRect.height)
+              this.windowClass?.setWindowLayoutFullScreen(true)
+            }
+          })
+        }
+      })
+
+
+    })
+    .onWillAppear(()=>{
+      window.getLastWindow(getContext(this), (err, windowClass) => {
+        if (!err.code) { //保存窗口管理器
+          this.windowClass = windowClass //获取状态栏高度
+          window.getLastWindow(getContext(this), (err, windowClass) => {
+            if (!err.code) { //保存窗口管理器
+              this.windowClass = windowClass //获取状态栏高度
+              this.windowClass?.setWindowLayoutFullScreen(false)
+              this.topRect =
+                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height) //获取手机底部规避区域高度
+              this.bottomRect =
+                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR).bottomRect.height)
+              this.windowClass?.setWindowLayoutFullScreen(true)
+            }
+          })
+        }
+      })
+
+
+    })
     .backgroundColor($r('app.color.page_background'))
     .mode(NavDestinationMode.STANDARD)
     .expandSafeArea()
