@@ -502,8 +502,8 @@ export struct PlayList {
                 // 宽屏布局
                 this.WideScreenLayout()
               } else {
-                // 标准移动端布局
-                this.MobileLayout()
+                // 小屏幕布局
+                this.SongListSection()
               }
             } else {
               // 显示空状态
@@ -584,71 +584,139 @@ export struct PlayList {
 
   @Builder
   ListHeader(){
-    Row() {
-      // 搜索框
-      Search({ value: this.searchKeywords, placeholder: '搜索歌单内歌曲...' })
-        .searchButton('搜索')
-        .onSubmit((value: string) => {
-          this.searchKeywords = value
-          this.filterSongs()
-        })
-        .onChange((value: string) => {
-          this.searchKeywords = value
-        })
-        .margin(0)
-        .backgroundBlurStyle(BlurStyle.Regular)
-        .layoutWeight(1)
-
-      // 播放全部按钮
+    if (this.isWideScreen) {
+      // 宽屏布局：一行显示所有元素
       Row() {
-        Image($r('app.media.ic_repeat'))
-          .width(22)
-          .height(22)
-          .fillColor($r('app.color.text_primary'))
-        Text('播放全部')
-          .fontSize(18)
-          .fontWeight(FontWeight.Medium)
-          .fontColor($r('app.color.text_primary'))
-          .margin({ left: 8 })
-      }
-      .shadow(ShadowStyle.OUTER_DEFAULT_XS)
-      .height(40)
-      .width(120)
-      .borderRadius(8)
-      .backgroundColor($r('app.color.setting_item_background'))
-      .justifyContent(FlexAlign.Center)
-      .margin({ left: 12 })
-      .onClick(() => {
-        if (this.playlist?.songs && this.playlist.songs.length > 0) {
-          // 寻找第一个可以播放的歌曲
-          const song = this.playlist.songs.find(song => song.privilege.playable)
-          this.handlePlaylistPlayAll(song || this.playlist.songs[0])
-          PlaylistManager.switchPlayMode(PlayMode.LOOP)
+        // 搜索框
+        Search({ value: this.searchKeywords, placeholder: '搜索歌单内歌曲...' })
+          .searchButton('搜索')
+          .onSubmit((value: string) => {
+            this.searchKeywords = value
+            this.filterSongs()
+          })
+          .onChange((value: string) => {
+            this.searchKeywords = value
+          })
+          .margin(0)
+          .backgroundBlurStyle(BlurStyle.Regular)
+          .layoutWeight(1)
+          .height(36)
+
+        // 播放全部按钮
+        Row() {
+          Image($r('app.media.ic_repeat'))
+            .width(20)
+            .height(20)
+            .fillColor($r('app.color.text_primary'))
+          Text('播放全部')
+            .fontSize(14)
+            .fontWeight(FontWeight.Medium)
+            .fontColor($r('app.color.text_primary'))
+            .margin({ left: 4 })
         }
-      })
+        .shadow(ShadowStyle.OUTER_DEFAULT_XS)
+        .height(36)
+        .width(100)
+        .borderRadius(8)
+        .backgroundColor($r('app.color.setting_item_background'))
+        .justifyContent(FlexAlign.Center)
+        .margin({ left: 8 })
+        .onClick(() => {
+          if (this.playlist?.songs && this.playlist.songs.length > 0) {
+            const song = this.playlist.songs.find(song => song.privilege.playable)
+            this.handlePlaylistPlayAll(song || this.playlist.songs[0])
+            PlaylistManager.switchPlayMode(PlayMode.LOOP)
+          }
+        })
 
-      // 更多选项按钮
-      Row() {
-        Image($r('app.media.ic_more'))
-          .width(22)
-          .height(22)
-          .fillColor($r('app.color.text_primary'))
+        // 更多选项按钮
+        Row() {
+          Image($r('app.media.ic_more'))
+            .width(20)
+            .height(20)
+            .fillColor($r('app.color.text_primary'))
+        }
+        .width(36)
+        .height(36)
+        .borderRadius(8)
+        .shadow(ShadowStyle.OUTER_DEFAULT_XS)
+        .backgroundColor($r('app.color.setting_item_background'))
+        .justifyContent(FlexAlign.Center)
+        .margin({ left: 8 })
+        .onClick(() => {
+          ToastUtil.showShort('即将支持更多操作')
+        })
       }
-      .width(40)
-      .height(40)
+      .padding({ left: 8, right: 8, top: 4, bottom: 4 })
+      .backgroundColor($r('app.color.card_background'))
       .borderRadius(8)
-      .shadow(ShadowStyle.OUTER_DEFAULT_XS)
-      .backgroundColor($r('app.color.setting_item_background'))
-      .justifyContent(FlexAlign.Center)
-      .margin({ left: 12 })
-      .onClick(() => {
-        // 显示更多选项的逻辑
-        ToastUtil.showShort('即将支持更多操作')
-      })
+    } else {
+      // 小屏幕布局：搜索框和按钮一行显示
+      Row() {
+        // 搜索框
+        Search({ value: this.searchKeywords, placeholder: '搜索歌单内歌曲...' })
+          .searchButton('搜索')
+          .onSubmit((value: string) => {
+            this.searchKeywords = value
+            this.filterSongs()
+          })
+          .onChange((value: string) => {
+            this.searchKeywords = value
+          })
+          .margin(0)
+          .backgroundBlurStyle(BlurStyle.Regular)
+          .layoutWeight(1)
+          .height(36)
+
+        // 播放全部按钮
+        Row() {
+          Image($r('app.media.ic_repeat'))
+            .width(20)
+            .height(20)
+            .fillColor($r('app.color.text_primary'))
+          Text('播放全部')
+            .fontSize(14)
+            .fontWeight(FontWeight.Medium)
+            .fontColor($r('app.color.text_primary'))
+            .margin({ left: 4 })
+        }
+        .shadow(ShadowStyle.OUTER_DEFAULT_XS)
+        .height(36)
+        .width(100)
+        .borderRadius(8)
+        .backgroundColor($r('app.color.setting_item_background'))
+        .justifyContent(FlexAlign.Center)
+        .margin({ left: 8 })
+        .onClick(() => {
+          if (this.playlist?.songs && this.playlist.songs.length > 0) {
+            const song = this.playlist.songs.find(song => song.privilege.playable)
+            this.handlePlaylistPlayAll(song || this.playlist.songs[0])
+            PlaylistManager.switchPlayMode(PlayMode.LOOP)
+          }
+        })
+
+        // 更多选项按钮
+        Row() {
+          Image($r('app.media.ic_more'))
+            .width(20)
+            .height(20)
+            .fillColor($r('app.color.text_primary'))
+        }
+        .width(36)
+        .height(36)
+        .borderRadius(8)
+        .shadow(ShadowStyle.OUTER_DEFAULT_XS)
+        .backgroundColor($r('app.color.setting_item_background'))
+        .justifyContent(FlexAlign.Center)
+        .margin({ left: 8 })
+        .onClick(() => {
+          ToastUtil.showShort('即将支持更多操作')
+        })
+      }
+      .padding({ left: 8, right: 8, top: 4, bottom: 4 })
+      .backgroundColor($r('app.color.card_background'))
+      .borderRadius(8)
     }
-    .padding(12)
-    .backgroundColor($r('app.color.card_background'))
-    .borderRadius(8)
   }
 
   @Builder
