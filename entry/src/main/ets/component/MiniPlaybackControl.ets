@@ -200,11 +200,21 @@ export struct MiniPlaybackControl {
             // 播放/暂停按钮
             Stack(){
               Button({ type: ButtonType.Circle }) {
-                Image(this.isPlaying ? $r('app.media.ic_pause') : $r('app.media.ic_play'))
-                  .width(20)
-                  .height(20)
-                  .fillColor($r('app.color.text_primary'))
+                if(this.isPlaying){
+                  Image($r('app.media.ic_pause'))
+                    .width(20)
+                    .height(20)
+                    .fillColor($r('app.color.text_primary'))
+                }else{
+                  Image($r('app.media.ic_play'))
+                    .width(16)
+                    .height(16)
+                    .fillColor($r('app.color.text_primary'))
+                    .margin({ left: 2 })
+                }
+
               }
+              .alignSelf(ItemAlign.Center)
               .width(36)
               .height(36)
               .backgroundColor('rgba(200, 200, 200, 0.1)')
