@@ -8,7 +8,6 @@ import { BasicPrefetcher } from '@kit.ArkUI';
 import { SongDataSourcePrefetching } from "../util/SongDataSourcePrefetching";
 import { BreakpointConstants } from "../constants/BreakpointConstants";
 import { cover } from "../util/AdapterHelper";
-import { formatRelativeTime } from "../util/String";
 import { PushPathHelper } from "../util/PushPathHelper";
 import { PlaylistManager, PlayMode } from "../util/PlaylistManager";
 import { SlideDownControl } from "../util/SlideDownController";
@@ -35,6 +34,10 @@ export struct PlayList {
   @StorageProp('bottomRect') bottomRect: number = 0;
   @StorageProp('topRect') topRect: number = 0;
   @StorageProp('winHeight') winHeight: number = 0;
+  // 搜索相关状态
+  @State searchKeywords: string = ''
+  @State filteredSongs: Song[] = []
+  @State isSearching: boolean = false
 
   @Builder
   Title() {
@@ -196,23 +199,39 @@ export struct PlayList {
         }
 
         ListItemGroup({ header: this.ListHeader() }){
-          LazyForEach(this.songDataSource, (song: Song, index: number) => {
-            ListItem() {
-              SongInfo({
-                song: song,
-                index: index,
-                active: this.song?.id === song.id,
-                highlight: this.billingIndex === index,
-                onTap: (song: Song) => {
-                  this.onSongTap(song, index);
-                }
-              })
-            }
-            // .margin({ top: index === 0 ? 12 : 0})
-            .key(`${song.id}-${index}`)
-          }, (song: Song, index: number) => `${song.id}-${index}`)
+          if (this.isSearching) {
+            ForEach(this.filteredSongs, (song: Song, index: number) => {
+              ListItem() {
+                SongInfo({
+                  song: song,
+                  index: index,
+                  active: this.song?.id === song.id,
+                  highlight: this.billingIndex === index,
+                  onTap: (song: Song) => {
+                    this.onSongTap(song, index);
+                  }
+                })
+              }
+              .key(`${song.id}-${index}`)
+            })
+          } else {
+            LazyForEach(this.songDataSource, (song: Song, index: number) => {
+              ListItem() {
+                SongInfo({
+                  song: song,
+                  index: index,
+                  active: this.song?.id === song.id,
+                  highlight: this.billingIndex === index,
+                  onTap: (song: Song) => {
+                    this.onSongTap(song, index);
+                  }
+                })
+              }
+              .key(`${song.id}-${index}`)
+            }, (song: Song, index: number) => `${song.id}-${index}`)
+          }
         }
-        .onAreaChange((oldValue: Area, newValue: Area) => {
+        .onAreaChange((_oldValue: Area, newValue: Area) => {
           this.groupHeight = newValue.height as number
         })
 
@@ -260,7 +279,7 @@ export struct PlayList {
         this.currentIndex = -1
       })
       .onReachEnd(async () => {
-        if (this.isLoading || !this.sourceOk) {
+        if (this.isLoading || !this.sourceOk || this.isSearching) {
           return;
         }
 
@@ -565,10 +584,71 @@ export struct PlayList {
 
   @Builder
   ListHeader(){
-    Column(){
-      // 播放操作+更多按钮
-      this.PlayListAction()
+    Row() {
+      // 搜索框
+      Search({ value: this.searchKeywords, placeholder: '搜索歌单内歌曲...' })
+        .searchButton('搜索')
+        .onSubmit((value: string) => {
+          this.searchKeywords = value
+          this.filterSongs()
+        })
+        .onChange((value: string) => {
+          this.searchKeywords = value
+        })
+        .margin(0)
+        .backgroundBlurStyle(BlurStyle.Regular)
+        .layoutWeight(1)
+
+      // 播放全部按钮
+      Row() {
+        Image($r('app.media.ic_repeat'))
+          .width(22)
+          .height(22)
+          .fillColor($r('app.color.text_primary'))
+        Text('播放全部')
+          .fontSize(18)
+          .fontWeight(FontWeight.Medium)
+          .fontColor($r('app.color.text_primary'))
+          .margin({ left: 8 })
+      }
+      .shadow(ShadowStyle.OUTER_DEFAULT_XS)
+      .height(40)
+      .width(120)
+      .borderRadius(8)
+      .backgroundColor($r('app.color.setting_item_background'))
+      .justifyContent(FlexAlign.Center)
+      .margin({ left: 12 })
+      .onClick(() => {
+        if (this.playlist?.songs && this.playlist.songs.length > 0) {
+          // 寻找第一个可以播放的歌曲
+          const song = this.playlist.songs.find(song => song.privilege.playable)
+          this.handlePlaylistPlayAll(song || this.playlist.songs[0])
+          PlaylistManager.switchPlayMode(PlayMode.LOOP)
+        }
+      })
+
+      // 更多选项按钮
+      Row() {
+        Image($r('app.media.ic_more'))
+          .width(22)
+          .height(22)
+          .fillColor($r('app.color.text_primary'))
+      }
+      .width(40)
+      .height(40)
+      .borderRadius(8)
+      .shadow(ShadowStyle.OUTER_DEFAULT_XS)
+      .backgroundColor($r('app.color.setting_item_background'))
+      .justifyContent(FlexAlign.Center)
+      .margin({ left: 12 })
+      .onClick(() => {
+        // 显示更多选项的逻辑
+        ToastUtil.showShort('即将支持更多操作')
+      })
     }
+    .padding(12)
+    .backgroundColor($r('app.color.card_background'))
+    .borderRadius(8)
   }
 
   @Builder
@@ -606,5 +686,23 @@ export struct PlayList {
     //   sub = px2vp(this.winHeight) - (50+40+12*2+(68+2*4)*this.songDataSource.totalCount()) - px2vp(this.topRect) - px2vp(this.bottomRect)
     // }
     return sub > 0 ? sub : 0
+  }
+
+  private filterSongs() {
+    if (!this.playlist?.songs) return
+    
+    if (!this.searchKeywords.trim()) {
+      this.filteredSongs = this.playlist.songs
+      this.isSearching = false
+      return
+    }
+
+    const keywords = this.searchKeywords.toLowerCase().trim()
+    this.filteredSongs = this.playlist.songs.filter(song => 
+      song.name.toLowerCase().includes(keywords) ||
+      song.artists.some(artist => artist.name.toLowerCase().includes(keywords)) ||
+      song.album.name.toLowerCase().includes(keywords)
+    )
+    this.isSearching = true
   }
 }
