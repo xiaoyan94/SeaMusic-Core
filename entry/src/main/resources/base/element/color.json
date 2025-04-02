@@ -119,6 +119,10 @@
     {
       "name": "border_line",
       "value": "#80696969"
+    },
+    {
+      "name": "item_title_font",
+      "value": "#E6000000"
     }
   ]
 }

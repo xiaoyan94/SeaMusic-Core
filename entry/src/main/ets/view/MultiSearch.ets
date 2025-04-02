@@ -14,7 +14,7 @@ import { window } from '@kit.ArkUI';
 
 @Component
 export struct MultiSearch {
-  @State groupHeight: Length = 0
+  @State groupHeight: number = 0
   @Consume('NavPathStack') pageStack: NavPathStack;
   @State keywords: string = '';
   @State result: SearchResult | null = null;
@@ -193,15 +193,14 @@ export struct MultiSearch {
 
             }
             .onAreaChange((oldValue: Area, newValue: Area) => {
-              console.info(`Ace: on area change, oldValue is ${JSON.stringify(oldValue)} value is ${JSON.stringify(newValue)}`)
-              this.groupHeight = newValue.height
+              this.groupHeight = newValue.height as number
             })
             .expandSafeArea()
 
             ListItem(){
               Row(){
                 // 监控ListItemGroup高度变化，随时调整List下方补充高度，winHeight - group高度 - 标题高度 - 避让高度
-                Blank().height(px2vp(this.winHeight) - parseInt(JSON.stringify(this.groupHeight)) - 50 - px2vp(this.bottomRect+this.topRect))
+                Blank().height(this.getBlankHeight())
               }
             }
 
@@ -302,6 +301,11 @@ export struct MultiSearch {
         }
       })
     )
+  }
+
+  getBlankHeight(): Length {
+    let sub = px2vp(this.winHeight) - this.groupHeight - 50 - px2vp(this.bottomRect+this.topRect)
+    return sub > 0 ? sub : 0
   }
 
   @Builder

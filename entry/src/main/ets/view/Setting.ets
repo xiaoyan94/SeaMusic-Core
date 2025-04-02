@@ -13,8 +13,6 @@ import { SlideDownControl } from "../util/SlideDownController";
 import { AboutSetting, PlayerSetting, SoftwareSetting } from "../viewmodel/SettingGroupData";
 import { About } from "./About";
 import {Personalized_settings}from '../view/Personalized_settings'
-import { window } from '@kit.ArkUI';
-
 @Component
 export struct Setting {
   @State translateY: number = 16;
@@ -23,7 +21,6 @@ export struct Setting {
   @State isExpanded: boolean = false
   @StorageLink("setting_page_sheet_show") isShow: boolean = false
   @State currentStep: number = 0
-  @State windowClass: window.Window | null = null //窗口管理器
   @State formData: SourceConfig = {
     id: `user_data_source_${Date.now()}`,
     name: '',
@@ -54,9 +51,9 @@ export struct Setting {
   @StorageLink("about_page_show") aboutPageShow: boolean = false
   @StorageLink("setting_page_sheet_content") nowSheet: string = "form"
   @StorageProp('winHeight') winHeight: number = 0;
-  @StorageLink('bottomAvoidAreaHeight') bottomRect: number = 0
-  @StorageLink('statusHeight') topRect: number = 0
-  @State groupHeight: Length = 0
+  @StorageProp('bottomRect') bottomRect: number = 0;
+  @StorageProp('topRect') topRect: number = 0;
+  @State groupHeight: number = 0
 
   calculateCurrentIndex(offset: number): number {
     offset = Math.abs(offset)
@@ -661,7 +658,6 @@ export struct Setting {
   }
   build() {
     NavDestination() {
-      Column().height(this.topRect)
       this.Title()
 
       Column() {
@@ -718,8 +714,7 @@ export struct Setting {
             ListItem().height(80).backgroundColor('transparent')
           }
           .onAreaChange((oldValue: Area, newValue: Area) => {
-            console.info(`Ace: on area change, oldValue is ${JSON.stringify(oldValue)} value is ${JSON.stringify(newValue)}`)
-            this.groupHeight = newValue.height
+            this.groupHeight = newValue.height as number
           })
           .translate({ y: this.translateY })
           .animation({
@@ -731,14 +726,13 @@ export struct Setting {
           ListItem(){
             Row(){
               // 监控ListItemGroup高度变化，随时调整List下方补充高度，winHeight - group高度 - 标题高度 - 避让高度
-              Blank().height(px2vp(this.winHeight) - parseInt(JSON.stringify(this.groupHeight)) - 50 - px2vp(this.bottomRect+this.topRect))
+              Blank().height(this.getBlankHeight())
             }
           }
         }
         .borderRadius(8)
         .backToTop(true)
         .layoutWeight(1)
-        .contentEndOffset(this.bottomRect)
         .scrollBar(BarState.Off)
         .edgeEffect(EdgeEffect.Spring)
         .width(StyleConstants.FULL_WIDTH)
@@ -770,46 +764,6 @@ export struct Setting {
     .expandSafeArea()
     .width(StyleConstants.FULL_WIDTH)
     .height(StyleConstants.FULL_HEIGHT)
-    .onSizeChange(()=>{
-      window.getLastWindow(getContext(this), (err, windowClass) => {
-        if (!err.code) { //保存窗口管理器
-          this.windowClass = windowClass //获取状态栏高度
-          window.getLastWindow(getContext(this), (err, windowClass) => {
-            if (!err.code) { //保存窗口管理器
-              this.windowClass = windowClass //获取状态栏高度
-              this.windowClass?.setWindowLayoutFullScreen(false)
-              this.topRect =
-                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height) //获取手机底部规避区域高度
-              this.bottomRect =
-                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR).bottomRect.height)
-              this.windowClass?.setWindowLayoutFullScreen(true)
-            }
-          })
-        }
-      })
-
-
-    })
-    .onWillAppear(()=>{
-      window.getLastWindow(getContext(this), (err, windowClass) => {
-        if (!err.code) { //保存窗口管理器
-          this.windowClass = windowClass //获取状态栏高度
-          window.getLastWindow(getContext(this), (err, windowClass) => {
-            if (!err.code) { //保存窗口管理器
-              this.windowClass = windowClass //获取状态栏高度
-              this.windowClass?.setWindowLayoutFullScreen(false)
-              this.topRect =
-                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height) //获取手机底部规避区域高度
-              this.bottomRect =
-                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR).bottomRect.height)
-              this.windowClass?.setWindowLayoutFullScreen(true)
-            }
-          })
-        }
-      })
-
-
-    })
     .bindSheet($$this.isShow, this.sheet, {
       showClose: this.nowSheet !== "form",
       height:SheetSize.FIT_CONTENT,
@@ -825,6 +779,11 @@ export struct Setting {
         }
       })
     )
+  }
+
+  getBlankHeight(): Length {
+    let sub = px2vp(this.winHeight) - this.groupHeight - 50 - px2vp(this.bottomRect+this.topRect)
+    return sub > 0 ? sub : 0
   }
 
   @Builder

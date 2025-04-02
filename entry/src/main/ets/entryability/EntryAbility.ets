@@ -11,6 +11,8 @@ import { DownloadManager } from '../util/DownloadUtils';
 import { avPlayerManager } from '../util/AVPlayerManager';
 import { backgroundRunningManager } from '../util/BackgroundRunningManager';
 import app from '@system.app';
+import FormUtils from '../util/FormUtils';
+import { CallMethod } from '../widget/model/FormCardConstant';
 
 export default class EntryAbility extends UIAbility {
 
@@ -30,6 +32,7 @@ export default class EntryAbility extends UIAbility {
     ContextHelper.init(this.context) // 初始化上下文工具类
     DownloadManager.init(this.context) // 初始化下载工具类
     await avPlayerManager.init(this.context); // 初始化播放器
+    FormUtils.init(this.context) //初始化服务卡片工具
     // 事件监听注册
     EventHelper.subscribePlaySong()
     EventHelper.subscribeInitData()
@@ -53,8 +56,10 @@ export default class EntryAbility extends UIAbility {
     EventHelper.subscribeSongState(async (data) => {
       if (data === 'PLAY') {
         await backgroundRunningManager.startBackgroundRunning();
+        FormUtils.updateCardPlayStatus(true);
       } else if (data === 'PAUSE') {
         await backgroundRunningManager.stopBackgroundRunning();
+        FormUtils.updateCardPlayStatus(false);
       }
     })
     EventHelper.subscribeLoopMode((mode) => {
@@ -67,10 +72,14 @@ export default class EntryAbility extends UIAbility {
     })
     await ImageKnife.getInstance().initFileCache(this.context, 256, 256 * 1024 * 1024)
     app.setImageRawDataCacheSize(100 * 1024 * 1024) // 设置解码前图片数据内存缓存上限为100MB
+    this.callee.on(CallMethod.REQUEST_UPDATE_CARD, FormUtils.requestUpdatePlayCard);
+    this.callee.on(CallMethod.PLAY_BY_ACTION, FormUtils.playByActionCall);
+    this.callee.on(CallMethod.COLLECT_ACTION, FormUtils.collectActionCall);
   }
 
   onDestroy(): void {
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onDestroy');
+    FormUtils.updateCardPlayStatus(false);
   }
 
   async onWindowStageCreate(windowStage: window.WindowStage): Promise<void> {

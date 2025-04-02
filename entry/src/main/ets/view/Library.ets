@@ -14,6 +14,7 @@ export function LibraryBuilder(){
 
 @Component
 struct Library {
+  @State itemHeight: number = 0
   @Consume('NavPathStack') pageStack: NavPathStack;
   @State currentIndex: number = -1;
   @StorageLink('user_playlist') playlists: Playlist[] = [];
@@ -166,12 +167,13 @@ struct Library {
                   .padding({ top: 12 })
               }
               .width(StyleConstants.FULL_WIDTH)
+              .onAreaChange((oldValue: Area, newValue: Area) => {
+                this.itemHeight = newValue.height as number
+              })
 
-              if(this.countSubVp() > 0) {
-                ListItem(){
-                  Column(){
-                    Blank().height(this.countSubVp())
-                  }
+              ListItem(){
+                Column(){
+                  Blank().height(this.countSubVp())
                 }
               }
             }
@@ -267,10 +269,8 @@ struct Library {
 
   countSubVp(): number{
     let sub: number = 0
-    if(this.playlists.length <= 15){
-      // 填补高度=屏幕高度 - title高度50 - 上方padding高度12 - 单一组件高度(74+0.5)*歌曲数量 - 状态栏高度 - 导航栏高度
-      sub = px2vp(this.winHeight) - ((74+0.5)*(this.playlists.length)+50+12) - px2vp(this.topRect) - px2vp(this.bottomRect)
-    }
+    // 填补高度=屏幕高度 - title高度50 - 上方padding高度12 - 单一组件高度(74+0.5)*歌曲数量 - 状态栏高度 - 导航栏高度
+    sub = px2vp(this.winHeight) - (this.itemHeight+50+12) - px2vp(this.topRect+this.bottomRect)
     return sub > 0 ? sub : 0
   }
 }
