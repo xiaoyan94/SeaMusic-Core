@@ -88,6 +88,14 @@ struct Library {
     Menu(){
       ForEach(this.adapters, (adapter: SourceConfig, sIndex) => {
         MenuItem(this.SourceMenuContent(adapter, sIndex))
+          .backgroundColor(this.getBackgroundColor(adapter))
+          .border({
+            width: 1,
+            color: this.getBorderColor(adapter),
+            style: BorderStyle.Solid
+          })
+          .margin(5)
+          .borderRadius(20)
       })
     }
   }
@@ -107,14 +115,6 @@ struct Library {
           .fontWeight(FontWeight.Bold)
       }
     }
-    .backgroundColor(this.getBackgroundColor(sourceConfig))
-    .border({
-      width: 1,
-      color: this.getBorderColor(sourceConfig),
-      style: BorderStyle.Solid
-    })
-    .borderRadius(12)
-    .margin({ top: 5, bottom: 5})
     .onClick(() => {
       const exists: boolean = this.showAdapters.some(adapter => adapter.id === sourceConfig.id)
       if(!exists){
@@ -125,7 +125,6 @@ struct Library {
       this.sIndex = sIndex
       this.isExpanded = !this.isExpanded
     })
-    .borderRadius(10)
     .padding({
       left: 10,
       right: 10,
