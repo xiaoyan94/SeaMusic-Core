@@ -6,7 +6,7 @@ import { cover } from '../util/AdapterHelper';
 import { PlaylistView } from '../component/PlaylistView';
 import { BreakpointConstants } from '../constants/BreakpointConstants';
 import { curves } from '@kit.ArkUI';
-
+import { PreferencesCache } from "../util/PreferenceCache";
 @Component
 export struct MiniPlaybackControl {
   @StorageLink('current_playing_song') currentSong: Song | null = null;
@@ -21,6 +21,7 @@ export struct MiniPlaybackControl {
   @State isSwipingActive: boolean = false; // 是否正在滑动中
   @State swipeDirection: string = ''; // 滑动方向
   @StorageLink('winWidth') winWidth: number = 0
+  @State bottom_judge:string = PreferencesCache.getUserPreference('miniplaying_bottom_judge','0')
   private updateTimer: number = -1;
   private playerManager = avPlayerManager;
   private readonly SWIPE_THRESHOLD: number = 80; // 触发切换的阈值
@@ -249,11 +250,12 @@ export struct MiniPlaybackControl {
       .width(StyleConstants.FULL_WIDTH)
       .height(StyleConstants.FULL_HEIGHT)
     }
+    .onVisibleAreaChange([0.0, 1.0], () =>{this.bottom_judge=PreferencesCache.getUserPreference('miniplaying_bottom_judge','0')})
     .width("90%")
     .height(64)
     .borderRadius(12)
     .clip(true)
-    .margin({ left: 16, right: 16, bottom: 16 })
+    .margin({ left: 16, right: 16, bottom:this.bottom_judge==='0'? 16:0 })
     .shadow({
       radius: 8,
       color: 'rgba(0, 0, 0, 0.15)',
