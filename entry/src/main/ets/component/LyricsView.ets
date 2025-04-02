@@ -326,7 +326,7 @@ export struct LyricsView {
       .width(StyleConstants.FULL_WIDTH)
       .height(StyleConstants.FULL_HEIGHT)
 
-      if (this.hasTranslation) {
+      if (this.hasTranslation&&this.mode_judge===true) {
         Button({ type: ButtonType.Circle }) {
           Image($r('app.media.ic_translate'))
             .width(24)

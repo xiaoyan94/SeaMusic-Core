@@ -14,7 +14,6 @@ import { SourceAdapter } from '../adapter'
 import { TimerSelector } from '../component/TimerSelector'
 import { isHorizontalMode } from '../util/HorizontalCheck'
 import { screen_on } from '../util/On_screen_control'
-import { window } from '@kit.ArkUI';
 
 @Builder
 export function PlayingBuilder() {
@@ -47,8 +46,9 @@ struct Playing {
   @State isBackButtonPressed: boolean = false
   @State Playing_Next: boolean = true
   private updateTimer: number = -1
-  //TAB控制
+  //TAB,swiper控制
   private controller: TabsController = new TabsController()
+  private swiperController: SwiperController = new SwiperController()
   // 歌曲封面-歌词翻转
   @State flipCoverLyric: boolean = PreferencesCache.flipCoverLyric()
 
@@ -99,53 +99,139 @@ struct Playing {
   }
 
   @Builder
-  //好心人帮我改下函数名哈
   //————————————————————————
-  // 函数名：Playing_phone()
+  // 函数名：Playing_HorizontalMode()
   // 参数：null
   // 功能：手机横屏播放器
   //——————————————————————————
   Playing_HorizontalMode() {
-    Row() {
-      //封面图
-      Column() {
-        Image(cover(this.song?.album?.cover ?? "", 512))
-          .width('100%')
-          .aspectRatio(1)
-          .borderRadius(24)
-      }
-      .padding({
-        left: 45,
-        top: 12,
-        bottom: 12,
-        right: 12
-      })
-      .width('35%')
-      .height('100%')
-      .justifyContent(FlexAlign.Center)
-      .alignItems(HorizontalAlign.Center)
+    Swiper(this.swiperController){
+      Row() {
+        //封面图
+        Column() {
+          Image(cover(this.song?.album?.cover ?? "", 512))
+            .geometryTransition("picture", { follow: false })
+            .transition(TransitionEffect.OPACITY)
+            .width('100%')
+            .aspectRatio(1)
+            .borderRadius(24)
+            .onClick(()=>{
+              animateTo({ duration: 300 }, () => {
+                this.swiperController.showNext()
+              })
+            })
+        }
+        .padding({
+          left: 45,
+          top: 12,
+          bottom: 12,
+          right: 12
+        })
+        .width('35%')
+        .height('100%')
+        .justifyContent(FlexAlign.Center)
+        .alignItems(HorizontalAlign.Center)
 
-      Column() {
-        LyricsView({
-          currentTimeMs: this.currentTime,
-          lyrics: this.song?.meta?.lyric?.normal,
-          translationLyrics: this.song?.meta?.lyric?.translation || this.song?.meta?.lyric?.transliteration,
-          mode_judge: false
-        }).width('100%').layoutWeight(1)
+        Column() {
+          LyricsView({
+            currentTimeMs: this.currentTime,
+            lyrics: this.song?.meta?.lyric?.normal,
+            translationLyrics: this.song?.meta?.lyric?.translation || this.song?.meta?.lyric?.transliteration,
+            mode_judge: false
+          }).width('100%').layoutWeight(1)
 
-        Text((this.song?.name || "未知歌曲") + '/' +
-          (this.song?.artists ? this.song.artists.map(artist => artist.name).join(" / ") : "未知艺术家"))
-          .fontSize(this.getFontSize(this.song?.name ?? "", 16, 16))// .fontWeight(FontWeight.Bold)
-          .maxLines(1)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-          .fontColor('rgba(255, 255, 255, 0.6)')
-          .height(24) // 固定高度确保布局稳定
-        this.PlayerControls()
-        this.ProgressBar()
+          Text((this.song?.name || "未知歌曲") + '/' +
+            (this.song?.artists ? this.song.artists.map(artist => artist.name).join(" / ") : "未知艺术家"))
+            .fontSize(this.getFontSize(this.song?.name ?? "", 16, 16))// .fontWeight(FontWeight.Bold)
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+            .fontColor('rgba(255, 255, 255, 0.6)')
+            .height(24) // 固定高度确保布局稳定
+          Column(){this.PlayerControls()}.width('50%')
+          Column(){
+            this.ProgressBar(true,4,false)
+          }.width('65%')
+
+        }
+        .padding(18)
+        .width('65%')
+      }.alignItems(VerticalAlign.Center).justifyContent(FlexAlign.SpaceBetween).onAppear(()=>{        PreferencesCache.setUserPreference('Playing_HorizontalMode_index','0')
+        console.info("zhishi0")})
+      Row() {
+        //封面图
+        Column() {
+          Image(cover(this.song?.album?.cover ?? "", 512))
+            .width('60%')
+            .aspectRatio(1)
+            .borderRadius(24)
+            .geometryTransition("picture", { follow: false })
+            .transition(TransitionEffect.OPACITY)
+            .margin({bottom:5,top:20})
+            .onClick(()=>{
+              animateTo({ duration: 300 }, () => {
+                this.swiperController.showPrevious()
+              })
+            })
+          this.ProgressBar(false)
+
+          Text((this.song?.name || "未知歌曲") + '/' +
+            (this.song?.artists ? this.song.artists.map(artist => artist.name).join(" / ") : "未知艺术家"))
+            .fontSize(this.getFontSize(this.song?.name ?? "", 16, 16))// .fontWeight(FontWeight.Bold)
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+            .fontColor(Color.White)
+            .height(24) // 固定高度确保布局稳定
+            .margin({top:5})
+          this.PlayerControls(false)
+        }
+        .padding({
+          left: 45,
+          top: 12,
+          bottom: 12,
+          right: 12
+        })
+        .width('35%')
+        .height('100%')
+        .justifyContent(FlexAlign.Center)
+        .alignItems(HorizontalAlign.Center)
+        Column() {
+          LyricsView({
+            currentTimeMs: this.currentTime,
+            lyrics: this.song?.meta?.lyric?.normal,
+            translationLyrics: this.song?.meta?.lyric?.translation || this.song?.meta?.lyric?.transliteration,
+            mode_judge: false
+          }).width('100%').layoutWeight(1)
+        }
+        .padding(18)
+        .width('65%')
+      }.alignItems(VerticalAlign.Top).justifyContent(FlexAlign.SpaceBetween)
+    }.loop(false)
+    .effectMode(EdgeEffect.None)
+    .curve(Curve.Smooth)
+    .onChange((index:number)=>{
+      if (index===1) {
+        PreferencesCache.setUserPreference('Playing_HorizontalMode_index','1')
+        console.info("jizhishi_Swiperi_index1")
+      }else {
+        PreferencesCache.setUserPreference('Playing_HorizontalMode_index','0')
+        console.info("jizhishi_Swiperi_index0")
       }
-      .padding(18)
-      .width('65%')
-    }.alignItems(VerticalAlign.Center).justifyContent(FlexAlign.SpaceBetween).onAppear(() => {
+    })
+    .indicator(
+      new DotIndicator().top(10)
+        // .itemWidth(15)
+        // .itemHeight(15)
+        // .selectedItemWidth(15)
+        // .selectedItemHeight(15)
+        .color(Color.Gray)
+        .selectedColor(Color.White)
+    )
+    .onAppear(() => {
+      if (PreferencesCache.getUserPreference('Playing_HorizontalMode_index')==='1') {
+        this.swiperController.changeIndex(1)
+      }else{
+        this.swiperController.changeIndex(0)
+      }
       screen_on(true)
     }).onDisAppear(() => {
       screen_on(false)
@@ -278,9 +364,10 @@ struct Playing {
   }
 
   @Builder
-  ProgressBar() {
+  ProgressBar(judge:boolean=true,weight:number=0,judge_time_area:boolean=true) {
     Column() {
-      Row() {
+      if (judge&&judge_time_area){
+        Row() {
         Text(this.formatTime(this.currentTime))
           .fontSize(12)
           .fontColor('rgba(255, 255, 255, 0.6)')
@@ -299,9 +386,11 @@ struct Playing {
           .fontColor('rgba(255, 255, 255, 0.6)')
           .height(16) // 固定高度以保持布局稳定
       }
-      .width(StyleConstants.FULL_WIDTH)
-      .padding({ left: 8, right: 8 })
-      .height(20) // 固定高度以保持布局稳定
+          .width(StyleConstants.FULL_WIDTH)
+          .padding({ left: 8, right: 8 })
+          .height(20) // 固定高度以保持布局稳定
+        }
+
 
       Slider({
         value: this.currentTime,
@@ -309,7 +398,7 @@ struct Playing {
         step: 1,
         style: SliderStyle.NONE
       })
-        .trackThickness(this.isProgressBarExpanded ? 8 : 4)
+        .trackThickness(this.isProgressBarExpanded ? 8 : 4+weight)
         .selectedColor(Color.White)
         .trackColor('rgba(255, 255, 255, 0.3)')// 半透明背景
         .width(StyleConstants.FULL_WIDTH)
@@ -333,15 +422,39 @@ struct Playing {
             avPlayerManager.seek(this.currentTime)
           }
         })
+      if (judge&&judge_time_area===false){
+        Row() {
+          Text(this.formatTime(this.currentTime))
+            .fontSize(12)
+            .fontColor('rgba(255, 255, 255, 0.6)')
+            .height(16)// 固定高度以保持布局稳定
+            .animation({
+              duration: 500,
+              curve: Curve.Linear,
+              iterations: 1,
+              playMode: PlayMode.Normal
+            })
+
+          Blank()
+
+          Text(this.formatTime(this.song?.duration || 0))
+            .fontSize(12)
+            .fontColor('rgba(255, 255, 255, 0.6)')
+            .height(16) // 固定高度以保持布局稳定
+        }
+        .width(StyleConstants.FULL_WIDTH)
+        .padding({ left: 8, right: 8 })
+        .height(20) // 固定高度以保持布局稳定
+      }
     }
     .width(StyleConstants.FULL_WIDTH)
     .padding({
       left: 16,
       right: 16,
-      top: 8,
+      top: judge_time_area?8:0 ,
       bottom: 4
     })
-    .height(64) // 固定整个进度条区域的高度
+    .height( judge?64:32) // 固定整个进度条区域的高度
   }
 
   private coverWidth = new BreakPointType({
@@ -353,10 +466,10 @@ struct Playing {
   private smallButtonSize = 36
 
   @Builder
-  PlayerControls() {
+  PlayerControls(judge:boolean=true) {
     Row() {
       // Shuffle/repeat button (Left)
-      Button({ type: ButtonType.Circle }) {
+      if(judge){ Button({ type: ButtonType.Circle }) {
         Image(this.getPlayModeResource(this.playMode))
           .width(22)
           .height(22)
@@ -381,7 +494,9 @@ struct Playing {
             this.isShuffleButtonPressed = false
           }, 300)
         })
-      })
+      })}
+
+
 
       // Previous button
       Button({ type: ButtonType.Circle }) {
@@ -502,9 +617,8 @@ struct Playing {
           })
         }, 500, "playNext")
       })
-
       // Playlist button (Right)
-      Button({ type: ButtonType.Circle }) {
+      if (judge){      Button({ type: ButtonType.Circle }) {
         Image($r('app.media.ic_list'))
           .width(22)
           .height(22)
@@ -531,6 +645,7 @@ struct Playing {
           }, 300)
         })
       })
+      }
     }
     .width(StyleConstants.FULL_WIDTH)
     .padding({ left: 16, right: 16 })
