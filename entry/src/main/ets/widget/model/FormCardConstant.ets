@@ -31,7 +31,7 @@ export enum CollectAction {
 }
 
 export enum RouterType {
-  PLAYER = '1',
+  PLAYER = 'Playing',
   LYRICS = '2',
   PLAYLISTS = '3',
   COLLECTED = '4'

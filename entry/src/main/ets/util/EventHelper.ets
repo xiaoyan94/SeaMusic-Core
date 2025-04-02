@@ -216,6 +216,18 @@ export class EventHelper {
     });
   }
 
+  public static subscribeFormJumpPage(callback?: (targetPage: string) => void) {
+    EmitterUtil.onSubscribe("on_form_jump", (targetPage: string) => {
+      if (callback) {
+        callback(targetPage);
+      }
+      else{
+        let pageStack = AppStorage.get("pageStack") as NavPathStack
+        pageStack.replacePath({name:targetPage})
+      }
+    });
+  }
+
   public static postInitData(data: string) {
     EmitterUtil.post("on_init_data", data);
   }
@@ -236,5 +248,9 @@ export class EventHelper {
 
   public static postPauseTimer(pauseAt: number) {
     EmitterUtil.post("on_pause_timer", pauseAt);
+  }
+
+  public static postFormJumpPage(targetPage: string){
+    EmitterUtil.post("on_form_jump", targetPage);
   }
 }
