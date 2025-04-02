@@ -96,14 +96,14 @@ struct PlayControlCard2x4 {
 
       Row() {
         SymbolGlyph($r('sys.symbol.backward_end_fill'))
-          .fontSize(24)
+          .fontSize(30)
           .fontColor(['#E5FFFFFF'])
           .onClick(() => {
             ActionUtils.playByAction(this, PlayActionType.PREVIOUS, this.formId);
           })
 
-        SymbolGlyph(this.isPlay ? $r('sys.symbol.pause') : $r('sys.symbol.play_fill'))
-          .fontSize(24)
+        SymbolGlyph(this.isPlay ? $r('sys.symbol.pause_round_triangle_fill') : $r('sys.symbol.play_round_triangle_fill'))
+          .fontSize(30)
           .symbolEffect(new ReplaceSymbolEffect(EffectScope.WHOLE), true)
           .fontColor(['#E5FFFFFF'])
           .margin({
@@ -119,7 +119,7 @@ struct PlayControlCard2x4 {
           })
 
         SymbolGlyph($r('sys.symbol.forward_end_fill'))
-          .fontSize(24)
+          .fontSize(30)
           .fontColor(['#E5FFFFFF'])
           .onClick(() => {
             ActionUtils.playByAction(this, PlayActionType.NEXT, this.formId);
