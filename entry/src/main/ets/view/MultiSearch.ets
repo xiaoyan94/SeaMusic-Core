@@ -10,7 +10,6 @@ import { cover } from "../util/AdapterHelper";
 import { PlaylistManager } from "../util/PlaylistManager";
 import { PushPathHelper } from "../util/PushPathHelper";
 import { SlideDownControl } from "../util/SlideDownController";
-import { window } from '@kit.ArkUI';
 
 @Component
 export struct MultiSearch {
@@ -20,10 +19,9 @@ export struct MultiSearch {
   @State result: SearchResult | null = null;
   @State loading: boolean = false;
   @State currentIndex: number = -1;
-  @StorageProp('bottomAvoidAreaHeight') bottomRect: number = 0
-  @StorageProp('statusHeight') topRect: number = 0
+  @StorageProp('bottomRect') bottomRect: number = 0
+  @StorageProp('topRect') topRect: number = 0
   @StorageProp('winHeight') winHeight: number = 0
-  @State windowClass: window.Window | null = null //窗口管理器
   private scrollController: Scroller = new Scroller();
 
   private generatePlaylistMenu(playlist: Playlist) {
@@ -76,7 +74,6 @@ export struct MultiSearch {
     NavDestination() {
       Stack({ alignContent: Alignment.Bottom }){
         Column(){
-          Column().height(this.topRect)
           this.Title()
 
           List({ scroller: this.scrollController}){
@@ -245,46 +242,6 @@ export struct MultiSearch {
       .width(StyleConstants.FULL_WIDTH)
       .height(StyleConstants.FULL_HEIGHT)
     }
-    .onSizeChange(()=>{
-      window.getLastWindow(getContext(this), (err, windowClass) => {
-        if (!err.code) { //保存窗口管理器
-          this.windowClass = windowClass //获取状态栏高度
-          window.getLastWindow(getContext(this), (err, windowClass) => {
-            if (!err.code) { //保存窗口管理器
-              this.windowClass = windowClass //获取状态栏高度
-              this.windowClass?.setWindowLayoutFullScreen(false)
-              this.topRect =
-                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height) //获取手机底部规避区域高度
-              this.bottomRect =
-                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR).bottomRect.height)
-              this.windowClass?.setWindowLayoutFullScreen(true)
-            }
-          })
-        }
-      })
-
-
-    })
-    .onWillAppear(()=>{
-      window.getLastWindow(getContext(this), (err, windowClass) => {
-        if (!err.code) { //保存窗口管理器
-          this.windowClass = windowClass //获取状态栏高度
-          window.getLastWindow(getContext(this), (err, windowClass) => {
-            if (!err.code) { //保存窗口管理器
-              this.windowClass = windowClass //获取状态栏高度
-              this.windowClass?.setWindowLayoutFullScreen(false)
-              this.topRect =
-                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height) //获取手机底部规避区域高度
-              this.bottomRect =
-                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR).bottomRect.height)
-              this.windowClass?.setWindowLayoutFullScreen(true)
-            }
-          })
-        }
-      })
-
-
-    })
     .hideToolBar(true)
     .hideTitleBar(true)
     .backgroundColor($r('app.color.page_background'))

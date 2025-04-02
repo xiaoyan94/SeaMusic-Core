@@ -6,7 +6,7 @@ import { SourceAdapter } from "../adapter";
 import { PlaylistList } from "../component/PlaylistList";
 import { SlideDownControl } from "../util/SlideDownController";
 import { MiniPlaybackControl } from "../component/MiniPlaybackControl";
-import { window } from '@kit.ArkUI';
+
 @Builder
 export function LibraryBuilder(){
   Library()
@@ -21,10 +21,10 @@ struct Library {
   @StorageProp('currentBreakpoint') currentBreakpoint: string = 'sm';
   @State isLoading: boolean = false;
   private scrollController: Scroller = new Scroller();
-  @StorageLink('bottomAvoidAreaHeight') bottomRect: number = 0
-  @StorageLink('statusHeight') topRect: number = 0
+  @StorageProp('bottomRect') bottomRect: number = 0;
+  @StorageProp('topRect') topRect: number = 0;
   @StorageProp('winHeight') winHeight: number = 0;
-  @State windowClass: window.Window | null = null //窗口管理器
+
 
   onMenuIconClick(index: number) {
     if (index === 0) {
@@ -139,9 +139,7 @@ struct Library {
       Stack({ alignContent: Alignment.Bottom }) {
         Column() {
           // 标题
-          Column().height(this.topRect)
           this.Title()
-
           // 主内容
           List({ scroller: this.scrollController }) {
             // 下拉提示动画
@@ -220,8 +218,7 @@ struct Library {
           })
         }
         .width(StyleConstants.FULL_WIDTH)
-        .height('100%')
-
+        .height(StyleConstants.FULL_HEIGHT)
 
         // 底部迷你播控组件
         MiniPlaybackControl()
@@ -236,23 +233,6 @@ struct Library {
     .width(StyleConstants.FULL_WIDTH)
     .height(StyleConstants.FULL_HEIGHT)
     .expandSafeArea()
-    .onWillAppear(()=>{
-      window.getLastWindow(getContext(this), (err, windowClass) => {
-      if (!err.code) { //保存窗口管理器
-        this.windowClass = windowClass //获取状态栏高度
-        window.getLastWindow(getContext(this), (err, windowClass) => {
-          if (!err.code) { //保存窗口管理器
-            this.windowClass = windowClass //获取状态栏高度
-            this.windowClass?.setWindowLayoutFullScreen(true)
-            this.topRect =
-              px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height) //获取手机底部规避区域高度
-            this.bottomRect =
-              px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR).bottomRect.height)
-          }
-        })
-
-      }
-    })})
     .gesture(
       SwipeGesture({
         direction: SwipeDirection.Vertical,

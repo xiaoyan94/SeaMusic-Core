@@ -24,7 +24,6 @@ export function PlayingBuilder() {
 
 @Component
 struct Playing {
-  @State windowClass: window.Window | null = null //窗口管理器
   @Consume('NavPathStack') pageStack: NavPathStack;
   @Watch('onBreakpointChange') @StorageProp('currentBreakpoint') currentBreakpoint: string = 'sm'
   @State currentTime: number = 0
@@ -47,10 +46,6 @@ struct Playing {
   @State isMoreButtonPressed: boolean = false
   @State isBackButtonPressed: boolean = false
   @State Playing_Next: boolean = true
-
-  @StorageLink('bottomAvoidAreaHeight') bottomRect: number = 0
-  @StorageLink('statusHeight') topRect: number = 0
-
   private updateTimer: number = -1
   //TAB控制
   private controller: TabsController = new TabsController()
@@ -805,13 +800,11 @@ struct Playing {
         this.BlurBackground()
 
         Column() {
-
           // 标题栏
 
 
           // 根据屏幕尺寸显示不同布局
           if (this.isWideScreen && this.Playing_Next == false) {
-
             this.Title()
             // 宽屏布局 - 左右分栏
             Row() {
@@ -881,52 +874,12 @@ struct Playing {
             })
           }
         }
-        .onAreaChange(()=>{
-          window.getLastWindow(getContext(this), (err, windowClass) => {
-            if (!err.code) { //保存窗口管理器
-              this.windowClass = windowClass //获取状态栏高度
-              window.getLastWindow(getContext(this), (err, windowClass) => {
-                if (!err.code) { //保存窗口管理器
-                  this.windowClass = windowClass //获取状态栏高度
-                  this.windowClass?.setWindowLayoutFullScreen(false)
-                  this.topRect =
-                    px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height) //获取手机底部规避区域高度
-                  this.bottomRect =
-                    px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR).bottomRect.height)
-                  this.windowClass?.setWindowLayoutFullScreen(true)
-                }
-              })
-            }
-          })
-
-
-        })
-        .onSizeChange(()=>{
-          window.getLastWindow(getContext(this), (err, windowClass) => {
-            if (!err.code) { //保存窗口管理器
-              this.windowClass = windowClass //获取状态栏高度
-              window.getLastWindow(getContext(this), (err, windowClass) => {
-                if (!err.code) { //保存窗口管理器
-                  this.windowClass = windowClass //获取状态栏高度
-                  this.windowClass?.setWindowLayoutFullScreen(false)
-                  this.topRect =
-                    px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height) //获取手机底部规避区域高度
-                  this.bottomRect =
-                    px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR).bottomRect.height)
-                  this.windowClass?.setWindowLayoutFullScreen(true)
-                }
-              })
-            }
-          })
-
-
-        })
-        .padding({top:(this.isWideScreen && this.Playing_Next)?0:this.topRect})
         .width(StyleConstants.FULL_WIDTH)
         .height(StyleConstants.FULL_HEIGHT)
       }
       .width(StyleConstants.FULL_WIDTH)
-      .height('100%')
+      .height(StyleConstants.FULL_HEIGHT)
+      .expandSafeArea()
     }
     .hideToolBar(true)
     .hideTitleBar(true)
@@ -934,47 +887,15 @@ struct Playing {
     .mode(NavDestinationMode.STANDARD)
     .expandSafeArea()
     .width(StyleConstants.FULL_WIDTH)
-    .height('100%')
-    .onSizeChange(()=>{
-      window.getLastWindow(getContext(this), (err, windowClass) => {
-        if (!err.code) { //保存窗口管理器
-          this.windowClass = windowClass //获取状态栏高度
-          window.getLastWindow(getContext(this), (err, windowClass) => {
-            if (!err.code) { //保存窗口管理器
-              this.windowClass = windowClass //获取状态栏高度
-              this.windowClass?.setWindowLayoutFullScreen(false)
-              this.topRect =
-                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height) //获取手机底部规避区域高度
-              this.bottomRect =
-                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR).bottomRect.height)
-              this.windowClass?.setWindowLayoutFullScreen(true)
-            }
-          })
-        }
-      })
-
-
-    })
-    .onWillAppear(()=>{
-      window.getLastWindow(getContext(this), (err, windowClass) => {
-        if (!err.code) { //保存窗口管理器
-          this.windowClass = windowClass //获取状态栏高度
-          window.getLastWindow(getContext(this), (err, windowClass) => {
-            if (!err.code) { //保存窗口管理器
-              this.windowClass = windowClass //获取状态栏高度
-              this.windowClass?.setWindowLayoutFullScreen(false)
-              this.topRect =
-                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height) //获取手机底部规避区域高度
-              this.bottomRect =
-                px2vp(windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR).bottomRect.height)
-              this.windowClass?.setWindowLayoutFullScreen(true)
-            }
-          })
-        }
-      })
-
-
-    })
+    .height(StyleConstants.FULL_HEIGHT)
+    // .onWillShow(() => {
+    //   if (this.Playing_Next) {
+    //     this.windowClass?.setWindowLayoutFullScreen(true)
+    //   }
+    // })
+    // .onWillHide(() => {
+    //   this.windowClass?.setWindowLayoutFullScreen(false)
+    // })
     .gesture(
       SwipeGesture({
         // 竖直方向滑动

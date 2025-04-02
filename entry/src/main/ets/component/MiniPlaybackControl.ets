@@ -309,9 +309,8 @@ export struct MiniPlaybackControl {
           duration: 100,
           // 构造插值器弹簧曲线对象，生成一条从0到1的动画曲线
           curve: curves.interpolatingSpring(0, 1, 324, 38),
-          // curve:Curve.Friction
         }, () => {
-          this.pageStack.pushPath({ name: 'Playing' }, true)
+          this.pageStack.pushPath({ name: 'Playing' }, false)
         })
       }
     })
