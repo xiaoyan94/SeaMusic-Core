@@ -32,7 +32,7 @@ export struct PlaylistList {
         .height(StyleConstants.FULL_HEIGHT)
         .justifyContent(FlexAlign.Center)
       } else {
-        ForEach(this.playlists, (playlist: Playlist, pIndex) => {
+        LazyForEach(this.dataSource, (playlist: Playlist, pIndex) => {
           if(this.judgeSourceByDataSourceId(playlist)){
             ListItem(){
               this.PlaylistItem(playlist)
