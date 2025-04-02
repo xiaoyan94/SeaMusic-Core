@@ -16,6 +16,7 @@ import { MiniPlaybackControl } from "../component/MiniPlaybackControl";
 
 @Component
 export struct PlayList {
+  @State groupHeight: number = 0;
   @Consume('NavPathStack') pageStack: NavPathStack;
   @State currentIndex: number = -1
   @StorageLink("current_playlist_data") playlist: Playlist | null = null
@@ -210,13 +211,14 @@ export struct PlayList {
             // .margin({ top: index === 0 ? 12 : 0})
             .key(`${song.id}-${index}`)
           }, (song: Song, index: number) => `${song.id}-${index}`)
+        }
+        .onAreaChange((oldValue: Area, newValue: Area) => {
+          this.groupHeight = newValue.height as number
+        })
 
-          ListItem(){
-            if (this.countSubVp() > 0) {
-              Row(){
-                Blank().height(this.countSubVp())
-              }
-            }
+        ListItem(){
+          Row(){
+            Blank().height(this.countSubVp())
           }
         }
 
@@ -598,11 +600,11 @@ export struct PlayList {
   }
 
   countSubVp(): number {
-    let sub: number = 0
-    if(this.songDataSource.totalCount() <= 15){
-      // 填补高度=屏幕高度 - title高度50 - (播放组件高度40+上下padding高度2*4) - 状态栏高度 - 导航栏高度
-      sub = px2vp(this.winHeight) - (50+40+12*2+(68+2*4)*this.songDataSource.totalCount()) - px2vp(this.topRect) - px2vp(this.bottomRect)
-    }
+    let sub: number = px2vp(this.winHeight) - 50 - this.groupHeight - (this.bottomRect+this.topRect)
+    // if(this.songDataSource.totalCount() <= 15){
+    //   // 填补高度=屏幕高度 - title高度50 - (播放组件高度40+上下padding高度2*4) - 状态栏高度 - 导航栏高度
+    //   sub = px2vp(this.winHeight) - (50+40+12*2+(68+2*4)*this.songDataSource.totalCount()) - px2vp(this.topRect) - px2vp(this.bottomRect)
+    // }
     return sub > 0 ? sub : 0
   }
 }
