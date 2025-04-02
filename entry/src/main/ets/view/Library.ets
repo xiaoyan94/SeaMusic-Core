@@ -8,6 +8,8 @@ import { SlideDownControl } from "../util/SlideDownController";
 import { MiniPlaybackControl } from "../component/MiniPlaybackControl";
 import { cover } from "../util/AdapterHelper";
 import { promptAction } from "@kit.ArkUI";
+import { PreferencesCache } from "../util/PreferenceCache";
+import { ToastUtil } from "@pura/harmony-utils";
 
 @Builder
 export function LibraryBuilder(){
@@ -27,6 +29,7 @@ struct Library {
   @StorageProp('topRect') topRect: number = 0;
   @StorageProp('winHeight') winHeight: number = 0;
   @StorageProp("user_data_source") adapters: SourceConfig[] = []
+  @StorageLink("show_user_data_source") showAdapters: SourceConfig[] = PreferencesCache.getShowUserDataSource()
   @State sIndex: number = 0
   @State isExpanded: boolean = false
 
@@ -71,11 +74,13 @@ struct Library {
     .onClick(() => {
       this.isExpanded = !this.isExpanded;
     })
-    .bindContextMenu(this.isExpanded, this.SwitchSourceMenu(), {
-        onDisappear: () => {
+    .bindContextMenu(this.isExpanded, this.SwitchSourceMenu(),{
+      onDisappear: () => {
+        if(this.isExpanded){
           this.isExpanded = !this.isExpanded
         }
-      })
+      }
+    })
   }
 
   @Builder
@@ -89,26 +94,65 @@ struct Library {
 
   @Builder
   SourceMenuContent(sourceConfig: SourceConfig, sIndex: number){
-    Row({ space: 10 }) {
-      Column() {
+    Row() {
+      Row({ space: 5}) {
         Image(cover(sourceConfig.auth?.user?.avatar ?? ''))
           .width(20)
           .borderRadius(10)
           .shadow(ShadowStyle.OUTER_DEFAULT_XS)
+        Text((sourceConfig.auth?.user?.name ?? '') + '（' + sourceConfig.name + '）')
+          .maxLines(1)
+          .fontColor($r('app.color.text_primary'))
+          .fontSize('15fp')
+          .fontWeight(FontWeight.Bold)
       }
-      Text((sourceConfig.auth?.user?.name ?? '') + '（' + sourceConfig.name + '）')
-        .maxLines(1)
-        .fontColor($r('app.color.text_primary'))
-        .fontSize('15fp')
-        .fontWeight(FontWeight.Bold)
     }
-    .onClick(() => {
-      this.sIndex = sIndex
+    .backgroundColor(this.getBackgroundColor(sourceConfig))
+    .border({
+      width: 1,
+      color: this.getBorderColor(sourceConfig),
+      style: BorderStyle.Solid
     })
-    .padding({ left: 10, right: 10, top: 5, bottom: 5 })
+    .borderRadius(12)
+    .margin({ top: 5, bottom: 5})
+    .onClick(() => {
+      const exists: boolean = this.showAdapters.some(adapter => adapter.id === sourceConfig.id)
+      if(!exists){
+        PreferencesCache.addShowUserDataSource(sourceConfig)
+      }else{
+        PreferencesCache.deleteShowUserDataSource(sourceConfig.id)
+      }
+      this.sIndex = sIndex
+      this.isExpanded = !this.isExpanded
+    })
+    .borderRadius(10)
+    .padding({
+      left: 10,
+      right: 10,
+      top: 5,
+      bottom: 5
+    })
     .height(40)
   }
 
+  private getBackgroundColor(sourceConfig: SourceConfig) {
+    if (this.judgeHighLighting(sourceConfig)) {
+      return 'rgba(100, 149, 237, 0.15)'; // 高亮背景色
+    }
+    return Color.Transparent;
+  }
+
+  judgeHighLighting(sourceConfig: SourceConfig): boolean {
+    const result: boolean = this.showAdapters.some(adapter => adapter.id === sourceConfig.id)
+    return result
+  }
+
+  private getBorderColor(sourceConfig: SourceConfig) {
+    if (this.judgeHighLighting(sourceConfig)) {
+      return 'rgba(100, 149, 237, 0.4)'; // 高亮边框色
+    }
+    return Color.Transparent;
+  }
 
   showToast(msg: string) {
     promptAction.showToast({ message: msg, backgroundColor: Color.Transparent, backgroundBlurStyle: BlurStyle.BACKGROUND_THIN, bottom: StyleConstants.PLAYER_CONTROL_HEIGHT + 32 })
@@ -253,6 +297,7 @@ struct Library {
           .height(StyleConstants.FULL_HEIGHT)
           .layoutWeight(1)
           .edgeEffect(EdgeEffect.Spring)
+          .scrollBar(BarState.Off)
           .expandSafeArea()
           .backToTop(true)
           // 主页底部避让高度：播控组件高度(60) + 播控组件下方margin值(16)
