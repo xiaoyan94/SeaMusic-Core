@@ -28,6 +28,20 @@ class ImageUtils {
     let min = Math.min(Math.min(rRGB, gRGB), bRGB);
     let sHSB = max === 0 ? 0 : (max - min) / max;
     let bHSB = max / 255;
+    // 针对灰度色（无色彩饱和度）进行特殊处理，避免除 0 引起的错误
+    if (max === min) {
+      if (bHSB >= 0.4) {
+        bHSB = 0.3;
+      } else if (bHSB >= 0.2) {
+        bHSB -= 0.1;
+      } else {
+        bHSB = bHSB + 0.2;
+      }
+      let fixedValue = Math.floor(bHSB * 255.0);
+      return [fixedValue, fixedValue, fixedValue];
+    }
+
+    // 普通颜色的处理：正常计算色相 hHSB
     let hHSB = 0;
     if (max === rRGB && gRGB >= bRGB) {
       hHSB = 60 * (gRGB - bRGB) / (max - min) + 0;
@@ -141,9 +155,10 @@ class ImageUtils {
         let imageData = new ImageDealData();
         let colorPicker = await effectKit.createColorPicker(pixelMap);
         let mainColor = colorPicker.getMainColorSync();
+        LogUtil.info(TAG, `getImageDealDataByArr mainColor :${mainColor.red} ${mainColor.green} ${mainColor.blue} ${mainColor.alpha}`);
         let colorArr = this.dealColor(mainColor.red, mainColor.green, mainColor.blue);
         let imageColor = `rgba(${colorArr[0]}, ${colorArr[1]}, ${colorArr[2]}, 1)`;
-        let imageColorHex = `${colorArr[0].toString(16)}${colorArr[1].toString(16)}${colorArr[2].toString(16)}`;
+        let imageColorHex = `${colorArr[0].toString(16).padStart(2, '0')}${colorArr[1].toString(16).padStart(2, '0')}${colorArr[2].toString(16).padStart(2, '0')}`;
         LogUtil.info(TAG, `getImageDealDataByArr imageColor :${imageColor}`);
         LogUtil.info(TAG, `getImageDealDataByArr imageColorHex :${imageColorHex}`);
         if (imageColorHex.length === 5)

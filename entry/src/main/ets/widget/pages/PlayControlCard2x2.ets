@@ -102,7 +102,7 @@ struct PlayControlCard2x2 {
     .linearGradient({
       direction: GradientDirection.Bottom,
       repeating: false,
-      colors: this.imageColorHex.length === 6 ? [[`#ff${this.imageColorHex}`, 0.0], [`#cc${this.imageColorHex}`, 0.5], [`#ff${this.imageColorHex}`, 1.0]] : [[`#ff18191d`, 0.0], [`#cc18191d`, 0.5], [`#ff18191d`, 1.0]]
+      colors: [[`#ff${this.imageColorHex}`, 0.0], [`#cc${this.imageColorHex}`, 0.5], [`#ff${this.imageColorHex}`, 1.0]]
     })
     .padding(12)
     .onClick(() => {
