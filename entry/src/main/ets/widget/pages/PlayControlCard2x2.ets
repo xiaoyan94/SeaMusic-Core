@@ -79,8 +79,8 @@ struct PlayControlCard2x2 {
         })
 
       Image(this.loaded ? 'memory://' + this.imgName: $r('app.media.icon'))
-        .height(60)
-        .width(60)
+        .height('50%')
+        .width('50%')
         .borderRadius(8)
         .alignRules(CoverAlignRules)
         .margin({ top: 2 })
