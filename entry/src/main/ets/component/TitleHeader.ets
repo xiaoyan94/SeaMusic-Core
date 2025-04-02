@@ -51,33 +51,37 @@ export struct TitleHeader {
       Row() {
         Row() {
           // this.BackButton()
+
           Text(this.title)
             .fontColor($r('app.color.text_title'))
             .fontWeight(StyleConstants.FONT_WEIGHT_SEVEN)
             .fontSize($r('app.float.title_font_size'))
             .maxLines(1)
           // 占位，把“返回”挤出屏幕
-          Blank()
+          if (this.rightContent) {
+            this.rightContent()
+          }
+          // Blank()
         }
+        .padding({ left: 16, right: 16})
         .justifyContent(FlexAlign.SpaceBetween)
         .width(StyleConstants.FULL_WIDTH)
-        .alignItems(VerticalAlign.Top)
-
-        Text('返回')
-          .fontColor($r('app.color.text_title'))
-          .fontWeight(StyleConstants.FONT_WEIGHT_SEVEN)
-          .fontSize($r('app.float.title_font_size'))
-          .maxLines(1)
-          .padding({ left: 16 })  // 与主页标题左padding一致
-
-        if (this.rightContent) {
-          this.rightContent()
+        .alignItems(VerticalAlign.Center)
+        Row() {
+          Text('返回')
+            .fontColor($r('app.color.text_title'))
+            .fontWeight(StyleConstants.FONT_WEIGHT_SEVEN)
+            .fontSize($r('app.float.title_font_size'))
+            .maxLines(1)
         }
+        .padding({ left: 16 })
+
+
       }
       .width(StyleConstants.FULL_WIDTH)
       .backgroundColor(Color.Transparent)
       .height(50)
-      .translate({ x: this.backActive ? '-100%' : 16 }) // 初始值16与所有标题左padding一致
+      .translate({ x: this.backActive ? '-100%' : 0 }) // 初始值16与所有标题左padding一致
       .animation({
         duration: 300,
         curve: Curve.FastOutSlowIn
