@@ -12,7 +12,7 @@ const CollectAlignRules: Record<string, Record<string, string | VerticalAlign | 
 };
 
 const CoverAlignRules: Record<string, Record<string, string | VerticalAlign | HorizontalAlign>> = {
-  'bottom': { 'anchor': '__container__', 'align': VerticalAlign.Bottom }
+  'top': { 'anchor': 'singerText', 'align': VerticalAlign.Bottom }
 };
 
 const PlayAlignRules: Record<string, Record<string, string | VerticalAlign | HorizontalAlign>> = {
@@ -79,23 +79,44 @@ struct PlayControlCard2x2 {
         })
 
       Image(this.loaded ? 'memory://' + this.imgName: $r('app.media.icon'))
-        .height(78)
-        .width(78)
+        .height(60)
+        .width(60)
         .borderRadius(8)
         .alignRules(CoverAlignRules)
+        .margin({ top: 2 })
 
-      SymbolGlyph(this.isPlay ? $r('sys.symbol.pause_round_triangle_fill') : $r('sys.symbol.play_round_triangle_fill'))
-        .fontSize(36)
-        .symbolEffect(new ReplaceSymbolEffect(EffectScope.WHOLE), true)
-        .fontColor(['#E5FFFFFF'])
-        .alignRules(PlayAlignRules)
-        .onClick(() => {
-          if (this.isPlay) {
-            ActionUtils.playByAction(this, PlayActionType.PAUSE, this.formId);
-          } else {
-            ActionUtils.playByAction(this, PlayActionType.PLAY, this.formId);
-          }
-        })
+
+      Row() {
+        SymbolGlyph($r('sys.symbol.backward_end_fill'))
+          .fontSize(28)
+          .fontColor(['#E5FFFFFF'])
+          .onClick(() => {
+            ActionUtils.playByAction(this, PlayActionType.PREVIOUS, this.formId);
+          })
+
+        SymbolGlyph(this.isPlay ? $r('sys.symbol.pause_round_triangle_fill') : $r('sys.symbol.play_round_triangle_fill'))
+          .fontSize(28)
+          .symbolEffect(new ReplaceSymbolEffect(EffectScope.WHOLE), true)
+          .fontColor(['#E5FFFFFF'])
+          .onClick(() => {
+            if (this.isPlay) {
+              ActionUtils.playByAction(this, PlayActionType.PAUSE, this.formId);
+            } else {
+              ActionUtils.playByAction(this, PlayActionType.PLAY, this.formId);
+            }
+          })
+
+        SymbolGlyph($r('sys.symbol.forward_end_fill'))
+          .fontSize(28)
+          .fontColor(['#E5FFFFFF'])
+          .onClick(() => {
+            ActionUtils.playByAction(this, PlayActionType.NEXT, this.formId);
+          })
+      }
+      .height(30)
+      .justifyContent(FlexAlign.SpaceBetween)
+      .alignRules(PlayAlignRules)
+      .width('100%')
     }
     .height('100%')
     .width('100%')
