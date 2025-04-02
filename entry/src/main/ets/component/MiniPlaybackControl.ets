@@ -102,6 +102,22 @@ export struct MiniPlaybackControl {
     .position({ x: 0, y: 0 })
   }
 
+  @Builder
+  ProgressBarCircle() {
+    Column() {
+      Progress({
+        value: this.currentTimeMs,
+        total: this.durationMs || 100,
+        type: ProgressType.Ring
+      })
+        .height(38)
+        .width(38)
+        .color($r('app.color.text_click'))
+        .style({ strokeWidth: 1, shadow: false })
+        .backgroundColor('transparent')
+    }
+  }
+
   // 播放列表弹层构建器
   @Builder
   PlayListBuilder() {
@@ -143,7 +159,7 @@ export struct MiniPlaybackControl {
 
       Row() {
         // 进度条（覆盖在整个组件上方）
-        this.ProgressBar()
+        // this.ProgressBar()
 
         // 主控制栏布局
         Row() {
@@ -181,15 +197,19 @@ export struct MiniPlaybackControl {
           // 控制按钮组
           Row({ space: 8 }) {
             // 播放/暂停按钮
-            Button({ type: ButtonType.Circle }) {
-              Image(this.isPlaying ? $r('app.media.ic_pause') : $r('app.media.ic_play'))
-                .width(20)
-                .height(20)
-                .fillColor($r('app.color.text_primary'))
+            Stack(){
+              Button({ type: ButtonType.Circle }) {
+                Image(this.isPlaying ? $r('app.media.ic_pause') : $r('app.media.ic_play'))
+                  .width(20)
+                  .height(20)
+                  .fillColor($r('app.color.text_primary'))
+              }
+              .width(36)
+              .height(36)
+              .backgroundColor('rgba(200, 200, 200, 0.1)')
+
+              this.ProgressBarCircle()
             }
-            .width(36)
-            .height(36)
-            .backgroundColor('rgba(200, 200, 200, 0.1)')
             .onClick(() => {
               if (this.isPlaying) {
                 this.playerManager.pause();
@@ -197,6 +217,7 @@ export struct MiniPlaybackControl {
                 this.playerManager.play();
               }
             })
+
 
             // 下一首按钮
             Button({ type: ButtonType.Circle }) {
