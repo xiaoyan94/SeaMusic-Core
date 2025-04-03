@@ -1,18 +1,23 @@
 import { LazyData } from "@pie/lazy-data";
-import { Playlist } from "../type/Adapter";
+import { Playlist, SourceConfig } from "../type/Adapter";
 import { ToastUtil } from '@pura/harmony-utils';
 import { SourceAdapter } from '../adapter';
 import { StyleConstants } from '../constants/StyleConstants';
 import { cover } from '../util/AdapterHelper';
 import { PlaylistManager } from '../util/PlaylistManager';
 import { PushPathHelper } from '../util/PushPathHelper';
+import { PreferencesCache } from "../util/PreferenceCache";
 
 @Component
 export struct PlaylistList {
+  @StorageProp('bottomRect') bottomRect: number = 0
   @Prop playlists: Playlist[] = [];
   onPlaylistSelected?: (playlist: Playlist) => void;
   @StorageProp('currentBreakpoint') currentBreakpoint: string = 'sm';
+  @StorageLink("show_user_data_source") showAdapters: SourceConfig[] = PreferencesCache.getShowUserDataSource()
   @State dataSource: LazyData<Playlist> = new LazyData<Playlist>(this.playlists);
+  @Prop adapters: SourceConfig[] = []
+  @Link sIndex: number
 
   build() {
     Column() {
@@ -27,23 +32,67 @@ export struct PlaylistList {
         .height(StyleConstants.FULL_HEIGHT)
         .justifyContent(FlexAlign.Center)
       } else {
-        // 歌单列表展示
-        List() {
-          LazyForEach(this.dataSource, (playlist: Playlist) => {
-            ListItem() {
+        LazyForEach(this.dataSource, (playlist: Playlist, pIndex) => {
+          if(this.judgeSourceByDataSourceId(playlist)){
+            ListItem(){
               this.PlaylistItem(playlist)
             }
-          })
-        }
-        .width('100%')
-        .listDirection(Axis.Vertical)
-        .divider({ strokeWidth: 0.5, color: $r('app.color.divider'), startMargin: 16, endMargin: 16 })
-        .backgroundColor($r('app.color.page_background'))
+          }
+        })
+        // 歌单列表展示
+        // Tabs({ index: this.sIndex }){
+        //   ForEach(this.adapters, (adapter: SourceConfig, SIndex) => {
+        //     TabContent(){
+        //       List() {
+        //         ListItem(){
+        //           Row().height(12)
+        //         }
+        //         ForEach(this.playlists, (playlist: Playlist, pIndex) => {
+        //           if(this.judgeSource(playlist, adapter)){
+        //             ListItem(){
+        //               this.PlaylistItem(playlist)
+        //             }
+        //           }
+        //         })
+        //         ListItem(){
+        //           Column()
+        //             .height(StyleConstants.PLAYER_CONTROL_HEIGHT + 32 + px2vp(this.bottomRect))
+        //         }
+        //       }
+        //       .nestedScroll({ scrollForward: NestedScrollMode.SELF_ONLY, scrollBackward: NestedScrollMode.SELF_FIRST})
+        //       .width('100%')
+        //       .height('100%')
+        //       .listDirection(Axis.Vertical)
+        //       .edgeEffect(EdgeEffect.Spring)
+        //       .scrollBar(BarState.Off)
+        //       // .divider({ strokeWidth: 0.5, color: $r('app.color.divider'), startMargin: 16, endMargin: 16 })
+        //       .backgroundColor($r('app.color.page_background'))
+        //     }
+        //     .tabBar(adapter.name+" "+adapter.auth?.user?.name)
+        //   })
+        // }
+        // .scrollable(false)
+        // .edgeEffect(EdgeEffect.Spring)
+        // .barHeight(0)
       }
     }
     .width('100%')
     .backgroundColor($r('app.color.page_background'))
     .expandSafeArea()
+  }
+
+  judgeSourceByDataSourceId(playlist: Playlist): boolean {
+    const exists = this.showAdapters.some(adapter => adapter.id === playlist.source?.id)
+    return exists
+  }
+
+  judgeSource(playlist: Playlist, sourceConfig: SourceConfig): boolean {
+    if(playlist.source?.auth?.user && sourceConfig.auth?.user){
+      if(playlist.source.auth?.user?.id === sourceConfig.auth?.user?.id){
+        return true
+      }
+    }
+    return false
   }
 
   @Builder

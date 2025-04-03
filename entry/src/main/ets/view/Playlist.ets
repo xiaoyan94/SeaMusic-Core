@@ -662,8 +662,10 @@ export struct PlayList {
           })
           .onChange((value: string) => {
             this.searchKeywords = value
+            if (value.trim() === '' || !value) {
+              this.filterSongs()
+            }
           })
-          .margin(0)
           .backgroundBlurStyle(BlurStyle.Regular)
           .layoutWeight(1)
           .height(36)
