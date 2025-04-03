@@ -59,11 +59,12 @@ export default class EntryAbility extends UIAbility {
       }
     })
     EventHelper.subscribeSongState(async (data) => {
+      hilog.info(0x0000, 'testTag', 'context '+ this.context);
       if (data === 'PLAY') {
-        await backgroundRunningManager.startBackgroundRunning();
+        await backgroundRunningManager.startBackgroundRunning(this.context);
         FormUtils.updateCardPlayStatus(true);
       } else if (data === 'PAUSE') {
-        await backgroundRunningManager.stopBackgroundRunning();
+        await backgroundRunningManager.stopBackgroundRunning(this.context);
         FormUtils.updateCardPlayStatus(false);
       }
     })
