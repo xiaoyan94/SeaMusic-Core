@@ -111,10 +111,14 @@ export struct MiniPlaybackControl {
         total: this.durationMs || 100,
         type: ProgressType.Ring
       })
-        .height(38)
-        .width(38)
+        .height(37)
+        .width(37)
         .color($r('app.color.text_click'))
-        .style({ strokeWidth: 1, shadow: false })
+        .style({
+          strokeWidth: 2,
+          shadow: false,
+          status: ProgressStatus.PROGRESSING
+        })
         .backgroundColor('transparent')
     }
   }
@@ -212,12 +216,13 @@ export struct MiniPlaybackControl {
                     .fillColor($r('app.color.text_primary'))
                     .margin({ left: 2 })
                 }
-
               }
-              .alignSelf(ItemAlign.Center)
               .width(36)
               .height(36)
-              .backgroundColor('rgba(200, 200, 200, 0.1)')
+              .alignSelf(ItemAlign.Center)
+              .backgroundBlurStyle(BlurStyle.Thin)
+              .backgroundColor('rgba(179, 179, 179, 0.10)')
+              .shadow(ShadowStyle.OUTER_DEFAULT_XS)
 
               this.ProgressBarCircle()
             }
@@ -239,7 +244,9 @@ export struct MiniPlaybackControl {
             }
             .width(36)
             .height(36)
+            .backgroundBlurStyle(BlurStyle.Thin)
             .backgroundColor('rgba(200, 200, 200, 0.1)')
+            .shadow(ShadowStyle.OUTER_DEFAULT_XS)
             .onClick(() => {
               const nextSong = PlaylistManager.playNext();
               if (nextSong) {
@@ -256,7 +263,9 @@ export struct MiniPlaybackControl {
             }
             .width(36)
             .height(36)
+            .backgroundBlurStyle(BlurStyle.Thin)
             .backgroundColor('rgba(200, 200, 200, 0.1)')
+            .shadow(ShadowStyle.OUTER_DEFAULT_XS)
             .onClick(() => {
               this.showPlaylist = true;
             })

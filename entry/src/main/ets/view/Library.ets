@@ -96,6 +96,16 @@ struct Library {
           })
           .margin(5)
           .borderRadius(20)
+          .onClick(() => {
+            const exists: boolean = this.showAdapters.some(adapterShow => adapterShow.id === adapter.id)
+            if(!exists){
+              PreferencesCache.addShowUserDataSource(adapter)
+            }else{
+              PreferencesCache.deleteShowUserDataSource(adapter.id)
+            }
+            this.sIndex = sIndex
+            this.isExpanded = !this.isExpanded
+          })
       })
     }
   }
@@ -115,16 +125,6 @@ struct Library {
           .fontWeight(FontWeight.Bold)
       }
     }
-    .onClick(() => {
-      const exists: boolean = this.showAdapters.some(adapter => adapter.id === sourceConfig.id)
-      if(!exists){
-        PreferencesCache.addShowUserDataSource(sourceConfig)
-      }else{
-        PreferencesCache.deleteShowUserDataSource(sourceConfig.id)
-      }
-      this.sIndex = sIndex
-      this.isExpanded = !this.isExpanded
-    })
     .padding({
       left: 10,
       right: 10,
