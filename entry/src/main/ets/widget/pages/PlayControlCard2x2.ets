@@ -29,12 +29,12 @@ struct PlayControlCard2x2 {
   @LocalStorageProp('isPlay') isPlay: boolean = false;
   @LocalStorageProp('title') title: string = '当前歌曲';
   @LocalStorageProp('isCollected') isCollected: boolean = false;
-  @LocalStorageProp('imgName') imgName: ResourceStr = $r('app.media.icon');
+  @LocalStorageProp('imgName') imgName: ResourceStr = $r('app.media.default_cover');
   @LocalStorageProp('singer') singer: string = '歌手';
   @LocalStorageProp('songId') songId: string = '';
   @LocalStorageProp('isNeedRequestUpdate') @Watch('requestData') isNeedRequestUpdate: boolean = false;
-  @LocalStorageProp('imageColor') imageColor: string = 'rgba(76, 72, 68, 1)';
-  @LocalStorageProp('imageColorHex') imageColorHex: string = '18191d';
+  @LocalStorageProp('imageColor') imageColor: string = 'rgba(54,87,124,1)';
+  @LocalStorageProp('imageColorHex') imageColorHex: string = '36577c';
   @LocalStorageProp('loaded') loaded: boolean = false;
 
   requestData() {
@@ -78,7 +78,7 @@ struct PlayControlCard2x2 {
           }
         })
 
-      Image(this.loaded ? 'memory://' + this.imgName: $r('app.media.icon'))
+      Image(this.loaded ? 'memory://' + this.imgName: $r('app.media.default_cover'))
         .height('50%')
         .width('50%')
         .borderRadius(8)
