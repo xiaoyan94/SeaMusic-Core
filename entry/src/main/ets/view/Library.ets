@@ -1,11 +1,15 @@
 import { TitleHeader } from "../component/TitleHeader";
 import { StyleConstants } from "../constants/StyleConstants";
-import { Playlist } from "../type/Adapter";
+import { Playlist, SourceConfig } from "../type/Adapter";
 import { PushPathHelper } from "../util/PushPathHelper";
 import { SourceAdapter } from "../adapter";
 import { PlaylistList } from "../component/PlaylistList";
 import { SlideDownControl } from "../util/SlideDownController";
 import { MiniPlaybackControl } from "../component/MiniPlaybackControl";
+import { cover } from "../util/AdapterHelper";
+import { promptAction } from "@kit.ArkUI";
+import { PreferencesCache } from "../util/PreferenceCache";
+import { ToastUtil } from "@pura/harmony-utils";
 
 @Builder
 export function LibraryBuilder(){
@@ -24,7 +28,10 @@ struct Library {
   @StorageProp('bottomRect') bottomRect: number = 0;
   @StorageProp('topRect') topRect: number = 0;
   @StorageProp('winHeight') winHeight: number = 0;
-
+  @StorageProp("user_data_source") adapters: SourceConfig[] = []
+  @StorageLink("show_user_data_source") showAdapters: SourceConfig[] = PreferencesCache.getShowUserDataSource()
+  @State sIndex: number = 0
+  @State isExpanded: boolean = false
 
   onMenuIconClick(index: number) {
     if (index === 0) {
@@ -50,7 +57,104 @@ struct Library {
     TitleHeader({
       title: $r('app.string.library'),
       backActive: this.currentIndex === 0,
+      rightContent: () => {
+        this.ButtonS()
+      }
     })
+  }
+
+  @Builder
+  ButtonS(){
+    Row(){
+      Image(cover(this.adapters[this.sIndex].auth?.user?.avatar ?? '', 200))
+        .shadow(ShadowStyle.OUTER_DEFAULT_XS)
+        .width(35)
+        .borderRadius(17.5)
+    }
+    .onClick(() => {
+      this.isExpanded = !this.isExpanded;
+    })
+    .bindContextMenu(this.isExpanded, this.SwitchSourceMenu(),{
+      onDisappear: () => {
+        if(this.isExpanded){
+          this.isExpanded = !this.isExpanded
+        }
+      }
+    })
+  }
+
+  @Builder
+  SwitchSourceMenu(){
+    Menu(){
+      ForEach(this.adapters, (adapter: SourceConfig, sIndex) => {
+        MenuItem(this.SourceMenuContent(adapter, sIndex))
+          .backgroundColor(this.getBackgroundColor(adapter))
+          .border({
+            width: 1,
+            color: this.getBorderColor(adapter),
+            style: BorderStyle.Solid
+          })
+          .margin(5)
+          .borderRadius(20)
+      })
+    }
+  }
+
+  @Builder
+  SourceMenuContent(sourceConfig: SourceConfig, sIndex: number){
+    Row() {
+      Row({ space: 5}) {
+        Image(cover(sourceConfig.auth?.user?.avatar ?? ''))
+          .width(20)
+          .borderRadius(10)
+          .shadow(ShadowStyle.OUTER_DEFAULT_XS)
+        Text((sourceConfig.auth?.user?.name ?? '') + '（' + sourceConfig.name + '）')
+          .maxLines(1)
+          .fontColor($r('app.color.text_primary'))
+          .fontSize('15fp')
+          .fontWeight(FontWeight.Bold)
+      }
+    }
+    .onClick(() => {
+      const exists: boolean = this.showAdapters.some(adapter => adapter.id === sourceConfig.id)
+      if(!exists){
+        PreferencesCache.addShowUserDataSource(sourceConfig)
+      }else{
+        PreferencesCache.deleteShowUserDataSource(sourceConfig.id)
+      }
+      this.sIndex = sIndex
+      this.isExpanded = !this.isExpanded
+    })
+    .padding({
+      left: 10,
+      right: 10,
+      top: 5,
+      bottom: 5
+    })
+    .height(40)
+  }
+
+  private getBackgroundColor(sourceConfig: SourceConfig) {
+    if (this.judgeHighLighting(sourceConfig)) {
+      return 'rgba(100, 149, 237, 0.15)'; // 高亮背景色
+    }
+    return Color.Transparent;
+  }
+
+  judgeHighLighting(sourceConfig: SourceConfig): boolean {
+    const result: boolean = this.showAdapters.some(adapter => adapter.id === sourceConfig.id)
+    return result
+  }
+
+  private getBorderColor(sourceConfig: SourceConfig) {
+    if (this.judgeHighLighting(sourceConfig)) {
+      return 'rgba(100, 149, 237, 0.4)'; // 高亮边框色
+    }
+    return Color.Transparent;
+  }
+
+  showToast(msg: string) {
+    promptAction.showToast({ message: msg, backgroundColor: Color.Transparent, backgroundBlurStyle: BlurStyle.BACKGROUND_THIN, bottom: StyleConstants.PLAYER_CONTROL_HEIGHT + 32 })
   }
 
   @Builder
@@ -154,7 +258,9 @@ struct Library {
               // 我的歌单部分
               ListItem() {
                 PlaylistList({
-                  playlists: this.playlists,
+                  playlists: [...this.playlists],
+                  sIndex: this.sIndex,
+                  adapters: this.adapters,
                   onPlaylistSelected: (item: Playlist) => {
                     PushPathHelper.pushPath(this.pageStack, "Playlist", async () => {
                       const playlist = await SourceAdapter.getPlaylistDetail(item)
@@ -162,7 +268,6 @@ struct Library {
                     })
                   }
                 })
-                  .padding({ top: 12 })
               }
               .width(StyleConstants.FULL_WIDTH)
               .onAreaChange((oldValue: Area, newValue: Area) => {
@@ -191,6 +296,7 @@ struct Library {
           .height(StyleConstants.FULL_HEIGHT)
           .layoutWeight(1)
           .edgeEffect(EdgeEffect.Spring)
+          .scrollBar(BarState.Off)
           .expandSafeArea()
           .backToTop(true)
           // 主页底部避让高度：播控组件高度(60) + 播控组件下方margin值(16)

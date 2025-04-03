@@ -84,10 +84,13 @@ export struct Setting {
         if (this.isEditing) {
           // 编辑现有数据源
           PreferencesCache.updateUserDataSource(source)
+          PreferencesCache.updateShowUserDataSource(source)
           ToastUtil.showShort('数据源已更新')
         } else {
           // 添加新数据源
           PreferencesCache.addUserDataSource(source)
+          // 添加展示数据源
+          PreferencesCache.addShowUserDataSource(source)
           ToastUtil.showShort('数据源已添加')
         }
 
@@ -570,6 +573,7 @@ export struct Setting {
             onAction: (action) => {
               if (action == DialogAction.TWO) {
                 PreferencesCache.deleteUserDataSource(adapter.id)
+                PreferencesCache.deleteShowUserDataSource(adapter.id)
                 ToastUtil.showShort('数据源已删除')
               }
             }
