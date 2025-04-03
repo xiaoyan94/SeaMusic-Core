@@ -29,9 +29,38 @@ const DEFAULT_COVER_SIZE = 256
 
 @Entry
 @Component
-struct Index {
-  @State blankHeight: number = 0
+struct Index{
   @Provide('NavPathStack') pageStack: NavPathStack = new NavPathStack()
+  @Builder
+  PageMap(name: string) {
+    if (name === 'ComingSoon') {
+      ComingSoon()
+    } else if (name === 'Setting') {
+      Setting()
+    } else if (name === 'Playlist') {
+      PlayList()
+    } else if (name === 'MultiSearch') {
+      MultiSearch()
+    }else if (name === 'Index_page') {
+      Index_page()
+    }
+  }
+  aboutToAppear(): void {
+    this.pageStack.replacePath({name: 'Index_page'})
+  }
+  build() {
+    Navigation(this.pageStack) {
+      // empty
+    }
+    .navDestination(this.PageMap)
+    .hideNavBar(true)
+    .mode(NavigationMode.Stack)
+  }
+}
+@Component
+struct Index_page {
+  @State blankHeight: number = 0
+  @Consume('NavPathStack') pageStack: NavPathStack
   @StorageProp('currentBreakpoint') currentBreakpoint: string = 'sm'
   private breakpointSystem = new BreakpointSystem()
   private menuItems = HomePageMenuData
@@ -419,7 +448,7 @@ struct Index {
   }
 
   build() {
-    Navigation(this.pageStack) {
+    NavDestination() {
       Stack({ alignContent: Alignment.Bottom }){
         List({ scroller: this.scrollController }){
           ListItem(){
@@ -511,8 +540,7 @@ struct Index {
     }
     .height(StyleConstants.FULL_HEIGHT)
     .width(StyleConstants.FULL_WIDTH)
-    .mode(NavigationMode.Stack)
-    .navDestination(this.PageMap)
+    .systemTransition(NavigationSystemTransitionType.FADE)
     .hideToolBar(true)
     .hideBackButton(true)
     .title({

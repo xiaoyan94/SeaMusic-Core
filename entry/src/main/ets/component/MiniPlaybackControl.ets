@@ -347,13 +347,14 @@ export struct MiniPlaybackControl {
     .onClick(() => {
       // 只有在没有滑动时才响应点击事件
       if (!this.isSwipingActive && this.currentSong) {
-        animateTo({
-          duration: 100,
-          // 构造插值器弹簧曲线对象，生成一条从0到1的动画曲线
-          curve: curves.interpolatingSpring(0, 1, 324, 38),
-        }, () => {
-          this.pageStack.pushPath({ name: 'Playing' }, false)
-        })
+        // animateTo({
+        //   duration: 100,
+        //   // 构造插值器弹簧曲线对象，生成一条从0到1的动画曲线
+        //   curve: curves.interpolatingSpring(0, 1, 324, 38),
+        // }, () => {
+        //   this.pageStack.pushPath({ name: 'Playing' }, false)
+        // })
+        this.pageStack.pushPath({ name: 'Playing' }, true)
       }
     })
     .bindSheet($$this.showPlaylist, this.PlayListBuilder(), {

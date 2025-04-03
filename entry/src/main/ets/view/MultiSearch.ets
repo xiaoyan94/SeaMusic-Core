@@ -249,6 +249,7 @@ export struct MultiSearch {
     .expandSafeArea()
     .width(StyleConstants.FULL_WIDTH)
     .height(StyleConstants.FULL_HEIGHT)
+    .systemTransition(NavigationSystemTransitionType.SLIDE_RIGHT)
     .gesture(
       SwipeGesture({
         direction: SwipeDirection.Vertical,
