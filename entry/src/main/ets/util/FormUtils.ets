@@ -172,12 +172,13 @@ class FormUtils {
   }
 
 
-  public async updateRecommendedCard(formId: string, imageUrl: string) {
+  public async updateRecommendedCards(imageUrl: string) {
+    let formList: Array<FormInfo> = await FormRdbHelper.getInstance(FormUtils.context!).queryFormByName('RecommendedMusic');
     let tempDir = FormUtils.context!.getApplicationContext().tempDir;
     let fileName = 'file' + Date.now();
     let tmpFile = tempDir + '/' + fileName + '.jpg';
     let httpRequest = http.createHttp();
-    let data = await httpRequest.request(imageUrl);
+    let data = await httpRequest.request(imageUrl+'?param=512y512');
     let imgMap: Record<string, number> = {};
 
     class FormDataClass {
@@ -198,7 +199,9 @@ class FormUtils {
         LogUtil.info(TAG, `ArkTSCard download complete: ${tmpFile}`);
         let formData = new FormDataClass();
         formData.imageColorHex = imageDealData.imageColorHex;
-        this.updateForm(formId, formData)
+        formList.forEach(formInfo => {
+          this.updateForm(formInfo.formId, formData);
+        });
       } catch (err) {
         LogUtil.error(TAG, `write data to file failed with error: ${JSON.stringify(err)}`);
       } finally {

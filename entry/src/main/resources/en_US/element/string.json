@@ -139,6 +139,10 @@
     {
       "name": "widget_desc_control",
       "value": "Music Control Widget"
+    },
+    {
+      "name": "my_playlist",
+      "value": "My Playlist"
     }
   ]
 }

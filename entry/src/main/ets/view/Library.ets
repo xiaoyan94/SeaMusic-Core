@@ -6,6 +6,8 @@ import { SourceAdapter } from "../adapter";
 import { PlaylistList } from "../component/PlaylistList";
 import { SlideDownControl } from "../util/SlideDownController";
 import { MiniPlaybackControl } from "../component/MiniPlaybackControl";
+import { LogUtil } from "@pura/harmony-utils";
+import FormUtils from "../util/FormUtils"
 import { cover } from "../util/AdapterHelper";
 import { promptAction } from "@kit.ArkUI";
 import { PreferencesCache } from "../util/PreferenceCache";
@@ -50,6 +52,11 @@ struct Library {
     } finally {
       this.isLoading = false;
     }
+  }
+
+  aboutToAppear(): void {
+    if (this.playlists[1]?.cover)
+      FormUtils.updateRecommendedCards(this.playlists[1].cover)
   }
 
   @Builder

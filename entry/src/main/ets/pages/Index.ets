@@ -59,6 +59,7 @@ struct Index {
     // 注册断点系统
     this.breakpointSystem.register()
     HorizontalMode(this.HorizontalMode_ctrl==='1')
+    AppStorage.setOrCreate("pageStack",this.pageStack)
     // 立即初始化数据
     this.initData()
   }

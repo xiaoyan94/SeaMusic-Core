@@ -12,7 +12,7 @@ const CollectAlignRules: Record<string, Record<string, string | VerticalAlign | 
 };
 
 const CoverAlignRules: Record<string, Record<string, string | VerticalAlign | HorizontalAlign>> = {
-  'bottom': { 'anchor': '__container__', 'align': VerticalAlign.Bottom }
+  'top': { 'anchor': 'singerText', 'align': VerticalAlign.Bottom }
 };
 
 const PlayAlignRules: Record<string, Record<string, string | VerticalAlign | HorizontalAlign>> = {
@@ -27,14 +27,14 @@ let storageUpdateCall = new LocalStorage();
 struct PlayControlCard2x2 {
   @LocalStorageProp('formId') formId: string = '';
   @LocalStorageProp('isPlay') isPlay: boolean = false;
-  @LocalStorageProp('title') title: string = '当前歌曲';
+  @LocalStorageProp('title') title: string = '暂无播放';
   @LocalStorageProp('isCollected') isCollected: boolean = false;
-  @LocalStorageProp('imgName') imgName: ResourceStr = $r('app.media.icon');
-  @LocalStorageProp('singer') singer: string = '歌手';
+  @LocalStorageProp('imgName') imgName: ResourceStr = $r('app.media.default_cover');
+  @LocalStorageProp('singer') singer: string = '未知歌手';
   @LocalStorageProp('songId') songId: string = '';
   @LocalStorageProp('isNeedRequestUpdate') @Watch('requestData') isNeedRequestUpdate: boolean = false;
-  @LocalStorageProp('imageColor') imageColor: string = 'rgba(76, 72, 68, 1)';
-  @LocalStorageProp('imageColorHex') imageColorHex: string = '18191d';
+  @LocalStorageProp('imageColor') imageColor: string = 'rgba(122,162,202,1)';
+  @LocalStorageProp('imageColorHex') imageColorHex: string = '7aa2ca';
   @LocalStorageProp('loaded') loaded: boolean = false;
 
   requestData() {
@@ -78,31 +78,52 @@ struct PlayControlCard2x2 {
           }
         })
 
-      Image(this.loaded ? 'memory://' + this.imgName: $r('app.media.icon'))
-        .height(78)
-        .width(78)
+      Image(this.loaded ? 'memory://' + this.imgName: $r('app.media.default_cover'))
+        .height('50%')
+        .width('50%')
         .borderRadius(8)
         .alignRules(CoverAlignRules)
+        .margin({ top: 2 })
 
-      SymbolGlyph(this.isPlay ? $r('sys.symbol.pause_round_triangle_fill') : $r('sys.symbol.play_round_triangle_fill'))
-        .fontSize(36)
-        .symbolEffect(new ReplaceSymbolEffect(EffectScope.WHOLE), true)
-        .fontColor(['#E5FFFFFF'])
-        .alignRules(PlayAlignRules)
-        .onClick(() => {
-          if (this.isPlay) {
-            ActionUtils.playByAction(this, PlayActionType.PAUSE, this.formId);
-          } else {
-            ActionUtils.playByAction(this, PlayActionType.PLAY, this.formId);
-          }
-        })
+
+      Row() {
+        SymbolGlyph($r('sys.symbol.backward_end_fill'))
+          .fontSize(28)
+          .fontColor(['#E5FFFFFF'])
+          .onClick(() => {
+            ActionUtils.playByAction(this, PlayActionType.PREVIOUS, this.formId);
+          })
+
+        SymbolGlyph(this.isPlay ? $r('sys.symbol.pause_round_triangle_fill') : $r('sys.symbol.play_round_triangle_fill'))
+          .fontSize(28)
+          .symbolEffect(new ReplaceSymbolEffect(EffectScope.WHOLE), true)
+          .fontColor(['#E5FFFFFF'])
+          .onClick(() => {
+            if (this.isPlay) {
+              ActionUtils.playByAction(this, PlayActionType.PAUSE, this.formId);
+            } else {
+              ActionUtils.playByAction(this, PlayActionType.PLAY, this.formId);
+            }
+          })
+
+        SymbolGlyph($r('sys.symbol.forward_end_fill'))
+          .fontSize(28)
+          .fontColor(['#E5FFFFFF'])
+          .onClick(() => {
+            ActionUtils.playByAction(this, PlayActionType.NEXT, this.formId);
+          })
+      }
+      .height(30)
+      .justifyContent(FlexAlign.SpaceBetween)
+      .alignRules(PlayAlignRules)
+      .width('100%')
     }
     .height('100%')
     .width('100%')
     .linearGradient({
       direction: GradientDirection.Bottom,
       repeating: false,
-      colors: this.imageColorHex.length === 6 ? [[`#ff${this.imageColorHex}`, 0.0], [`#cc${this.imageColorHex}`, 0.5], [`#ff${this.imageColorHex}`, 1.0]] : [[`#ff18191d`, 0.0], [`#cc18191d`, 0.5], [`#ff18191d`, 1.0]]
+      colors: [[`#ff${this.imageColorHex}`, 0.0], [`#cc${this.imageColorHex}`, 0.5], [`#ff${this.imageColorHex}`, 1.0]]
     })
     .padding(12)
     .onClick(() => {
