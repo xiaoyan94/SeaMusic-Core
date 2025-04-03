@@ -33,6 +33,6 @@ export enum CollectAction {
 export enum RouterType {
   PLAYER = 'Playing',
   LYRICS = '2',
-  PLAYLISTS = '3',
+  PLAYLISTS = 'Library',
   COLLECTED = '4'
 }

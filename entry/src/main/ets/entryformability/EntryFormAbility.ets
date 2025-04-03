@@ -25,10 +25,6 @@ export default class EntryFormAbility extends FormExtensionAbility {
       if (formName.includes('PlayControlCard')) {
         FormUtils.updateMusicControlCard(formId, true);
       }
-
-      if (formName === 'RecommendedMusic1x2' || formInfo.formName === 'RecommendedMusic2x4') {
-        // FormUtils.updateRecommendedCard(this.context, formInfo.formId, IMAGE_URL1);
-      }
     }
     return formBindingData.createFormBindingData('');
   }

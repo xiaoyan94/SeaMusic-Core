@@ -27,14 +27,14 @@ let storageUpdateCall = new LocalStorage();
 struct PlayControlCard2x2 {
   @LocalStorageProp('formId') formId: string = '';
   @LocalStorageProp('isPlay') isPlay: boolean = false;
-  @LocalStorageProp('title') title: string = '当前歌曲';
+  @LocalStorageProp('title') title: string = '暂无播放';
   @LocalStorageProp('isCollected') isCollected: boolean = false;
   @LocalStorageProp('imgName') imgName: ResourceStr = $r('app.media.default_cover');
-  @LocalStorageProp('singer') singer: string = '歌手';
+  @LocalStorageProp('singer') singer: string = '未知歌手';
   @LocalStorageProp('songId') songId: string = '';
   @LocalStorageProp('isNeedRequestUpdate') @Watch('requestData') isNeedRequestUpdate: boolean = false;
-  @LocalStorageProp('imageColor') imageColor: string = 'rgba(54,87,124,1)';
-  @LocalStorageProp('imageColorHex') imageColorHex: string = '36577c';
+  @LocalStorageProp('imageColor') imageColor: string = 'rgba(122,162,202,1)';
+  @LocalStorageProp('imageColorHex') imageColorHex: string = '7aa2ca';
   @LocalStorageProp('loaded') loaded: boolean = false;
 
   requestData() {
