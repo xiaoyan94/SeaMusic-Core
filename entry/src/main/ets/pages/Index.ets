@@ -540,7 +540,7 @@ struct Index_page {
     }
     .height(StyleConstants.FULL_HEIGHT)
     .width(StyleConstants.FULL_WIDTH)
-    .systemTransition(NavigationSystemTransitionType.FADE)
+    .systemTransition(NavigationSystemTransitionType.SLIDE_RIGHT)
     .hideToolBar(true)
     .hideBackButton(true)
     .title({
