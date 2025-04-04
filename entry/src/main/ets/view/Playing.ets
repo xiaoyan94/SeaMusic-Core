@@ -14,7 +14,7 @@ import { SourceAdapter } from '../adapter'
 import { TimerSelector } from '../component/TimerSelector'
 import { isHorizontalMode } from '../util/HorizontalCheck'
 import { screen_on } from '../util/On_screen_control'
-
+import { curves } from '@kit.ArkUI';
 @Builder
 export function PlayingBuilder() {
   Playing()
@@ -996,6 +996,7 @@ struct Playing {
       .height(StyleConstants.FULL_HEIGHT)
       .expandSafeArea()
     }
+    .systemTransition(NavigationSystemTransitionType.SLIDE_BOTTOM)
     .hideToolBar(true)
     .hideTitleBar(true)
     .backgroundColor($r('app.color.page_background'))
@@ -1003,13 +1004,15 @@ struct Playing {
     .expandSafeArea()
     .width(StyleConstants.FULL_WIDTH)
     .height(StyleConstants.FULL_HEIGHT)
-    // .onWillShow(() => {
-    //   if (this.Playing_Next) {
-    //     this.windowClass?.setWindowLayoutFullScreen(true)
-    //   }
-    // })
-    // .onWillHide(() => {
-    //   this.windowClass?.setWindowLayoutFullScreen(false)
+    // .onBackPressed(()=> {
+    //   animateTo({
+    //     duration: 500,
+    //     // 构造插值器弹簧曲线对象，生成一条从0到1的动画曲线
+    //     curve: curves.interpolatingSpring(0, 1, 324, 38),
+    //   }, () => {
+    //     this.pageStack.pop(false)
+    //   })
+    //   return true
     // })
     .gesture(
       SwipeGesture({

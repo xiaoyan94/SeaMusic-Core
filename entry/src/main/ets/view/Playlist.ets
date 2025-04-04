@@ -563,6 +563,7 @@ export struct PlayList {
     }
     .hideToolBar(true)
     .hideTitleBar(true)
+    .systemTransition(NavigationSystemTransitionType.EXPLODE)
     .backgroundColor($r('app.color.page_background'))
     .mode(NavDestinationMode.STANDARD)
     .expandSafeArea()
