@@ -223,7 +223,7 @@ export class EventHelper {
       }
       else{
         let pageStack = AppStorage.get("pageStack") as NavPathStack
-        pageStack.replacePath({name:targetPage})
+        pageStack.pushPath({name: targetPage},{launchMode:LaunchMode.POP_TO_SINGLETON})
       }
     });
   }
