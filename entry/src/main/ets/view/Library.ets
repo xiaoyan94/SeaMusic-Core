@@ -91,12 +91,11 @@ struct Library {
         Row()
           .width(this.capsuleWidth)
           .height(10)
-          .backgroundColor('#9ad25858')
+          .backgroundColor('#ad9e5f')
           .borderRadius(5)
           .margin({ bottom: -20})
           .scale({ x: this.scaleX, y: this.scaleY })
           .shadow(ShadowStyle.OUTER_DEFAULT_XS)
-          .backgroundBlurStyle(BlurStyle.Regular)
       }
       .height(35)
       .layoutWeight(1)
