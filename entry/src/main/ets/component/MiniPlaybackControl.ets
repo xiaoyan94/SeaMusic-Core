@@ -354,7 +354,7 @@ export struct MiniPlaybackControl {
         // }, () => {
         //   this.pageStack.pushPath({ name: 'Playing' }, false)
         // })
-        this.pageStack.pushPath({ name: 'Playing' }, true)
+        this.pageStack.pushPath({ name: 'Playing' },{launchMode:LaunchMode.MOVE_TO_TOP_SINGLETON,animated:true} )
       }
     })
     .bindSheet($$this.showPlaylist, this.PlayListBuilder(), {
