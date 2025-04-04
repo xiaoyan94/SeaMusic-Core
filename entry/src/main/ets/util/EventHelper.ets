@@ -224,6 +224,7 @@ export class EventHelper {
       else{
         let pageStack = AppStorage.get("pageStack") as NavPathStack
         pageStack.pushPath({name:targetPage},{launchMode:LaunchMode.MOVE_TO_TOP_SINGLETON})
+
       }
     });
   }
