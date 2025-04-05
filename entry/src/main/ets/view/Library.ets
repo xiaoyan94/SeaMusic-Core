@@ -91,7 +91,7 @@ struct Library {
         Row()
           .width(this.capsuleWidth)
           .height(10)
-          .backgroundColor('#ad9e5f')
+          .backgroundColor($r('app.color.title_emphasis_color'))
           .borderRadius(5)
           .margin({ bottom: -20})
           .scale({ x: this.scaleX, y: this.scaleY })
