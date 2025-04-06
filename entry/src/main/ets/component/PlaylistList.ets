@@ -104,15 +104,16 @@ export struct PlaylistList {
     let exists: boolean = false
     const showAdapterIDs: ID[] = this.showAdapters.map(adapter => adapter.id)
     if(showAdapterIDs.includes(playlist.source?.id as ID)){
+      console.log("创建者ID："+playlist.creator?.id + " 数据源ID:" + playlist.source?.auth?.user?.id);
       switch(index){
         case 0:
           exists = true
           break
         case 1:
-          exists = playlist.creator?.id === playlist.source?.auth?.user?.id
+          exists = playlist.creator?.id == playlist.source?.auth?.user?.id
           break
         case 2:
-          exists = playlist.creator?.id !== playlist.source?.auth?.user?.id
+          exists = playlist.creator?.id != playlist.source?.auth?.user?.id
           break
       }
     }
