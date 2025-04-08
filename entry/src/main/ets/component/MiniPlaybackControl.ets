@@ -174,8 +174,8 @@ export struct MiniPlaybackControl {
               .width(42)
               .height(42)
               .borderRadius(8)
-              .geometryTransition('song-cover', { follow: true })
-              .transition(TransitionEffect.OPACITY)
+              // .geometryTransition('song-cover', { follow: true })
+              // .transition(TransitionEffect.OPACITY)
           }
           .margin({ left: 16 })
 
@@ -278,7 +278,7 @@ export struct MiniPlaybackControl {
         .justifyContent(FlexAlign.SpaceBetween)
         .alignItems(VerticalAlign.Center)
         .translate({ x: this.swipeOffset })
-        .geometryTransition('song-cover', { follow: false })
+        // .geometryTransition('song-cover', { follow: false })
         .opacity(this.isSwipingActive ? (1 - Math.min(0.3, Math.abs(this.swipeOffset) / 300)) : 1)
         .animation({
           duration: 350,

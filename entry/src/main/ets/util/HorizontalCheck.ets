@@ -12,6 +12,7 @@ export function isHorizontalMode(): boolean {
   const isFoldable = display.isFoldable();
   let deviceTypeInfo: string = deviceInfo.deviceType;
   // 默认假设为横屏模式
+  let productSeries:string=deviceInfo.productSeries
   let isHorizontalMode = true;
 
   if (isFoldable) {
@@ -24,6 +25,10 @@ export function isHorizontalMode(): boolean {
   if(deviceTypeInfo=='tablet'||deviceTypeInfo=='2in1') {
     isHorizontalMode = false;
   }
+  if(productSeries=='VDE') {
+    isHorizontalMode = true;
+  }
+  console.info('jizhishiTEST '+productSeries);
   return isHorizontalMode;
 }
 //HorizontalMode
