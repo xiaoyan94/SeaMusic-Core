@@ -136,86 +136,103 @@ struct Playing {
     Swiper(this.swiperController){
       Row() {
         //封面图
-        Column() {
-          Image(cover(this.song?.album?.cover ?? "", 512))
-            .geometryTransition("picture", { follow: false })
-            .transition(TransitionEffect.OPACITY)
-            .width('100%')
-            .aspectRatio(1)
-            .clip(true)
-            .shadow({
-              radius: 0,
-              color: 'rgba(0, 0, 0, 0.15)',
-              offsetX: 0,
-              offsetY: 2
-            })
-            .borderRadius(this.img_playing_ctrl==='1'?0:24)
-            .gesture(
-              PanGesture({ direction: PanDirection.Horizontal })
-                .onActionStart(() => {
-                  this.isSwipingActive = true;
-                })
-                .onActionUpdate((event) => {
-                  // 更新滑动偏移量
-                  this.swipeOffset = event.offsetX;
+        Stack(){
+          Column() {
+            Image(cover(this.song?.album?.cover ?? "", 512))
+              .geometryTransition("picture", { follow: false })
+              .transition(TransitionEffect.OPACITY)
+              .width('100%')
+              .aspectRatio(1)
+              .clip(true)
+              .onClick(()=>{this.swiperController.showNext()})
+              .shadow({
+                radius: 0,
+                color: 'rgba(0, 0, 0, 0.15)',
+                offsetX: 0,
+                offsetY: 2
+              })
+              .borderRadius(this.img_playing_ctrl==='1'?0:24)
+              .gesture(
+                PanGesture({ direction: PanDirection.Horizontal })
+                  .onActionStart(() => {
+                    this.isSwipingActive = true;
+                  })
+                  .onActionUpdate((event) => {
+                    // 更新滑动偏移量
+                    this.swipeOffset = event.offsetX;
 
-                  // 确定滑动方向
-                  if (event.offsetX > 10 &&this.img_playing_ctrl==='1') {
-                    this.swipeDirection = 'right'; // 向右滑动，上一首
-                  } else if (event.offsetX < -10) {
-                    this.swipeDirection = 'left'; // 向左滑动，下一首
-                  } else {
-                    this.swipeDirection = '';
-                  }
-                })
-                .onActionEnd(() => {
-                  // 根据最终偏移量决定是切换歌曲还是回弹
-                  if (this.swipeOffset > this.SWIPE_THRESHOLD &&this.img_playing_ctrl==='1') {
-                    // 向右滑动超过阈值，切换到上一首
-                    this.handleSongChange('prev');
-                  }   else if (this.swipeOffset < -this.SWIPE_THRESHOLD &&this.img_playing_ctrl==='0') {
+                    // 确定滑动方向
+                    if (event.offsetX > 10 &&this.img_playing_ctrl==='1') {
+                      this.swipeDirection = 'right'; // 向右滑动，上一首
+                    } else if (event.offsetX < -10) {
+                      this.swipeDirection = 'left'; // 向左滑动，下一首
+                    } else {
+                      this.swipeDirection = '';
+                    }
+                  })
+                  .onActionEnd(() => {
+                    // 根据最终偏移量决定是切换歌曲还是回弹
+                    if (this.swipeOffset > this.SWIPE_THRESHOLD &&this.img_playing_ctrl==='1') {
+                      // 向右滑动超过阈值，切换到上一首
+                      this.handleSongChange('prev');
+                    }   else if (this.swipeOffset < -this.SWIPE_THRESHOLD &&this.img_playing_ctrl==='0') {
                       this.swiperController.showNext()
-                  }else if (this.swipeOffset < -this.SWIPE_THRESHOLD&&this.img_playing_ctrl==='1') {
-                    // 向左滑动超过阈值，切换到下一首
-                    this.handleSongChange('next');
-                  } else {
-                    // 未达到阈值，回弹
-                    animateTo({
-                      duration: 250,
-                      curve: Curve.EaseOut,
-                      delay: 0,
-                      onFinish: () => {
-                        this.isSwipingActive = false;
-                        this.swipeDirection = '';
-                      }
-                    }, () => {
-                      this.swipeOffset = 0;
-                    });
-                  }
-                })
-            )
-            .borderImage({
-              source: {
-                angle: 90,
-                direction: GradientDirection.Left,
-                colors: [[0xAEE1E1, 0.0], [0xD3E0DC, 0.3], [0xFCD1D1, 1.0]]
-              },
-              slice: { top: this.img_playing_ctrl==='1'?10:0, bottom: this.img_playing_ctrl==='1'?10:0, left: this.img_playing_ctrl==='1'?10:0, right: this.img_playing_ctrl==='1'?10:0 },
-              width: { top:this.img_playing_ctrl==='1'? "10px":"0px", bottom: this.img_playing_ctrl==='1'? "10px":"0px", left: this.img_playing_ctrl==='1'? "10px":"0px", right: this.img_playing_ctrl==='1'? "10px":"0px" },
-              repeat: RepeatMode.Stretch,
-              fill: false
-            })
-        }
-        .padding({
-          left: 45,
-          top: 12,
-          bottom: 12,
-          right: 12
-        })
-        .width('35%')
-        .height('100%')
-        .justifyContent(FlexAlign.Center)
-        .alignItems(HorizontalAlign.Center)
+                    }else if (this.swipeOffset < -this.SWIPE_THRESHOLD&&this.img_playing_ctrl==='1') {
+                      // 向左滑动超过阈值，切换到下一首
+                      this.handleSongChange('next');
+                    } else {
+                      // 未达到阈值，回弹
+                      animateTo({
+                        duration: 250,
+                        curve: Curve.EaseOut,
+                        delay: 0,
+                        onFinish: () => {
+                          this.isSwipingActive = false;
+                          this.swipeDirection = '';
+                        }
+                      }, () => {
+                        this.swipeOffset = 0;
+                      });
+                    }
+                  })
+              )
+              .borderImage({
+                source: {
+                  angle: 90,
+                  direction: GradientDirection.Left,
+                  colors: [[0xAEE1E1, 0.0], [0xD3E0DC, 0.3], [0xFCD1D1, 1.0]]
+                },
+                slice: { top: this.img_playing_ctrl==='1'?10:0, bottom: this.img_playing_ctrl==='1'?10:0, left: this.img_playing_ctrl==='1'?10:0, right: this.img_playing_ctrl==='1'?10:0 },
+                width: { top:this.img_playing_ctrl==='1'? "10px":"0px", bottom: this.img_playing_ctrl==='1'? "10px":"0px", left: this.img_playing_ctrl==='1'? "10px":"0px", right: this.img_playing_ctrl==='1'? "10px":"0px" },
+                repeat: RepeatMode.Stretch,
+                fill: false
+              })
+          }
+          .padding({
+            left: 45,
+            top: 12,
+            bottom: 12,
+            right: 12
+          })
+          .width('35%')
+          .height('100%')
+          .justifyContent(FlexAlign.Center)
+          .alignItems(HorizontalAlign.Center)
+          Column(){
+            TextClock()
+              .fontColor("#A6C2BE")
+              .blendMode(BlendMode.PLUS, BlendApplyType.OFFSCREEN)
+              // .linearGradient({
+              //   direction: GradientDirection.Right,
+              //   colors: [["#A6C2BE", 0.0], ["#E84026", 1]]
+              // })
+              // .blendMode(BlendMode.SRC_OVER, BlendApplyType.OFFSCREEN)
+              // .margin({right:20,bottom:16})
+          }.margin(12)
+
+
+        }.alignContent(Alignment.BottomEnd)
+
 
         Column() {
           LyricsView({
@@ -305,13 +322,9 @@ struct Playing {
                   }
                 })
             )
-            .geometryTransition("picture", { follow: false })
-            .transition(TransitionEffect.OPACITY)
             .margin({bottom:5,top:20})
             .onClick(()=>{
-
                 this.swiperController.showPrevious()
-
             })
           this.ProgressBar(false)
 
@@ -962,7 +975,7 @@ struct Playing {
         .aspectRatio(1)
         .borderRadius(24)
         .margin({ top: 36 })
-        .geometryTransition('song-cover', { follow: true })
+        // .geometryTransition('song-cover', { follow: true })
         .transition(TransitionEffect.OPACITY)
         .onClick(() => {
           if (!this.isWideScreen) {
