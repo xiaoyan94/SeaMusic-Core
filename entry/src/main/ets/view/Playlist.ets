@@ -734,9 +734,15 @@ export struct PlayList {
         .backgroundColor($r('app.color.setting_item_background'))
         .justifyContent(FlexAlign.Center)
         .margin({ left: 8 })
-        .onClick(() => {
-          ToastUtil.showShort('即将支持更多操作')
-        })
+        .bindMenu([{
+          value: '下载全部歌曲',
+          action: () => {
+            if (this.playlist?.songs && this.playlist.songs.length > 0) {
+              const songs = this.playlist.songs.filter(song => song.privilege.playable)
+              SongDownloadManager.batchDownloadSongs(songs)
+            }
+          }
+        }])
       }
       .padding({
         left: 8,
