@@ -54,7 +54,16 @@ class SongDownloadManagerClass {
   private downloadQueue: Map<ID, DownloadProgress> = new Map();
 
   private setQueue(songId: ID, progress: DownloadProgress): void {
-    this.downloadQueue.set(songId, progress);
+    // 如果队列中已经存在该歌曲，则更新进度
+    if (this.downloadQueue.has(songId)) {
+      const existingItem = this.downloadQueue.get(songId);
+      if (existingItem) {
+        existingItem.progress = progress.progress;
+      }
+    } else {
+      // 否则添加新的歌曲到队列
+      this.downloadQueue.set(songId, progress);
+    }
     AppStorage.setOrCreate('download_queue', this.downloadQueue);
   }
 
@@ -203,7 +212,8 @@ class SongDownloadManagerClass {
         song: song,
         progress: 0
       });
-      DownloadManager.downloadFile({
+
+      await DownloadManager.downloadFile({
         url: url,
         fileName: tempFilePath,
         background: background,
@@ -549,48 +559,39 @@ class SongDownloadManagerClass {
   /**
    * 批量下载歌曲
    * @param songs 歌曲列表
-   * @param onProgress 进度回调函数
-   * @param onComplete 完成回调函数
    * @returns Promise<boolean> 是否成功开始下载
    */
   public async batchDownloadSongs(
-    songs: Song[],
-    onProgress?: (current: number, total: number, song: Song) => void,
-    onComplete?: () => void
+    songs: Song[]
   ): Promise<boolean> {
     this.checkInitialized();
 
-    const total = songs.length;
-    let current = 0;
-
+    // 先创建下载队列
     for (const song of songs) {
-      current++;
       const songId = song.id.toString();
+      this.setQueue(songId, {
+        song: song,
+        progress: 0
+      });
+    }
 
+    // 按顺序下载
+    for (const song of songs) {
+      const songId = song.id.toString();
       try {
         await this.downloadSong(
           songId,
           song,
-          (_progress) => {
-            if (onProgress) {
-              onProgress(current, total, song);
-            }
-          },
-          () => {
-            if (onProgress) {
-              onProgress(current, total, song);
-            }
-          },
+          undefined,
+          undefined,
           true
         );
       } catch (error) {
         LogUtil.error('SongDownloadManager', `Error downloading song ${song.name}:`, error.message);
+        // 下载失败时从队列中移除
+        this.removeQueue(songId);
         continue;
       }
-    }
-
-    if (onComplete) {
-      onComplete();
     }
 
     return true;

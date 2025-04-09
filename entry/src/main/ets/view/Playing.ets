@@ -839,11 +839,15 @@ struct Playing {
   // 下载歌曲
   async downloadSong() {
     if (this.song) {
+      ToastUtil.showShort("已添加到下载队列")
       SongDownloadManager.downloadSong(
         this.song.id.toString(),
         this.song,
+        undefined,
+        () => {
+          ToastUtil.showShort("下载完成")
+        },
       )
-      ToastUtil.showShort("已添加到下载队列")
     }
   }
 
