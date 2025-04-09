@@ -311,10 +311,13 @@ class SongDownloadManagerClass {
       // }
 
       // 首先判断目录是否存在
-      try {
-        fs.accessSync(dirPath);
-      } catch (err) {
-        // 如果目录不存在，则创建目录
+      // try {
+      //   fs.accessSync(dirPath);
+      // } catch (err) {
+      //   // 如果目录不存在，则创建目录
+      //   fs.mkdirSync(dirPath);
+      // }
+      if (!fs.accessSync(dirPath)) {
         fs.mkdirSync(dirPath);
       }
 
