@@ -182,6 +182,8 @@ struct Index_page {
       right: 16
     })
     .expandSafeArea()
+    .backgroundColor(Color.Transparent) // 关键透明设置
+    .zIndex(1) // 确保标题层级高于内容
   }
 
   onMenuIconClick(index: number) {
@@ -532,6 +534,9 @@ struct Index_page {
           }
         })
         .expandSafeArea()
+        .padding({ top: 50 }) // 标题栏高度补偿
+        // .margin({ top: -50 }) // 负边距实现穿透
+        .zIndex(0) // 层级低于标题
 
         MiniPlaybackControl()
       }
@@ -546,8 +551,13 @@ struct Index_page {
     .title({
       builder: this.Title(),
       height: 50,
+    }, {
+      backgroundColor: Color.Transparent,
+      backgroundBlurStyle: BlurStyle.Thin,
+      barStyle: BarStyle.STACK,
     })
-    .backgroundColor($r('app.color.page_background'))
+    .backgroundColor(Color.Transparent)
+    //.backgroundColor($r('app.color.page_background'))
   }
 
   getBlankHeight(): number {
