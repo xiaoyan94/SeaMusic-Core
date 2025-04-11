@@ -152,7 +152,7 @@ export struct MiniPlaybackControl {
         .height(StyleConstants.FULL_HEIGHT)
         // .backgroundColor('rgba(243, 243, 243, 0.6)')
         // .backdropBlur(30)
-        .backgroundBlurStyle(BlurStyle.Thick)
+        .backgroundBlurStyle(BlurStyle.Thin)
         .borderRadius(10)
         .shadow({
           color: 'rgba(0, 0, 0, 0.12)',
