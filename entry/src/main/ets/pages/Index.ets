@@ -18,19 +18,23 @@ import { PushPathHelper } from '../util/PushPathHelper'
 import { PlaylistManager } from '../util/PlaylistManager'
 import { MiniPlaybackControl } from '../component/MiniPlaybackControl'
 import { MultiSearch } from '../view/MultiSearch'
-import { SlideDownControl } from '../util/SlideDownController'
 import { LazyData } from '@pie/lazy-data'
-import {HorizontalMode}from '../util/HorizontalCheck'
+import { HorizontalMode } from '../util/HorizontalCheck'
+import { Download } from '../view/Download'
+import { ScrollIndexHandler } from '../util/ScrollIndexHandler'
+import { HeaderAnimation } from '../component/HeaderAnimation'
 
 // 缓存常用值以避免重复计算
 const COLUMNS_TEMPLATE_LG = '1fr 1fr 1fr 1fr'
 const COLUMNS_TEMPLATE_SM = '1fr 1fr'
 const DEFAULT_COVER_SIZE = 256
+const TAG = 'Index'
 
 @Entry
 @Component
-struct Index{
+struct Index {
   @Provide('NavPathStack') pageStack: NavPathStack = new NavPathStack()
+
   @Builder
   PageMap(name: string) {
     if (name === 'ComingSoon') {
@@ -41,13 +45,17 @@ struct Index{
       PlayList()
     } else if (name === 'MultiSearch') {
       MultiSearch()
-    }else if (name === 'Index_page') {
+    } else if (name === 'Index_page') {
       Index_page()
+    } else if (name === 'Download') {
+      Download()
     }
   }
+
   aboutToAppear(): void {
-    this.pageStack.replacePath({name: 'Index_page'})
+    this.pageStack.replacePath({ name: 'Index_page' })
   }
+
   build() {
     Navigation(this.pageStack) {
       // empty
@@ -57,6 +65,7 @@ struct Index{
     .mode(NavigationMode.Stack)
   }
 }
+
 @Component
 struct Index_page {
   @State blankHeight: number = 0
@@ -65,30 +74,34 @@ struct Index_page {
   private breakpointSystem = new BreakpointSystem()
   private menuItems = HomePageMenuData
   private scrollController: Scroller = new Scroller()
-  @State currentIndex: number = -1
   @StorageLink("user_data_source") adapters: SourceConfig[] = PreferencesCache.getUserDataSource()
-
   // 使用StorageLink保持数据同步
   @StorageLink("index_recommend_playlist") recommendPlaylist: Playlist[] = []
   @StorageLink("index_recommend_songs") recommendSongs: Song[] = []
   @StorageLink("index_recommend_artists") recommendArtists: Artist[] = []
   @StorageLink("index_recommend_toplist") topList: Playlist[] = []
   @State loading: boolean = true
-
   // 避让导航栏高度
   @StorageProp('bottomRect') bottomRect: number = 0
   @StorageProp('topRect') topRect: number = 0
   @StorageProp('winHeight') winHeight: number = 0
-  @State HorizontalMode_ctrl:string =  PreferencesCache.getUserPreference('HorizontalMode_ctrl','0')
+  @State HorizontalMode_ctrl: string = PreferencesCache.getUserPreference('HorizontalMode_ctrl', '0')
   // 预先计算并缓存必要的布局值
   private coverWidth: number = 120
   private segmentPadding: number = 4
+  @State scrollIndexHandler: ScrollIndexHandler = new ScrollIndexHandler({
+    onIndexChange: (index) => {
+      console.log("currentIndex:"+index)
+      this.onMenuIconClick(index)
+    },
+    componentTag: TAG
+  }).linkController(this.scrollController)
 
   async aboutToAppear() {
     // 注册断点系统
     this.breakpointSystem.register()
-    HorizontalMode(this.HorizontalMode_ctrl==='1')
-    AppStorage.setOrCreate("pageStack",this.pageStack)
+    HorizontalMode(this.HorizontalMode_ctrl === '1')
+    AppStorage.setOrCreate("pageStack", this.pageStack)
     // 立即初始化数据
     this.initData()
   }
@@ -157,7 +170,7 @@ struct Index_page {
       Row() {
         MenuIcon({
           icon: $r('app.media.ic_search'),
-          active: this.currentIndex === 1
+          active: this.scrollIndexHandler.currentIndex === 1
         })
           .onClick(() => {
             this.onMenuIconClick(1)
@@ -165,7 +178,7 @@ struct Index_page {
 
         MenuIcon({
           icon: $r('app.media.ic_gearshape'),
-          active: this.currentIndex === 0
+          active: this.scrollIndexHandler.currentIndex === 0
         })
           .onClick(() => {
             this.onMenuIconClick(0)
@@ -194,19 +207,6 @@ struct Index_page {
     }
   }
 
-  @Builder
-  PageMap(name: string) {
-    if (name === 'ComingSoon') {
-      ComingSoon()
-    } else if (name === 'Setting') {
-      Setting()
-    } else if (name === 'Playlist') {
-      PlayList()
-    } else if (name === 'MultiSearch') {
-      MultiSearch()
-    }
-  }
-
   // 使用Builder模式优化各个部分的渲染
   @Builder
   MenuGrid() {
@@ -228,47 +228,6 @@ struct Index_page {
     .width(StyleConstants.FULL_WIDTH)
     .rowsGap(8)
     .columnsGap(8)
-  }
-
-  @Builder
-  HeaderAnimation() {
-    Row() {
-      if(this.currentIndex >= 2){
-        LoadingProgress()
-          .width(24)
-          .height(24)
-          .opacity(this.currentIndex >= 1 ? 1 : 0)
-          .scale({ x: this.currentIndex >= 1 ? 1 : 0.5, y: this.currentIndex >= 1 ? 1 : 0.5 })
-          .margin({ right: 8 })
-          .animation({
-            duration: 250,
-            curve: Curve.FastOutSlowIn
-          })
-      }
-
-      Text(SlideDownControl.getIndexActionText(this.currentIndex))
-        .fontColor($r('app.color.text_secondary'))
-        .fontWeight(StyleConstants.FONT_WEIGHT_FIVE)
-        // .margin({ left: 8 })
-        .opacity(this.currentIndex >= 0 ? 1 : 0)
-        .translate({ y: this.currentIndex >= 0 ? 0 : -20 })
-        .animation({
-          duration: 250,
-          curve: Curve.FastOutSlowIn
-        })
-    }
-    .height(this.currentIndex >= 0 ? 40 : 0)
-    .animation({
-      duration: 250,
-      curve: Curve.FastOutSlowIn
-    })
-    .alignItems(VerticalAlign.Center)
-    .justifyContent(FlexAlign.Center)
-    .width(StyleConstants.FULL_WIDTH)
-    .padding({
-      left: 16,
-      right: 16
-    })
   }
 
   @Builder
@@ -449,38 +408,44 @@ struct Index_page {
 
   build() {
     NavDestination() {
-      Stack({ alignContent: Alignment.Bottom }){
-        List({ scroller: this.scrollController }){
-          ListItem(){
-            this.HeaderAnimation()
+      Stack({ alignContent: Alignment.Bottom }) {
+        List({ scroller: this.scrollController }) {
+          ListItem() {
+            HeaderAnimation({ scrollIndexHandler: this.scrollIndexHandler, isShowLoadingProgress: true })
           }
+
           if (this.adapters.length > 0) {
-            if(this.recommendPlaylist.length > 0 && this.recommendSongs.length > 0
-            && this.recommendArtists.length > 0 && this.topList.length > 0){
-              ListItem(){
+            if (this.recommendPlaylist.length > 0 && this.recommendSongs.length > 0
+              && this.recommendArtists.length > 0 && this.topList.length > 0) {
+              ListItem() {
                 this.MenuGrid()
               }
-              ListItem(){
+
+              ListItem() {
                 this.RecommendedSongs()
               }
-              ListItem(){
+
+              ListItem() {
                 this.RecommendedPlaylists()
               }
-              ListItem(){
+
+              ListItem() {
                 this.RecommendedArtists()
               }
-              ListItem(){
+
+              ListItem() {
                 this.TopLists()
               }
             } else {
-              ListItem(){
+              ListItem() {
                 this.MenuGrid()
               }
               .onAreaChange((oldValue: Area, newValue: Area) => {
                 this.blankHeight = newValue.height as number
               })
-              ListItem(){
-                Row(){
+
+              ListItem() {
+                Row() {
                   Column() {
                     Text('当前音源暂无推荐！')
                       .fontWeight(StyleConstants.FONT_WEIGHT_SEVEN)
@@ -495,13 +460,13 @@ struct Index_page {
               }
             }
           } else {
-            ListItem(){
+            ListItem() {
               this.EmptyDataSource()
             }
           }
 
-          ListItem(){
-            Row(){
+          ListItem() {
+            Row() {
               Blank().height(StyleConstants.PLAYER_CONTROL_HEIGHT + 16)
             }
           }
@@ -512,25 +477,8 @@ struct Index_page {
         .backToTop(true)
         .scrollBar(BarState.Off)
         .edgeEffect(EdgeEffect.Spring)
-        .onWillScroll((scrollOffset: number, scrollState: ScrollState, scrollSource: ScrollSource)=>{
-          // 优化滚动期间的计算频率
-          if (scrollState === ScrollState.Scroll) {
-            const positionY = this.scrollController.currentOffset().yOffset
-
-            // 只有在下拉时才计算索引，减少计算量
-            if (positionY < 0) {
-              this.currentIndex = SlideDownControl.calculateCurrentIndex(positionY, 2)
-            } else if (this.currentIndex !== -1) {
-              this.currentIndex = -1
-            }
-          }
-        })
-        .onScrollStop(() => {
-          if (this.currentIndex >= 0) {
-            this.onMenuIconClick(this.currentIndex)
-            this.currentIndex = -1
-          }
-        })
+        .onWillScroll(this.scrollIndexHandler.scrollHandlers.onWillScroll)
+        .onScrollStop(this.scrollIndexHandler.scrollHandlers.onScrollStop)
         .expandSafeArea()
 
         MiniPlaybackControl()
@@ -551,7 +499,7 @@ struct Index_page {
   }
 
   getBlankHeight(): number {
-    let sub = px2vp(this.winHeight) - this.blankHeight - 50 - px2vp(this.bottomRect+this.topRect)
+    let sub = px2vp(this.winHeight) - this.blankHeight - 50 - px2vp(this.bottomRect + this.topRect)
     return sub > 0 ? sub : 0
   }
 }
